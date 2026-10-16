@@ -9,3 +9,8 @@ Dados no IndexedDB dependem da proteção do dispositivo; não são criptografad
 Importação limita conteúdo a aproximadamente 50 MB, valida schema e relações antes de escrever e exige confirmação de substituição. Falha dentro da transação reverte o conjunto. Exclusão local exige digitar APAGAR após mostrar os dados afetados. Não há exclusão remota porque não há backend.
 
 Limitações: o iOS pode remover armazenamento; não há garantia de permanência sem backup externo. Fotografias aumentam o agregado e o tamanho dos backups. Logs técnicos de hospedagem podem registrar pedidos dos arquivos estáticos, mas não recebem registros pessoais pelo código do aplicativo. Auditamos dependências de produção; resultados atualizados em TESTING.md.
+
+
+## Vercel
+
+vercel.json prepara headers de segurança e cache para app estático. Não há variáveis privilegiadas no frontend nem dados de saúde no build. A instalação da integração e o acesso da Vercel ao repositório privado devem ocorrer por OAuth/instalação oficial; nunca por senha ou token enviados no chat. Configuração local .vercel é ignorada pelo Git. Prévia deve conter somente dados sintéticos locais e ter o acesso nativo apropriado à conta, quando disponível. Headers, HTTPS e isolamento ainda devem ser conferidos no endereço publicado.

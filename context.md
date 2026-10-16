@@ -1,5 +1,13 @@
 # oaolife — continuidade
 
+## Estado atual — integração Vercel
+- Preparação na branch feat/vercel-hosting, derivada de main e preservando commit local de documentação b190baf. Código funcional anterior em origin/main: 5fd8aa2, CI remota aprovada.
+- Configuração Vercel, rotas internas, headers/cache, proteção de formulários e verificação de hospedagem prontas. Testes locais da preparação: 86/86 Vitest e 26/26 Playwright; TypeScript/build aprovados.
+- Vercel ainda não instalada/conectada: busca confirmada retornou installed:false após a sugestão de autorização. Ambiente sem credenciais Vercel configuradas. Projeto, plano efetivo da conta, domínio, preview e produção não confirmados.
+- Conta existente/Hobby autorizados pelo usuário. Solicitar somente autorização segura da integração Vercel, sem senha/token no chat. Não criar repositório alternativo ou serviço pago.
+- Pages e CI preservados. Consulta administrativa de branch protection e leitura de deployments via integração GitHub retornaram 403; não se afirma que proteções obrigatórias foram configuradas ou que não existem.
+- Não existe URL HTTPS de produção confirmada. Não declarar tarefa concluída até publicar e validar.
+
 ## Auditoria inicial · 16/10/2026
 - Repositório oficial privado: https://github.com/oaovito/oaolife.git.
 - Inspeção via API e clone: repositório vazio, sem branches, arquivos ou commits. Branch padrão configurada: main.
@@ -72,3 +80,23 @@ Node 24 e npm 11 disponíveis. Rede de comandos precisa da permissão de rede ad
 
 ## Critérios ainda não comprovados
 Publicação HTTPS, instalação em aparelho físico e pipeline de deploy até a etapa final. Portanto a entrega não pode ser declarada integralmente pronta para uso no iPhone enquanto esses pontos não forem resolvidos. Backend remoto não é anunciado como implementado.
+
+
+## Integração Vercel em andamento · 16/10/2026
+- Autorizado usar a conta Vercel existente, Hobby, domínio gratuito disponível próximo de oaolife.vercel.app, integração oficial com oaovito/oaolife/main. Sem custos, sem outro repositório, sem retirar Pages antes de validar Vercel.
+- Auditoria retomada: main remoto com implementação 5fd8aa2; commit local b190baf de documentação ainda estava à frente do remoto após interrupções de envio. Criada branch feat/vercel-hosting, preservando ambos.
+- React/Vite, npm ci, npm run build, saída dist, Node 24; nenhuma variável secreta necessária ao aplicativo. BASE_PATH deve ficar ausente ou / na Vercel.
+- Não existe vercel.json ou .vercel/project.json anterior no checkout; nenhum projeto Vercel confirmado. Não houve deploy anterior confirmado e não há evidência de usuários num domínio publicado, mas não é possível inspecionar armazenamento de outros dispositivos.
+- Plugin Vercel encontrado como disponível e não instalado; sugestão de instalação/autorização emitida. Conta ainda não confirmada conectada. Ambiente não possui secrets/runtime variables Vercel configuradas; não pedir tokens no chat.
+- Preparados vercel.json (Vite/build/dist, SPA sem reescrever arquivos estáticos ausentes, headers e política de cache), engines Node 24 e exclusões de arquivos locais.
+- Em desenvolvimento: bloqueio de atualização durante formulários não salvos e rotas internas leves. Nenhuma mudança no plano clínico, na periodização ou no schema IndexedDB.
+- Workflows Pages/CI preservados até Vercel ter produção confirmada. Próximo passo dependente: autorização segura da integração Vercel. Demais testes/documentação seguem em paralelo.
+
+
+## Validação da preparação Vercel
+- Rodada final local: 86 testes Vitest, 26 testes Playwright, TypeScript e build aprovados. A primeira rodada encontrou e corrigiu a associação do formulário à confirmação de commit: microtask podia limpar o token antes do handler React; a associação agora dura até o fim da tarefa. Teste real confirmou bloqueio e liberação da atualização após salvar.
+- Ensaio entre duas origens locais: destino começou vazio, importação criptografada restaurou o volume e origem antiga continuou preservada. Não representa migração de um domínio Vercel já publicado.
+- Nenhuma alteração em src/domain/model.ts, plan.ts, training.ts ou progression.ts nesta integração. Schema IndexedDB permanece 2; nenhuma limpeza de dados.
+- vercel.json e engines: Vite / npm ci / npm run build / dist / Node 24.x. Branch de produção desejada main; domínio desejado só será divulgado após confirmação do provedor.
+- scripts/verify-hosting.mjs pronto para verificar uma URL HTTPS real; não executado sem URL confirmada.
+- Documentação atualizada: README, ARCHITECTURE, DEPLOYMENT, TESTING, SYNC e SECURITY. Acompanhamento da branch/PR e autenticação são os próximos passos.

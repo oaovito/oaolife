@@ -24,7 +24,7 @@ Node 24 e npm: `npm ci`, `npm run dev`. Verificações: `npm run check`, `npm ru
 
 ## Publicação e limites
 
-GitHub Actions contém CI e publicação no GitHub Pages, condicionada à disponibilidade de Pages para este repositório privado. A CI remota foi aprovada. A tentativa de publicação foi bloqueada ao criar Pages: “Resource not accessible by integration”. Ainda não há URL de produção. Nenhuma mudança de visibilidade é feita automaticamente. Veja [context.md](context.md) e [DEPLOYMENT.md](DEPLOYMENT.md) para o resultado observado.
+A hospedagem Vercel está sendo preparada pela integração oficial GitHub–Vercel, com Vite, Node 24 e saída dist. A conexão autenticada e o domínio ainda estão pendentes. GitHub Actions mantém a CI e a configuração anterior de Pages até a nova produção ser validada. A CI remota foi aprovada. A tentativa de publicação foi bloqueada ao criar Pages: “Resource not accessible by integration”. Ainda não há URL de produção. Nenhuma mudança de visibilidade é feita automaticamente. Veja [context.md](context.md) e [DEPLOYMENT.md](DEPLOYMENT.md) para o resultado observado.
 
 Sem backend privado configurado, autenticação remota ou sincronização de dados. Armazenamento local depende da proteção do dispositivo desbloqueado. O aplicativo não avalia técnica por sensores e não substitui avaliação médica. Sem alteração automática de dieta, sódio, água ou cardio.
 

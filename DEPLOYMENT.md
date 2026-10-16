@@ -1,5 +1,56 @@
 # Publicação
 
+## Vercel — preparação atual
+
+A Vercel foi autorizada como destino de hospedagem em 16/10/2026, com a conta existente do usuário, plano Hobby e domínio gratuito disponível. **Ainda não há conta autenticada, projeto, domínio ou deploy Vercel confirmados.** A integração foi encontrada e sua instalação/autorização foi solicitada pelo mecanismo seguro; nenhuma senha ou token foi pedido no chat.
+
+Configuração derivada do checkout em `vercel.json`:
+
+| Campo | Valor preparado |
+|---|---|
+| Framework | Vite |
+| Produção | main, após revisão e verificações |
+| Instalação | npm ci, com package-lock.json |
+| Build | npm run build |
+| Saída | dist |
+| Node | 24.x, conforme ambiente e CI existentes |
+| Variáveis obrigatórias do app | Nenhuma |
+| BASE_PATH | Ausente ou / para raiz Vercel; /oaolife/ é exclusivo de Pages |
+| Domínio | A confirmar na conta; preferência oaolife.vercel.app se disponível |
+
+A configuração foi preparada em `feat/vercel-hosting`. Não contém IDs de projeto inventados nem credenciais. `.vercel/` e arquivos privados estão excluídos. Antes de criar projeto, é necessário listar os projetos da conta autenticada e reutilizar uma associação válida se ela existir.
+
+Integração preferencial: importar oaovito/oaolife pela integração oficial GitHub–Vercel, confirmar conta/plano Hobby, produção main e prévias de PR. Não contratar plano ou recurso pago. A instalação GitHub da Vercel precisa ter acesso ao repositório privado oficial. Aprovar/mesclar alterações e publicar depois do merge são operações distintas; commits arbitrários não são considerados aprovados. A CI do GitHub é preservada. Configurar checks obrigatórios apenas quando plano/permissões permitirem; até lá, usar PR com checks aprovados antes do merge.
+
+O workflow Pages continua preservado até a Vercel funcionar. Depois de um deploy HTTPS validado, manter Pages como fallback manual (`workflow_dispatch`), evitando duas publicações automáticas para o mesmo push. Não desligar um endereço antigo que contenha dados sem a migração revisada.
+
+## Rotas, cache e verificações
+
+Rotas de interface: /, /treino, /alimentacao, /hidratacao, /cardio, /mobilidade, /plano, /evolucao e /ajustes. `vercel.json` reescreve caminhos sem extensão para index.html. Arquivos JS/CSS/imagens ausentes devem retornar 404, não HTML. Ícones usam a base de build, preservando compatibilidade com o caminho anterior.
+
+HTML, manifest e demais arquivos de nome estável revalidam. Assets com hash em /assets usam cache imutável de um ano. /sw.js usa no-cache/no-store e escopo /. O Service Worker precacheia recursos, não dados pessoais. Headers de segurança incluem CSP, nosniff, Referrer-Policy, X-Frame-Options e HSTS. A validade efetiva dos headers e rewrites deve ser verificada no deploy real.
+
+`scripts/verify-hosting.mjs` recebe somente uma URL HTTPS real retornada pelo provedor e verifica HTML, rotas, manifest, ícones, tipo/cache de sw.js, headers e 404 de asset ausente. Este script ainda não foi executado em uma URL Vercel confirmada. Testes browser de instalação em aparelho físico são uma etapa separada.
+
+## Migração de origem
+
+Não houve publicação HTTPS confirmada nesta sessão anterior à Vercel. Não é possível inspecionar o armazenamento de outros dispositivos. Se houver registros em qualquer endereço antigo:
+
+1. No endereço antigo, exportar um backup .oaolife com senha e verificar o download externo.
+2. Abrir a URL definitiva nova, importar o arquivo com a mesma senha e revisar contagens antes de confirmar RESTAURAR.
+3. Conferir dias, sessões, cargas, fotos e configurações no novo endereço, incluindo reabertura offline.
+4. Manter o endereço e os dados antigos até a conferência. Não copiar IndexedDB por redirecionamento: o navegador isola por origem.
+
+O ensaio automatizado usa duas origens locais distintas com registros sintéticos. Não comprova transferência de registros reais entre domínios de produção nem sua existência em dispositivos do usuário.
+
+## Falhas e rollback
+
+Falhas de build/deploy ficam nos resultados nativos da Vercel e nos checks GitHub quando conectados; não há monitoramento contínuo externo configurado. Erros de inicialização e de atualização têm mensagens locais. Não adicionar telemetria de saúde.
+
+Para rollback, selecionar um deployment anterior compatível no projeto Vercel e promover pelo mecanismo nativo. Revalidar HTTPS, rotas e offline. Nunca limpar IndexedDB/Cache Storage pessoal para fazer rollback. Esta integração não altera o schema 2; voltar a uma versão compatível não deve exigir migração. Uma futura alteração de schema requer teste de compatibilidade e plano de recuperação antes de reverter o código. Guardar backup antes de migração de dados.
+
+## Histórico do GitHub Pages
+
 Repositório único: https://github.com/oaovito/oaolife. Não criar outro nem mudar visibilidade sem autorização. Não publicar registros de saúde.
 
 Workflows:
