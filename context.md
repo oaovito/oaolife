@@ -1,12 +1,17 @@
 # oaolife — continuidade
 
-## Estado atual — integração Vercel
-- Preparação na branch feat/vercel-hosting, derivada de main e preservando commit local de documentação b190baf. Código funcional anterior em origin/main: 5fd8aa2, CI remota aprovada.
-- Configuração Vercel, rotas internas, headers/cache, proteção de formulários e verificação de hospedagem prontas. Testes locais da preparação: 86/86 Vitest e 26/26 Playwright; TypeScript/build aprovados.
-- Vercel ainda não instalada/conectada: busca confirmada retornou installed:false após a sugestão de autorização. Ambiente sem credenciais Vercel configuradas. Projeto, plano efetivo da conta, domínio, preview e produção não confirmados.
-- Conta existente/Hobby autorizados pelo usuário. Solicitar somente autorização segura da integração Vercel, sem senha/token no chat. Não criar repositório alternativo ou serviço pago.
-- Pages e CI preservados. Consulta administrativa de branch protection e leitura de deployments via integração GitHub retornaram 403; não se afirma que proteções obrigatórias foram configuradas ou que não existem.
-- Não existe URL HTTPS de produção confirmada. Não declarar tarefa concluída até publicar e validar.
+## Estado atual — Vercel publicada, versão 1.0.0
+- URL HTTPS pública confirmada: https://oaolife.vercel.app. Projeto oaolife, conta oaovito, equipe oao7, plano Hobby. Projeto prj_3IBSBETJUAlsyzDW4AYcHTbGKlAZ. Nenhum serviço pago contratado.
+- Autorização concluída por login seguro da CLI; MCP Vercel apareceu, mas recusou o escopo oao7 com 403. Fallback oficial CLI autenticado funcionou. Credenciais locais fora do Git; nenhum token no cliente ou na documentação.
+- GitHub oficial conectado, productionBranch main. PR #1 incorporado após CI aprovada e prévia Ready. Commit c3fd4a4e070903d25d88294b8ca17c2e1cf930a6 acionou automaticamente o deployment de produção dpl_3EJCjkimtcP4WjpxhrbfDBiQdvef, Ready, com alias oaolife.vercel.app.
+- Prévia dpl_DH283hm1BBNxGraAftpbgVwMbQrK Ready (target staging na API); acesso protegido por CLI oficial retornou HTTP 200. Os assets coincidiram com a produção. OIDC de desenvolvimento foi recusado por TRUSTED_SOURCES_ENVIRONMENT_MISMATCH; proteção não foi desabilitada. Testes browser foram executados no domínio público.
+- Qualidade: 86/86 Vitest + 26/26 Playwright na CI da preparação; mais 22/22 Playwright na URL real, em Chromium mobile/desktop. Script HTTPS aprovou HTML, oito rotas, manifest, ícones, Service Worker, headers e 404 de asset ausente. TypeScript/build/auditoria de produção aprovados na CI.
+- Reabertura real de processo Chromium com perfil persistente, consulta ao SW e recarga offline mantiveram um registro sintético de hidratação. Dados privados do usuário nunca foram enviados ao servidor.
+- Banco IndexedDB schema 2 preservado; nenhuma alteração no domínio ou nos registros de treinamento durante integração. Backup/restauração AES-GCM testados localmente e na URL real. Sem backend ou sincronização remota.
+- GitHub Actions mantém CI. Pages preservado como fallback manual após Vercel validada; não existe endereço Pages publicado confirmado. Migração de domínio só será necessária se o usuário tiver dados em outra origem; ensaio de exportação/importação entre duas origens locais passou, transferência de registros reais não foi afirmada.
+- Consulta administrativa de branch protection retornou 403. Não se afirma que verificações obrigatórias foram configuradas; merges desta entrega são precedidos de checks aprovados.
+- Pendências: instalação e uso em Safari/iPhone físico; cadastro pelo usuário da semana atual do ciclo, incrementos reais, duração do cardio e protocolo habitual. Sem dados inventados. Nutrição cadastrada ainda não calcula automaticamente macros dos itens fixos das refeições.
+- Os itens abaixo registram a evolução histórica, inclusive bloqueios de publicação que foram superados pela Vercel. Este estado atual prevalece.
 
 ## Auditoria inicial · 16/10/2026
 - Repositório oficial privado: https://github.com/oaovito/oaolife.git.
@@ -20,7 +25,7 @@
 - Operações locais transacionais com revisão, auditoria e fila persistente. Sem backend remoto: nunca declarar dados sincronizados.
 - Backup criptografado por senha. Sem telemetria ou envio de saúde a terceiros.
 - PWA com precache, atualização sob controle e proteção durante sessão ativa.
-- Publicação preferencial via GitHub Actions e hospedagem estática gratuita. Repositório privado pode limitar GitHub Pages no plano gratuito; não alterar visibilidade automaticamente.
+- Publicação nativa GitHub–Vercel; GitHub Actions verifica qualidade. Repositório privado pode limitar GitHub Pages no plano gratuito; não alterar visibilidade automaticamente.
 
 ## Plano incremental
 1. Núcleo de calendário, periodização, progressão e persistência.

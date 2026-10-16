@@ -13,6 +13,8 @@ Concorrência local usa a transação serializável do IndexedDB. Importação c
 
 ## Publicação Vercel e segurança da interface
 
-Deploy nativo GitHub–Vercel está preparado, mas depende de autenticação e validação real. Publicação não sincroniza registros pessoais. HTML e SW precisam revalidar no servidor; assets com hash podem ser imutáveis. Uma nova origem tem seu próprio IndexedDB e exige exportação/importação; nenhum redirect transporta dados.
+Deploy nativo GitHub–Vercel validado: merge c3fd4a4 em main gerou produção Ready no domínio https://oaolife.vercel.app. Publicação não sincroniza registros pessoais. HTML e SW precisam revalidar no servidor; assets com hash podem ser imutáveis. Uma nova origem tem seu próprio IndexedDB e exige exportação/importação; nenhum redirect transporta dados.
 
 Ativação também é bloqueada por formulários não salvos. Uma submissão só limpa o estado pendente após commit bem-sucedido da mesma revisão; erros ou novas edições mantêm a proteção. O usuário pode continuar usando a versão armazenada offline. O iOS não é considerado um executor confiável de tarefas com a PWA fechada.
+
+A ativação de uma nova versão de SW e a proteção durante sessão/formulário foram validadas em build local real (não simulação da API). Na hospedagem, registro, precache, offline e verificação de atualização foram conferidos. O deploy de documentação conserva os mesmos recursos e não simula uma nova versão de código apenas para forçar recarga.
