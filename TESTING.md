@@ -25,3 +25,18 @@ Salvamento é assíncrono: o teste de recarga aguarda confirmação de commit. U
 ## Limites
 
 Chromium com viewport/fuso móvel não é um iPhone físico. Safari/iOS, instalação real na Tela de Início, comportamento de armazenamento do sistema e splash controlado pelo iOS exigem validação em aparelho. Pipeline e deploy só são validados após execução no GitHub; não estão comprovados pela compilação local. Não há testes de sincronização com backend inexistente.
+
+
+## Resultado remoto
+
+[Verificar oaolife](https://github.com/oaovito/oaolife/actions/runs/38968715539) concluiu com sucesso no commit de implementação 5fd8aa2. [Publicar oaolife](https://github.com/oaovito/oaolife/actions/runs/38968715549) passou por testes e builds, mas falhou ao criar o site Pages por falta de permissão da integração. Não há validação de publicação ou teste HTTPS em produção. Os critérios do pipeline são parcialmente comprovados: execução e verificações sim, deploy final não.
+
+
+## Integração Vercel preparada
+
+Em feat/vercel-hosting: TypeScript, build e **86/86 testes Vitest** aprovados; **26/26 testes Playwright** aprovados nos perfis mobile/desktop. Foram acrescentadas rotas internas com recarga/voltar, backup e restauração entre 127.0.0.1 e localhost (origens distintas) e proteção contra ativação do SW durante formulário não salvo. A mesma revisão salva libera a atualização; edições pendentes continuam bloqueadas.
+
+Nenhum schema ou plano de treinamento/nutrição foi alterado. A migração do banco e os demais registros seguem cobertos. Esta rodada valida a preparação local, não valida Vercel, certificado, headers efetivos, domínio de produção ou transferência de registros reais. Scripts de verificação do endereço estão preparados para execução após a autenticação/deploy. Instalação em iPhone físico permanece pendente.
+
+
+CI da preparação Vercel confirmada: https://github.com/oaovito/oaolife/actions/runs/38971287133, commit d9b651d. Instalação pelo lockfile, 86 Vitest, build, auditoria e 26 Playwright passaram. Continua pendente a validação de uma URL Vercel, pois a conta ainda não está autenticada nesta sessão.

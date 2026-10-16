@@ -17,3 +17,10 @@ Persistência por agregado: `state/main` reúne as entidades de domínio; audito
 Sessões são snapshots do planejamento ao abrir o treino. Novas sugestões não editam snapshots já abertos. Não existe registro automático de execução. Cada alteração lê a última revisão dentro da transação, preservando alterações concorrentes de outras abas. A restauração exige a mesma revisão analisada pelo usuário.
 
 Service Worker gerado com Workbox: precache dos arquivos construídos, fallback de navegação e atualização em espera. Nada de dados pessoais em Cache Storage. Ativação bloqueada durante sessão ou cronômetro ativo e operações de gravação.
+
+
+## Adaptação à Vercel
+
+Hospedagem estática preparada por vercel.json, sem backend ou segredos de runtime. Rotas leves usam History API e os caminhos de build; reabrir uma rota preserva a tela correspondente. O lançamento da PWA pela raiz continua abrindo o dashboard. Configuração de headers e fallback não toca no IndexedDB.
+
+useFormSafety acompanha revisões de formulários ainda não salvos. Atualização só pode ser solicitada sem sessão, cronômetro, gravação ou formulário pendente; salvar com sucesso libera somente a revisão efetivamente enviada, preservando edições que ocorram durante uma gravação. Atualização originada em outra aba não força recarga da interface atual.
