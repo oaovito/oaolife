@@ -25,3 +25,8 @@ Salvamento é assíncrono: o teste de recarga aguarda confirmação de commit. U
 ## Limites
 
 Chromium com viewport/fuso móvel não é um iPhone físico. Safari/iOS, instalação real na Tela de Início, comportamento de armazenamento do sistema e splash controlado pelo iOS exigem validação em aparelho. Pipeline e deploy só são validados após execução no GitHub; não estão comprovados pela compilação local. Não há testes de sincronização com backend inexistente.
+
+
+## Resultado remoto
+
+[Verificar oaolife](https://github.com/oaovito/oaolife/actions/runs/38968715539) concluiu com sucesso no commit de implementação 5fd8aa2. [Publicar oaolife](https://github.com/oaovito/oaolife/actions/runs/38968715549) passou por testes e builds, mas falhou ao criar o site Pages por falta de permissão da integração. Não há validação de publicação ou teste HTTPS em produção. Os critérios do pipeline são parcialmente comprovados: execução e verificações sim, deploy final não.

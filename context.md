@@ -28,7 +28,7 @@
 - Manifest, ícones, safe areas e Service Worker com ativação protegida por eventos nativos. A primeira implementação de ativação foi corrigida após falha observada em Playwright. Workflows CI/Pages escritos, ainda não validados remotamente. Consulta à API Pages pela integração retornou HTTP 403: Resource not accessible by integration.
 - Compilação TypeScript/build aprovada. 83 testes Vitest aprovados, incluindo encerramento real de sessão com progressão e desfazer. Auditoria de dependências de produção sem vulnerabilidades reportadas.
 - Playwright final: 22/22 testes aprovados, 11 fluxos em Chromium mobile (393×852, fuso America/Sao_Paulo) e desktop (1440×1000). Inclui calendário, registros, offline, reabertura, meia-noite/foco, axe/layout, cardio, protocolo, backup/restauração, atualização real do SW e tema. Build de produção aprovado, precache de cerca de 589 KiB. Nenhuma validação em aparelho físico presumida.
-- Nenhum commit remoto ou URL de produção confirmados ainda.
+- Código publicado em main, commit 5fd8aa28512d26a71b4a459d864d4bbda0cb342c. Não há URL de produção confirmada: habilitação do Pages bloqueada por permissão.
 
 ## Limites explícitos da primeira versão
 - Sem validação em iPhone físico ou Safari real até o momento.
@@ -51,3 +51,24 @@ Data inicial do ciclo; duração exata de cardio; incrementos reais das máquina
 
 ## Ambiente
 Node 24 e npm 11 disponíveis. Rede de comandos precisa da permissão de rede adicional; clone oficial realizado. Conector GitHub conectado. Credenciais não devem ser exibidas ou persistidas.
+
+
+## Entrega validada e bloqueio de publicação · 16/10/2026
+- Versão do aplicativo: 1.0.0. Código enviado ao repositório oficial; árvore de trabalho limpa no commit de implementação.
+- Local: TypeScript, build, 83 testes Vitest e 22 testes Playwright aprovados; auditoria de produção sem vulnerabilidades reportadas.
+- CI remoto **aprovado** no mesmo commit: https://github.com/oaovito/oaolife/actions/runs/38968715539 (job verify). Instalação pelo lockfile, TypeScript, Vitest, build, auditoria e Playwright passaram no runner Ubuntu/Node 24.
+- Pipeline de publicação executado: https://github.com/oaovito/oaolife/actions/runs/38968715549. Validações, testes e builds passaram, incluindo BASE_PATH=/oaolife/. Falhou em actions/configure-pages@v5: Get Pages site: Not Found; Create Pages site: Resource not accessible by integration. Job deploy não chegou a publicar.
+- A integração CLI também recebeu HTTP 403 ao consultar Pages. Não se pode afirmar que basta repetir o mesmo token, nem inferir o plano da conta a partir desse erro.
+- Necessidade externa: proprietário habilitar Pages com origem GitHub Actions em https://github.com/oaovito/oaolife/settings/pages, quando permitido pelo plano/permissões, ou disponibilizar hospedagem gratuita já autorizada. Não criar outro repositório, mudar visibilidade nem assumir despesas.
+- Pergunta enviada ao usuário solicitando a liberação da hospedagem ou identificação de alternativa já autorizada; sem resposta até a atualização deste documento.
+- Um commit posterior apenas de documentação registra estes resultados com [skip ci], evitando repetir verificações de código que não mudou.
+
+## Próximos passos concretos
+1. Após a hospedagem ser liberada, executar workflow_dispatch de Publicar oaolife no main, acompanhar até o resultado terminal e verificar a URL HTTPS retornada.
+2. Testar a URL real, manifest, Service Worker e registro offline no caminho publicado; não divulgar uma URL prevista como se estivesse pronta.
+3. Validar em iPhone/Safari físico: Adicionar à Tela de Início, safe areas, reabertura offline e atualização. Não está considerado testado pelo Chromium.
+4. No app, configurar separadamente a semana do ciclo, os incrementos reais, o cardio e o protocolo habitual. Calendário já alinhado à referência 17/10/2026=C2.
+5. Manter backups externos; decidir sobre backend privado apenas em trabalho posterior autorizado. Modo local segue completo para os registros implementados.
+
+## Critérios ainda não comprovados
+Publicação HTTPS, instalação em aparelho físico e pipeline de deploy até a etapa final. Portanto a entrega não pode ser declarada integralmente pronta para uso no iPhone enquanto esses pontos não forem resolvidos. Backend remoto não é anunciado como implementado.
