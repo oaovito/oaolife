@@ -74,3 +74,8 @@ Commit de implementação: `5fd8aa28512d26a71b4a459d864d4bbda0cb342c` em main.
 - [Publicação bloqueada](https://github.com/oaovito/oaolife/actions/runs/38968715549): todas as verificações e o build para /oaolife/ passaram; actions/configure-pages@v5 não conseguiu criar o site: **Resource not accessible by integration**. Nenhuma URL foi publicada.
 
 A API pela integração também retornou HTTP 403. É preciso habilitar Pages pelo proprietário em Configurações → Pages → origem GitHub Actions, se permitido pelo plano/permissões, ou disponibilizar outra hospedagem gratuita autorizada. Não foi feita mudança de visibilidade nem contratação. Depois da liberação, Codex pode disparar o workflow e validar o deploy sem comandos locais do usuário. Um commit de documentação com [skip ci] não refaz testes do código inalterado; workflow_dispatch continua disponível.
+
+
+## Preparação revisável e autorização pendente
+
+PR: https://github.com/oaovito/oaolife/pull/1, branch feat/vercel-hosting. CI de código d9b651d aprovada: https://github.com/oaovito/oaolife/actions/runs/38971287133. O PR aguarda a conexão Vercel para validar uma prévia antes da publicação definitiva. O mecanismo seguro de instalação/autorização foi oferecido; a última consulta ainda confirmou a integração não instalada. Nenhum nome de projeto ou endereço deve ser inventado. Ao receber confirmação da conexão, continuar a partir desse PR sem refazer o aplicativo.

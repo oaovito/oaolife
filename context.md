@@ -100,3 +100,14 @@ Publicação HTTPS, instalação em aparelho físico e pipeline de deploy até a
 - vercel.json e engines: Vite / npm ci / npm run build / dist / Node 24.x. Branch de produção desejada main; domínio desejado só será divulgado após confirmação do provedor.
 - scripts/verify-hosting.mjs pronto para verificar uma URL HTTPS real; não executado sem URL confirmada.
 - Documentação atualizada: README, ARCHITECTURE, DEPLOYMENT, TESTING, SYNC e SECURITY. Acompanhamento da branch/PR e autenticação são os próximos passos.
+
+
+## Ponto de continuidade confirmado — Vercel aguarda autenticação
+- Preparação enviada à branch feat/vercel-hosting, commit de código d9b651d49395d821e05631ebce413354648c1a70.
+- PR aberto e revisável: https://github.com/oaovito/oaolife/pull/1. Base main 5fd8aa2. Mantido aberto para conectar/validar a prévia Vercel antes de concluir a integração na produção.
+- CI remota da preparação **aprovada**: https://github.com/oaovito/oaolife/actions/runs/38971287133, job verify. npm ci, TypeScript, 86 Vitest, build, auditoria e 26 Playwright passaram no runner Ubuntu/Node 24.
+- Estado de acesso mais recente: plugin Vercel ainda installed:false; nenhuma ferramenta Vercel autenticada disponível e nenhum segredo Vercel no ambiente. Sugestão de instalação/autorização emitida uma vez. Não repetir a sugestão se o usuário confirmar conexão; redescobrir ferramentas e continuar a tarefa original.
+- Não criar uma hospedagem diferente ou outro repositório para contornar essa autorização. Não pedir tokens/senhas no chat. Só é necessária a instalação/autorização segura da integração com a conta existente neste ponto.
+- Não há projeto/domínio/deploy de prévia/produção confirmados. oaolife.vercel.app é apenas preferência do usuário, não um endereço publicado.
+- Continuar após autorização: listar contas/projetos, confirmar Hobby, reutilizar projeto associado ou criar no repo oficial, ligar GitHub e main, validar prévia desta branch, incorporar somente após checks/regras, publicar, executar scripts/verify-hosting.mjs na URL real e testes browser publicados; só então tornar Pages fallback manual.
+- Documentação posterior ao código aprovado apenas registra esses resultados; não muda o build, dados ou regras de negócio.
