@@ -24,7 +24,8 @@ Autorização segura pela CLI Vercel na conta existente. O MCP Vercel não teve 
 
 - Preparação revisada no [PR #1](https://github.com/oaovito/oaolife/pull/1), com [CI aprovada](https://github.com/oaovito/oaolife/actions/runs/38971627148).
 - Deploy inicial dos arquivos já verificados: dpl_Eno1K1kRgPJuAAsLjdzSHfe1mCeE. A API promoveu o primeiro deploy automaticamente para production; essa inicialização não comprova automação por merge.
-- Prévia: dpl_DH283hm1BBNxGraAftpbgVwMbQrK, Ready, target staging (nome da API para prévia), https://oaolife-b0fuy2ofg-oao7.vercel.app. Acesso protegido pela CLI retornou 200; assets idênticos à produção. OIDC de desenvolvimento retornou TRUSTED_SOURCES_ENVIRONMENT_MISMATCH; não foi desabilitada a proteção.
+- Prévia: dpl_DH283hm1BBNxGraAftpbgVwMbQrK, Ready, target staging na API, https://oaolife-b0fuy2ofg-oao7.vercel.app. Acesso protegido pela CLI retornou 200; assets idênticos à produção. OIDC de desenvolvimento retornou TRUSTED_SOURCES_ENVIRONMENT_MISMATCH; não foi desabilitada a proteção.
+- **Prévia automática comprovada:** push/PR #2 da branch docs/vercel-release gerou dpl_GEVzsrVUm9XzM3ErZ4i7Tqy1vB5x, Ready, target preview, https://oaolife-4muon2zwa-oao7.vercel.app. OIDC local funcionou na prévia normal; um teste browser de refeições/água/persistência passou. A recusa anterior dizia respeito ao deploy staging, não ao preview nativo.
 - **Automação comprovada:** merge do PR #1 gerou commit c3fd4a4e070903d25d88294b8ca17c2e1cf930a6 em main. A integração GitHub acionou dpl_3EJCjkimtcP4WjpxhrbfDBiQdvef automaticamente; terminou Ready, com https://oaolife.vercel.app e https://oaolife-git-main-oao7.vercel.app.
 - `scripts/verify-hosting.mjs` e 22 testes Playwright passaram na URL definitiva. Perfil Chromium persistente foi fechado/reaberto, revalidou SW e manteve um registro sintético na recarga offline.
 
