@@ -1,5 +1,19 @@
 # Verificação
 
+## Estado final da integração Vercel · 16/10/2026
+
+- CI da preparação: **86/86 Vitest e 26/26 Playwright**, TypeScript/build/auditoria aprovados. [Run](https://github.com/oaovito/oaolife/actions/runs/38971627148).
+- URL real https://oaolife.vercel.app: **22/22 Playwright**, nos dois perfis, incluindo offline, persistência, calendário, séries, refeições, água, cardio, protocolo, backup/restauração, tema, rotas e axe. Os dois cenários que modificam o SW no servidor local ou usam duas origens locais permanecem na suíte local/CI; não modificam artificialmente produção.
+- `node --use-env-proxy scripts/verify-hosting.mjs https://oaolife.vercel.app`: aprovado, HTML/oito rotas/manifest/ícones/SW/headers/404. HTTPS validado com a CA do ambiente. Chromium recebeu confiança restrita na chave da CA do proxy do ambiente; as primeiras tentativas sem essa confiança falharam no certificado do proxy e foram corrigidas na configuração de execução, sem mudar o aplicativo.
+- Preview Ready acessível pela CLI autenticada (200), com os mesmos assets da produção. OIDC local para preview retornou incompatibilidade de ambiente; proteção foi preservada e os fluxos browser foram exercitados no endereço público.
+- Prévia automática do PR #2 (target preview) Ready; **1/1 teste browser** de refeições/água/persistência passou com OIDC local, sem alterar proteção. O erro de ambiente anterior ocorreu no target staging da API.
+- CI main c3fd4a4: [aprovada](https://github.com/oaovito/oaolife/actions/runs/38973269912).
+- Merge aprovado do PR #1, commit c3fd4a4, acionou automaticamente Vercel produção dpl_3EJCjkimtcP4WjpxhrbfDBiQdvef, Ready e domínio público confirmado.
+- Processo Chromium fechado e reaberto com perfil persistente manteve um registro sintético; revalidação de SW e recarga offline também mantiveram o dado. Nenhum dado real de saúde usado.
+- Nenhum teste em iPhone/Safari físico afirmado. Sem transporte remoto de dados para testar.
+
+Os resultados abaixo são o histórico incremental; o estado acima prevalece.
+
 Comandos executáveis: `npm run check` (TypeScript + Vitest), `npm run build`, `npm run test:e2e` (Playwright), `npm audit --omit=dev`.
 
 ## Cobertura

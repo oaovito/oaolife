@@ -2,6 +2,8 @@
 
 Aplicação pessoal em português para acompanhar treino, alimentação, hidratação, cardio e protocolo habitual de hipercifose. React, TypeScript, Vite e IndexedDB; dados locais, sem conta ou backend remoto.
 
+**Acesse: https://oaolife.vercel.app** · versão 1.0.0
+
 Repositório oficial e único: https://github.com/oaovito/oaolife
 
 ## Uso
@@ -12,7 +14,7 @@ Registre cada série com carga, modalidade, repetições, RIR, técnica e amplit
 
 ## Instalação no iPhone
 
-Depois da publicação HTTPS confirmada, abrir no Safari → Compartilhar → Adicionar à Tela de Início. Aguarde o primeiro carregamento conectado para armazenar os recursos. Não é preciso assinatura Apple Developer. A validação em iPhone físico deve complementar os testes automatizados; não está presumida.
+Abra https://oaolife.vercel.app no Safari → Compartilhar → Adicionar à Tela de Início. Aguarde o primeiro carregamento conectado para armazenar os recursos. Não é preciso assinatura Apple Developer. A validação em iPhone físico deve complementar os testes automatizados; não está presumida.
 
 ## Dados e backup
 
@@ -24,7 +26,7 @@ Node 24 e npm: `npm ci`, `npm run dev`. Verificações: `npm run check`, `npm ru
 
 ## Publicação e limites
 
-A hospedagem Vercel está sendo preparada pela integração oficial GitHub–Vercel, com Vite, Node 24 e saída dist. A conexão autenticada e o domínio ainda estão pendentes. GitHub Actions mantém a CI e a configuração anterior de Pages até a nova produção ser validada. A CI remota foi aprovada. A tentativa de publicação foi bloqueada ao criar Pages: “Resource not accessible by integration”. Ainda não há URL de produção. Nenhuma mudança de visibilidade é feita automaticamente. Veja [context.md](context.md) e [DEPLOYMENT.md](DEPLOYMENT.md) para o resultado observado.
+Hospedado na Vercel, projeto oaolife da conta oao7 (Hobby), com integração oficial ao GitHub. Produção main e prévias de branches/PR. O merge do PR #1 acionou um deploy de produção Ready, validado em HTTPS. GitHub Actions mantém testes; Pages fica como fallback manual, sem publicação automática duplicada. Veja [context.md](context.md) e [DEPLOYMENT.md](DEPLOYMENT.md) para evidências e limites.
 
 Sem backend privado configurado, autenticação remota ou sincronização de dados. Armazenamento local depende da proteção do dispositivo desbloqueado. O aplicativo não avalia técnica por sensores e não substitui avaliação médica. Sem alteração automática de dieta, sódio, água ou cardio.
 

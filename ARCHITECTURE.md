@@ -21,6 +21,8 @@ Service Worker gerado com Workbox: precache dos arquivos construídos, fallback 
 
 ## Adaptação à Vercel
 
-Hospedagem estática preparada por vercel.json, sem backend ou segredos de runtime. Rotas leves usam History API e os caminhos de build; reabrir uma rota preserva a tela correspondente. O lançamento da PWA pela raiz continua abrindo o dashboard. Configuração de headers e fallback não toca no IndexedDB.
+Hospedagem estática publicada em https://oaolife.vercel.app, projeto oaolife/oao7 (Hobby), configurada por vercel.json, sem backend ou segredos de runtime. Rotas leves usam History API e os caminhos de build; reabrir uma rota preserva a tela correspondente. O lançamento da PWA pela raiz continua abrindo o dashboard. Configuração de headers e fallback não toca no IndexedDB.
 
 useFormSafety acompanha revisões de formulários ainda não salvos. Atualização só pode ser solicitada sem sessão, cronômetro, gravação ou formulário pendente; salvar com sucesso libera somente a revisão efetivamente enviada, preservando edições que ocorram durante uma gravação. Atualização originada em outra aba não força recarga da interface atual.
+
+A integração GitHub–Vercel usa main para produção e branches/PR para prévia. O merge c3fd4a4 gerou produção Ready automaticamente. CI GitHub valida antes dos merges; Pages é fallback manual. Hospedagem não é armazenamento de dados de saúde.
