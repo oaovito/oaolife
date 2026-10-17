@@ -1,7 +1,9 @@
-# Registro hormonal local
+# Registro hormonal
 
-O aplicativo registra informações fornecidas pelo usuário; não recomenda substâncias, doses, combinações ou ajustes. O protocolo informado não cria administrações realizadas. É independente do início e da semana do ciclo de treino.
+Sexto bloco de Hoje, na rota `/hormonal`, com o mesmo armazenamento, auditoria e backup dos demais registros. O plano informado pelo usuário está incluído em `src/domain/hormonal.ts`; não exige importação. Protocolos já existentes são preservados. O protocolo informado não cria administrações realizadas e é independente do ciclo de treino.
 
-Importação em Ajustes → Registro hormonal: JSON com `format: "oaolife-hormonal-1"` e `protocol`. Protocolo: `name`, `weeks`, `entries`. Cada entrada contém `id`, `substance`, `doseMg`, `frequency` (`daily` ou `weekly`), `weekday` (0=domingo a 6=sábado, ou null para desconhecido), `fromWeek` e `toWeek`. Quantidades e períodos são validados. A consulta de uma semana filtra os períodos e soma apenas os totais declarados; uma entrada diária multiplica por sete.
+A consulta por semana filtra períodos e calcula totais declarados. O segundo dia semanal permanece não informado. A oximetolona aparece nas semanas 1–8 e as demais entradas nas semanas 1–12. Nenhuma data inicial é presumida.
 
-O usuário informa separadamente data, semana e quantidade realmente administrada. Datas futuras são rejeitadas. “Desfazer registro” corrige o lançamento, mantendo o histórico na auditoria. Dados entram no backup criptografado e não saem do navegador. O arquivo pessoal de importação não deve ser adicionado ao Git ou aos assets públicos.
+O usuário registra data, semana e quantidade efetivamente administrada. Datas futuras são rejeitadas. Concluir o registro do dia recolhe o bloco sem preencher doses ausentes; reabrir e desfazer permitem corrigir. Alterar uma administração reabre o bloco da data correspondente. O resumo do dia lista somente administrações detalhadas; a conclusão é uma declaração separada.
+
+Todos os registros do app ficam em IndexedDB, entram no backup criptografado e não têm sincronização remota configurada. O plano fornecido é distribuído com o aplicativo, como os planos de treino e alimentação; administrações reais não são publicadas.

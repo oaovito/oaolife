@@ -5,9 +5,10 @@ import { MEALS } from './plan';
 
 export function dayReport(data:AppData,date:string) {
  const day=data.days.find(d=>d.id===date),sets=data.sessions.filter(s=>s.date===date).flatMap(s=>s.exercises.flatMap(e=>e.sets));
- const labels={workout:'treino',meals:'alimentação',water:'hidratação',cardio:'cardio',mobility:'mobilidade'};
+ const labels={workout:'treino',meals:'alimentação',water:'hidratação',cardio:'cardio',mobility:'mobilidade',hormonal:'registro hormonal'};
  return {
   declaredBlocks:Object.keys(day?.declarations??{}).map(k=>labels[k as keyof typeof labels]),
+  hormonalLogs:data.hormonalLogs.filter(log=>log.date===date),
   setsDone:sets.filter(s=>s.done).length,
   setsSkipped:sets.filter(s=>s.skipped).length,
   incompleteSets:sets.filter(s=>s.done&&(s.load===null||s.reps===null||s.rir===null||s.technique===null||s.range===null)).length,

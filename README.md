@@ -40,4 +40,4 @@ Itens feitos ficam recolhidos em “Ver e corrigir”. No treino, séries e exer
 
 Em Hoje → Resumo e fechamento do dia, “Concluir dia sem detalhar” confirma apenas a realização declarada, preserva medições existentes e não inventa cargas, tempos, quantidades ou calorias. A data selecionada pode ser aberta com `?date=AAAA-MM-DD`. A confirmação é gravada no navegador em que o usuário aperta o botão; não há alteração remota do iPhone.
 
-Em Ajustes → Registro hormonal, importe um arquivo pessoal no formato documentado em [HORMONAL.md](HORMONAL.md). O plano informado, o dia semanal desconhecido e as administrações reais ficam separados. Nada é marcado como tomado automaticamente. Arquivos pessoais não fazem parte do código publicado.
+Em Hoje → Registro hormonal, o plano informado já está disponível, sem importação. O bloco pode ser concluído, recolhido e reaberto para correção. As administrações reais são registradas separadamente; nada é marcado como tomado automaticamente. Usa o mesmo armazenamento e backup dos demais blocos. Consulte [HORMONAL.md](HORMONAL.md).

@@ -1,7 +1,8 @@
 import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
+import { INFORMED_HORMONAL_PLAN } from './hormonal';
 import { CARDIO_DAYS, MEALS, MOBILITY_DAYS } from './plan';
 import { cycleForDate, now, schedule } from './training';
-export function emptyData():AppData { return {schemaVersion:3,hormonalProtocol:null,hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
+export function emptyData():AppData { return {schemaVersion:3,hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
  const cycle=cycleForDate(data,date),p=schedule(cycle,date);
  const protocol=data.mobility&&p.template&&data.mobility.days.includes(p.template)?structuredClone(data.mobility):null;
@@ -15,7 +16,7 @@ export function pauseCardio(c:CardioSession,clock=Date.now()) { c.elapsed=timerS
 export function startCardio(c:CardioSession,clock=Date.now()) { if(c.runningSince===null){c.runningSince=clock;c.status='running';} }
 export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada.');c.status=c.elapsed>=c.planned*60&&(c.minimumSpeed===null||(c.mode==='Esteira'&&c.speed!==null&&c.speed>=c.minimumSpeed))?'complete':'partial'; }
 function summary(done:number,total:number,subtitle:string,partial=false):BlockSummary { return {done,total,subtitle,status:total===0?'Não programado':done>=total?'Concluído':partial?'Parcial':done?'Em andamento':'Não iniciado'}; }
-export function summaries(data:AppData,date:string,clock=Date.now()):Record<'workout'|'meals'|'water'|'cardio'|'mobility',BlockSummary> {
+export function summaries(data:AppData,date:string,clock=Date.now()):Record<'workout'|'meals'|'water'|'cardio'|'mobility'|'hormonal',BlockSummary> {
  const cycle=cycleForDate(data,date),plan=schedule(cycle,date),day=data.days.find(d=>d.id===date)??makeDay(data,date);const session=data.sessions.find(s=>s.date===date&&s.cycleId===cycle?.id);
  const totalSets=session?.exercises.reduce((a,e)=>a+e.sets.length,0)||0,doneSets=session?.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0)||0;
  const workout=plan.template?summary(doneSets,totalSets||1,`${plan.template} · ${totalSets?`${doneSets}/${totalSets} séries`:plan.week?'Pronto para começar':'Configure a semana da periodização'}`,session?.status==='partial'):summary(0,0,'Descanso e recuperação');
@@ -30,7 +31,10 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const mobilityScheduled=!!plan.template&&((data.mobility?data.mobility.days.includes(plan.template):MOBILITY_DAYS.includes(plan.template))||!!day.mobility.protocol?.days.includes(plan.template));
  const protocol=day.mobility.protocol;const mTotal=protocol?.exercises.reduce((a,e)=>a+e.sets,0)||0;const validIds=protocol?.exercises.flatMap(e=>Array.from({length:e.sets},(_,i)=>`${e.id}:${i}`))||[];const mDone=validIds.filter(id=>day.mobility.sets[id]?.done).length;
  const mobility=mobilityScheduled?(mTotal?summary(mDone,mTotal,`${mDone}/${mTotal} séries do protocolo`):{status:'Pendente de revisão' as const,done:0,total:4,subtitle:'Protocolo pendente de configuração'}):summary(0,0,plan.template?'Não especificado no plano inicial':'Não programado');
- const blocks={workout,meals,water,cardio,mobility};
+ const logs=data.hormonalLogs.filter(log=>log.date===date);
+ const hormonal=summary(0,1,logs.length?`${logs.length} administração(ões) registrada(s)`:`Plano informado · ${(data.hormonalProtocol??INFORMED_HORMONAL_PLAN).weeks} semanas`);
+ if(logs.length)hormonal.status='Em andamento';
+ const blocks={workout,meals,water,cardio,mobility,hormonal};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
   if(blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
  }

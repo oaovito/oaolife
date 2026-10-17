@@ -2,7 +2,7 @@
 
 A versão 3 do IndexedDB migra o snapshot para `schemaVersion: 3`, preservando revisão, auditoria, fila e medições. `skipped` distingue séries não realizadas; `done` pode existir com detalhes nulos. `cardio.speed` registra velocidade real e `minimumSpeed` é a meta do snapshot. Registros antigos recebem ambos nulos, mantendo tempo, modalidade e meta anteriores.
 
-`days[].declarations` guarda confirmações de blocos sem detalhes. Nenhum valor planejado é copiado para medidas reais. `hormonalProtocol` e `hormonalLogs` guardam respectivamente o protocolo informado e administrações explícitas; ambos começam vazios.
+`days[].declarations` guarda confirmações de blocos sem detalhes. Nenhum valor planejado é copiado para medidas reais. `hormonalProtocol` e `hormonalLogs` guardam respectivamente o protocolo informado e administrações explícitas; o plano informado acompanha o aplicativo, enquanto as administrações começam vazias. O bloco `hormonal` participa das declarações de conclusão do dia, sem criar doses realizadas.
 
 O código v2 exige `schemaVersion: 2` antes de gravar. Após a migração, a transação antiga rejeita o snapshot v3, impedindo perda silenciosa dos novos campos. Apenas aumentar a versão Dexie não basta: Dexie pode reabrir estruturas compatíveis. Backups novos usam payload `oaolife-backup-3`; versões anteriores não os aceitam. A nova versão importa backups v2 com migração sem perdas. Não fazer downgrade de código após migração; publicar correções compatíveis com schema 3.
 

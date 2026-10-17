@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Check, ChevronLeft, Circle, CheckCircle2 } from 'lucide-react';
 import type { AppData } from '../domain/model';
-export type Page='home'|'workout'|'meals'|'water'|'cardio'|'mobility'|'plan'|'progress'|'settings';
+export type Page='home'|'workout'|'meals'|'water'|'cardio'|'mobility'|'hormonal'|'plan'|'progress'|'settings';
 export interface PageProps { data:AppData; date:string; run:(action:()=>Promise<unknown>,message?:string)=>Promise<boolean>; go:(page:Page)=>void }
 export function Panel({children,className=''}:{children:ReactNode;className?:string}) {return <section className={`panel ${className}`}>{children}</section>;}
 export function CompletedItems({children,count,label='Concluídos'}:{children:ReactNode;count:number;label?:string}) {

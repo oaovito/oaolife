@@ -66,6 +66,6 @@ export function confirmDay(date:string) {
   if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
   for(const set of Object.values(day.mobility.sets))if(set.runningSince!==null){set.seconds+=Math.max(0,(Date.now()-set.runningSince)/1000);set.runningSince=null;}
   const blocks=summaries(data,date);
-  for(const key of ['workout','meals','water','cardio','mobility'] as const)if(blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
+  for(const key of ['workout','meals','water','cardio','mobility','hormonal'] as const)if(blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
  });
 }
