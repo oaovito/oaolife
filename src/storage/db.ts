@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import { appDataSchema, type AppData, type SyncOperation } from '../domain/model';
-import { emptyData, makeDay, workoutComplete } from '../domain/daily';
+import { emptyData, makeDay, workoutComplete, summaries, pauseCardio } from '../domain/daily';
 import { makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
 import { MEALS } from '../domain/plan';
@@ -15,15 +15,15 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
 }
 export class OaoDatabase extends Dexie {
  state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});}
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
- for(const items of [data.cycles,data.sessions,data.days,data.measurements,data.photos,data.foods,data.recipes,data.decisions,data.adjustments]){const ids=items.map(x=>x.id);if(new Set(ids).size!==ids.length)throw Error('Backup contém IDs duplicados.');}
+ for(const items of [data.cycles,data.sessions,data.days,data.measurements,data.photos,data.foods,data.recipes,data.decisions,data.adjustments,data.hormonalLogs]){const ids=items.map(x=>x.id);if(new Set(ids).size!==ids.length)throw Error('Backup contém IDs duplicados.');}
  const cycles=[...data.cycles].sort((a,b)=>a.start.localeCompare(b.start));
  for(let i=1;i<cycles.length;i++)if(daysBetween(cycles[i-1].start,cycles[i].start)<84)throw Error('Ciclos sobrepostos não são permitidos.');
  const cycleIds=new Set(data.cycles.map(c=>c.id));
- const dates=new Set<string>();for(const s of data.sessions){if(!cycleIds.has(s.cycleId))throw Error('Sessão sem ciclo válido.');const k=s.cycleId+':'+s.date;if(dates.has(k))throw Error('Sessão duplicada.');dates.add(k);if(cycleForDate(data,s.date)?.id!==s.cycleId)throw Error('Data da sessão fora do ciclo.');if(s.status==='complete'&&!workoutComplete(s))throw Error('Treino completo com séries pendentes.');if(new Set(s.exercises.map(e=>e.id)).size!==s.exercises.length)throw Error('Exercício duplicado na sessão.');for(const e of s.exercises){if(new Set(e.sets.map(v=>v.id)).size!==e.sets.length)throw Error('Série duplicada.');for(const v of e.sets)if(v.done&&(v.load===null||v.reps===null||v.reps<=0||v.rir===null||v.technique===null||v.range===null))throw Error('Série concluída sem dados de execução.');}}
+ const dates=new Set<string>();for(const s of data.sessions){if(!cycleIds.has(s.cycleId))throw Error('Sessão sem ciclo válido.');const k=s.cycleId+':'+s.date;if(dates.has(k))throw Error('Sessão duplicada.');dates.add(k);if(cycleForDate(data,s.date)?.id!==s.cycleId)throw Error('Data da sessão fora do ciclo.');if(s.status==='complete'&&!workoutComplete(s))throw Error('Treino completo com séries pendentes.');if(new Set(s.exercises.map(e=>e.id)).size!==s.exercises.length)throw Error('Exercício duplicado na sessão.');for(const e of s.exercises){if(new Set(e.sets.map(v=>v.id)).size!==e.sets.length)throw Error('Série duplicada.');for(const v of e.sets){if(v.done&&v.skipped)throw Error('Série não pode ser feita e não realizada ao mesmo tempo.');if(v.done&&v.reps===0)throw Error('Repetições devem ser positivas ou não informadas.');}}}
  for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==MEALS[i].foods.length))throw Error('Quantidade de alimentos incompatível com o plano.');}
  for(const d of data.decisions)if(!data.sessions.some(s=>s.id===d.sessionId&&s.cycleId===d.cycleId&&s.exercises.some(e=>e.id===d.exerciseId)))throw Error('Progressão sem exposição válida.');
  for(const r of data.recipes)for(const i of r.ingredients)if(!data.foods.some(f=>f.id===i.foodId))throw Error('Receita referencia alimento ausente.');
@@ -41,7 +41,7 @@ export async function mutate(kind:string,detail:string,fn:(data:AppData)=>void,d
  });
 }
 export function ensureDay(data:AppData,date:string) { let day=data.days.find(d=>d.id===date);if(!day){day=makeDay(data,date);data.days.push(day);}return day; }
-export function editDay(date:string,kind:string,fn:(d:ReturnType<typeof ensureDay>,data:AppData)=>void) {return mutate(kind,date,d=>{if(date>today())throw Error('Você está consultando uma data futura. Registre a execução na data real.');const day=ensureDay(d,date);fn(day,d);const k=kind.toLowerCase();const domain=k.includes('água')?'water':k.includes('alimento')||k.includes('refeição')?'meals':k.includes('cardio')?'cardio':k.includes('hipercifose')||k.includes('protocolo')?'mobility':k.includes('recuperação')?'recovery':null;if(domain&&!day.recorded.includes(domain))day.recorded.push(domain);});}
+export function editDay(date:string,kind:string,fn:(d:ReturnType<typeof ensureDay>,data:AppData)=>void) {return mutate(kind,date,d=>{if(date>today())throw Error('Você está consultando uma data futura. Registre a execução na data real.');const day=ensureDay(d,date);fn(day,d);const k=kind.toLowerCase();const domain=k.includes('água')?'water':k.includes('alimento')||k.includes('refeição')?'meals':k.includes('cardio')?'cardio':k.includes('hipercifose')||k.includes('protocolo')?'mobility':k.includes('recuperação')?'recovery':null;if(domain&&!day.recorded.includes(domain))day.recorded.push(domain);if(domain&&domain!=='recovery')delete day.declarations[domain];});}
 export function openWorkout(date:string) { return mutate('Abrir treino',date,d=>{if(date>today())throw Error('Use a data real para iniciar uma sessão.');const cycle=cycleForDate(d,date);if(d.sessions.some(s=>s.cycleId===cycle?.id&&s.date===date))return;const s=makeWorkout(d,date);if(!s)throw Error('Nenhum treino programado nesta data.');d.sessions.push(s);ensureDay(d,date);}); }
 export function finishWorkout(id:string,partialReason='') {
  return mutate('Encerrar treino',id,d=>{const s=d.sessions.find(s=>s.id===id);if(!s)throw Error('Sessão não encontrada.');if(s.status!=='open')throw Error('Sessão já encerrada.');const complete=workoutComplete(s);if(!complete&&!partialReason.trim())throw Error('Informe o motivo do encerramento parcial.');
@@ -54,3 +54,18 @@ export function startCycle(start:string) {return mutate('Novo ciclo',start,d=>{f
 export async function requestPersistence() {return navigator.storage?.persist?await navigator.storage.persist():false;}
 export function remoteStatus(online:boolean) {return online?'Modo local · backend remoto não configurado':'Offline · registros salvos neste dispositivo';}
 export function dayPlan(data:AppData,date:string) {return schedule(cycleForDate(data,date),date);}
+
+export function confirmDay(date:string) {
+ return mutate('Confirmar dia sem detalhes',date,data=>{
+  if(date>today())throw Error('Não é possível concluir uma data futura.');
+  const day=ensureDay(data,date);
+  for(const session of data.sessions.filter(s=>s.date===date&&s.status==='open')) {
+   session.status=workoutComplete(session)?'complete':'partial';session.closedAt=now();
+   session.reason='Dia confirmado pelo usuário; detalhes não registrados permanecem desconhecidos.';
+  }
+  if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
+  for(const set of Object.values(day.mobility.sets))if(set.runningSince!==null){set.seconds+=Math.max(0,(Date.now()-set.runningSince)/1000);set.runningSince=null;}
+  const blocks=summaries(data,date);
+  for(const key of ['workout','meals','water','cardio','mobility','hormonal'] as const)if(blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
+ });
+}
