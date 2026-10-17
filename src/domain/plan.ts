@@ -46,7 +46,8 @@ export const MEALS:Meal[]=[
  {id:'m4',title:'Refeição 4',foods:['200 g de iogurte Itambé Grego Flocos']},
  {id:'m5',title:'Refeição 5',foods:['300 g de peito de frango desfiado','150 g de macarrão cozido']}
 ];
-export const WATER_LABELS=['Refeição 1','Refeição 2','Refeição 3','Refeição 4','Durante o treino / livre','Extra ao longo do dia'];
+export const WATER_LABELS=['Água 1','Água 2','Água 3','Água 4','Água 5','Água 6'];
 export const CARDIO_DAYS=['A1','B1','A2','B2'];
 export const MOBILITY_DAYS=['A1','B1','A2'];
 export const LOAD_LABEL={total:'kg total',lado:'kg por lado',halter:'kg por halter'};
+
