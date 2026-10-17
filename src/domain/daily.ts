@@ -1,11 +1,11 @@
 import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
 import { CARDIO_DAYS, MEALS, MOBILITY_DAYS } from './plan';
 import { cycleForDate, now, schedule } from './training';
-export function emptyData():AppData { return {schemaVersion:2,profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:null,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
+export function emptyData():AppData { return {schemaVersion:3,hormonalProtocol:null,hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
  const cycle=cycleForDate(data,date),p=schedule(cycle,date);
  const protocol=data.mobility&&p.template&&data.mobility.days.includes(p.template)?structuredClone(data.mobility):null;
- return {id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planned:p.template&&CARDIO_DAYS.includes(p.template)?data.settings.cardioMinutes:null,elapsed:0,runningSince:null,status:'idle',mode:'Caminhada',intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
+ return {declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planned:p.template&&CARDIO_DAYS.includes(p.template)?60:null,elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:p.template&&CARDIO_DAYS.includes(p.template)?5:null,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
 }
 export function nextMeal(day:DailyLog) { const i=day.meals.findIndex(m=>!m.every(Boolean));return i<0?null:i; }
 export function toggleFood(day:DailyLog,meal:number,food:number,at=now()) { day.meals[meal][food]=!day.meals[meal][food];day.mealTimes[meal]=day.meals[meal].every(Boolean)?at:null; }
@@ -13,7 +13,7 @@ export function completeMeal(day:DailyLog,meal:number,at=now()) { const done=day
 export function timerSeconds(timer:{elapsed:number;runningSince:number|null},clock=Date.now()) { return Math.max(0,Math.floor(timer.elapsed+(timer.runningSince===null?0:Math.max(0,clock-timer.runningSince)/1000))); }
 export function pauseCardio(c:CardioSession,clock=Date.now()) { c.elapsed=timerSeconds(c,clock);c.runningSince=null;c.status='paused'; }
 export function startCardio(c:CardioSession,clock=Date.now()) { if(c.runningSince===null){c.runningSince=clock;c.status='running';} }
-export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada, até 60 minutos.');c.status=c.elapsed>=c.planned*60?'complete':'partial'; }
+export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada.');c.status=c.elapsed>=c.planned*60&&(c.minimumSpeed===null||(c.mode==='Esteira'&&c.speed!==null&&c.speed>=c.minimumSpeed))?'complete':'partial'; }
 function summary(done:number,total:number,subtitle:string,partial=false):BlockSummary { return {done,total,subtitle,status:total===0?'Não programado':done>=total?'Concluído':partial?'Parcial':done?'Em andamento':'Não iniciado'}; }
 export function summaries(data:AppData,date:string,clock=Date.now()):Record<'workout'|'meals'|'water'|'cardio'|'mobility',BlockSummary> {
  const cycle=cycleForDate(data,date),plan=schedule(cycle,date),day=data.days.find(d=>d.id===date)??makeDay(data,date);const session=data.sessions.find(s=>s.date===date&&s.cycleId===cycle?.id);
@@ -25,12 +25,16 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const waterDone=day.water.filter((v,i)=>v>=day.waterTargets[i]).length;
  const water=summary(waterDone,6,waterDone===6?'Hidratação concluída':`${(day.water.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR',{maximumFractionDigits:2})} de ${(day.waterTargets.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR')} litros`,day.water.some((v,i)=>v>0&&v<day.waterTargets[i]));
  const cardioScheduled=!!plan.template&&CARDIO_DAYS.includes(plan.template);const seconds=timerSeconds(day.cardio,clock);
- const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Defina a duração · até 60 min':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
+ const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Defina a duração · até 60 min':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}${day.cardio.minimumSpeed===null?'':` · ${day.cardio.speed??'—'} / ${day.cardio.minimumSpeed} km/h`}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
  if(cardioScheduled&&day.cardio.planned===null)cardio.status='Pendente de revisão';else if(cardioScheduled&&['running','paused'].includes(day.cardio.status))cardio.status='Em andamento';
  const mobilityScheduled=!!plan.template&&((data.mobility?data.mobility.days.includes(plan.template):MOBILITY_DAYS.includes(plan.template))||!!day.mobility.protocol?.days.includes(plan.template));
  const protocol=day.mobility.protocol;const mTotal=protocol?.exercises.reduce((a,e)=>a+e.sets,0)||0;const validIds=protocol?.exercises.flatMap(e=>Array.from({length:e.sets},(_,i)=>`${e.id}:${i}`))||[];const mDone=validIds.filter(id=>day.mobility.sets[id]?.done).length;
  const mobility=mobilityScheduled?(mTotal?summary(mDone,mTotal,`${mDone}/${mTotal} séries do protocolo`):{status:'Pendente de revisão' as const,done:0,total:4,subtitle:'Protocolo pendente de configuração'}):summary(0,0,plan.template?'Não especificado no plano inicial':'Não programado');
- return {workout,meals,water,cardio,mobility};
+ const blocks={workout,meals,water,cardio,mobility};
+ for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
+  if(blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
+ }
+ return blocks;
 }
 export function dayComplete(blocks:ReturnType<typeof summaries>) { return Object.values(blocks).every(b=>b.status==='Concluído'||b.status==='Não programado'); }
 export function workoutComplete(s:WorkoutSession) { return s.exercises.length>0&&s.exercises.every(e=>e.sets.every(v=>v.done)); }

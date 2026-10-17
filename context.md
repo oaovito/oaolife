@@ -1,5 +1,21 @@
 # oaolife — continuidade
 
+## Retomada no Codex — versão 1.1.0 preparada
+
+- Escopo recuperado por capturas do chat: fluxo compacto, horários no iPhone, destaque de séries/RIR/descanso, cardio de 60 min e 5 km/h, conclusão sem detalhes e indicação de séries não realizadas.
+- Itens feitos ficam recolhidos e corrigíveis. Cinco blocos cabem acima da navegação em 393×852; campos de horário testados em 320/360/393/430 px.
+- Novos dias de cardio usam esteira, 60 min e meta mínima 5 km/h; velocidade real começa nula. Histórico mantém metas e medições; nova meta em dia existente exige ação explícita.
+- Séries feitas aceitam campos nulos, mas progressão exige todos os dados anteriores. Séries não realizadas não contam como executadas.
+- “Concluir dia sem detalhar” grava declaração local, sem inventar doses, cargas, tempos, porções ou calorias. Pode fechar sessão aberta preservando somente as séries detalhadas e encerrar cronômetros pela duração real. Correção desfaz a declaração. Links aceitam `?date=AAAA-MM-DD`.
+- Pedido sobre um dia anterior requer execução no dispositivo que contém os registros: não há backend para modificar remotamente o armazenamento do iPhone. Nenhum registro pessoal foi semeado no código público.
+- Registro hormonal local: importação de protocolo pessoal, períodos, dia semanal desconhecido, totais informados e administrações reais separadas. Nenhuma dose é registrada automaticamente. Arquivo pessoal preparado fora do repositório, não publicado em assets.
+- IndexedDB e payload sob schema 3; importação compatível com backups v2. A validação literal do código antigo rejeita snapshots v3 antes de escrever, impedindo perda dos novos campos. Novo backup usa formato oaolife-backup-3; não fazer rollback para código v2.
+- Verificação local: TypeScript/build, 96 Vitest e 47 Playwright aprovados (7 WebKit + 20 Chromium móvel + 20 desktop). Inclui backup/restauração entre origens, offline, atualização segura, migração e preservação de campos desconhecidos. Safari/iPhone físico não foi testado.
+- WebKit local usou bibliotecas Debian extraídas no workspace e wrapper local preservando LD_LIBRARY_PATH; o app não incorpora essas bibliotecas. CI instala dependências oficiais de Chromium/WebKit.
+- Publicação desta retomada: aguardando push/CI e merge; a URL de produção existente ainda não comprova a versão 1.1.0.
+
+O estado acima prevalece sobre as notas históricas abaixo.
+
 ## Estado atual — Vercel publicada, versão 1.0.0
 - URL HTTPS pública confirmada: https://oaolife.vercel.app. Projeto oaolife, conta oaovito, equipe oao7, plano Hobby. Projeto prj_3IBSBETJUAlsyzDW4AYcHTbGKlAZ. Nenhum serviço pago contratado.
 - Autorização concluída por login seguro da CLI; MCP Vercel apareceu, mas recusou o escopo oao7 com 403. Fallback oficial CLI autenticado funcionou. Credenciais locais fora do Git; nenhum token no cliente ou na documentação.

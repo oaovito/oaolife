@@ -1,5 +1,11 @@
 # Verificação
 
+## Retomada 1.1.0
+
+TypeScript/build aprovados; 96/96 testes Vitest e 47/47 Playwright locais (7 WebKit, 20 Chromium móvel, 20 desktop). Novos cenários: campos de horário 320–430 px e persistência; cinco blocos acima da navegação; itens recolhidos/corrigíveis; treino sem detalhes e séries não realizadas; cardio com tempo/modalidade/velocidade; fechamento de dia sem inventar medidas; protocolo hormonal sintético separado das administrações. Migração v2→v3 preserva histórico e impede gravação por validação v2. Backups v3 mantêm os novos campos; backups v2 são importáveis. Regressão cobre offline, atualização PWA com formulários pendentes, backup e troca de origem.
+
+Os testes do registro hormonal usam apenas substâncias e doses sintéticas. Nenhum dado real do usuário é publicado. WebKit em Linux não substitui validação em iPhone físico.
+
 ## Estado final da integração Vercel · 16/10/2026
 
 - CI da preparação: **86/86 Vitest e 26/26 Playwright**, TypeScript/build/auditoria aprovados. [Run](https://github.com/oaovito/oaolife/actions/runs/38971627148).

@@ -39,7 +39,7 @@ export function suggestedLoad(data:AppData,exercise:Exercise,date:string) {
 export function makeWorkout(data:AppData,date:string):WorkoutSession|null {
  const cycle=cycleForDate(data,date); const plan=schedule(cycle,date);if(!cycle||!plan.template||!plan.week)return null;
  const t=ORIGINAL_PLAN.find(t=>t.id===plan.template)!;const w=WEEKS[plan.week-1];const counts=allocateSets(t.exercises,w.volume);
- return {id:`${cycle.id}:${date}`,cycleId:cycle.id,date,timezone:data.settings.timezone,template:t.id,week:plan.week,volume:w.volume,status:'open',reason:'',startedAt:now(),closedAt:null,exercises:t.exercises.map((e,i):PlannedExercise=>({id:e.id,name:e.name,muscle:e.muscle,reps:[...e.reps],reference:e.reference,suggested:suggestedLoad(data,e,date),mode:e.mode,rir:[...w.rir],rest:e.fst?'30–45 s':e.compound?'2–3 min':'60–120 s',notes:e.notes||'',fst:!!e.fst,sets:Array.from({length:counts[i]},(_,j)=>({id:`${e.id}:${j}`,done:false,load:null,reps:null,rir:null,technique:null,range:null,notes:'',mode:e.mode}))}))};
+ return {id:`${cycle.id}:${date}`,cycleId:cycle.id,date,timezone:data.settings.timezone,template:t.id,week:plan.week,volume:w.volume,status:'open',reason:'',startedAt:now(),closedAt:null,exercises:t.exercises.map((e,i):PlannedExercise=>({id:e.id,name:e.name,muscle:e.muscle,reps:[...e.reps],reference:e.reference,suggested:suggestedLoad(data,e,date),mode:e.mode,rir:[...w.rir],rest:e.fst?'30–45 s':e.compound?'2–3 min':'60–120 s',notes:e.notes||'',fst:!!e.fst,sets:Array.from({length:counts[i]},(_,j)=>({id:`${e.id}:${j}`,done:false,skipped:false,load:null,reps:null,rir:null,technique:null,range:null,notes:'',mode:e.mode}))}))};
 }
 export function nextExposure(data:AppData,s:WorkoutSession,id:string) {
  const c=data.cycles.find(c=>c.id===s.cycleId)!;

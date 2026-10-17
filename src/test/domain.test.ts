@@ -47,8 +47,8 @@ describe('cinco blocos independentes',()=>{
 });
 describe('cardio persistível',()=>{
  it('inicia, pausa e retoma com duração real sem depender de intervalos em segundo plano',()=>{const c=makeDay(fixture(),'2026-10-12').cardio;c.planned=20;startCardio(c,1000);expect(timerSeconds(c,61000)).toBe(60);pauseCardio(c,61000);expect(timerSeconds(c,90000)).toBe(60);startCardio(c,121000);expect(timerSeconds(c,181000)).toBe(120);const restored=JSON.parse(JSON.stringify(c));expect(timerSeconds(restored,241000)).toBe(180);finishCardio(restored,241000);expect(restored.status).toBe('partial');});
- it('duração manual só conclui quando atinge a meta escolhida',()=>{const c=makeDay(fixture(),'2026-10-12').cardio;c.planned=15;c.elapsed=900;finishCardio(c);expect(c.status).toBe('complete');expect(()=>{c.elapsed=0;finishCardio(c);}).toThrow();});
- it('meta nula não equivale a 60 minutos obrigatórios',()=>{const d=fixture();expect(makeDay(d,'2026-10-12').cardio.planned).toBeNull();expect(summaries(d,'2026-10-12').cardio.status).toBe('Pendente de revisão');});
+ it('duração manual só conclui quando atinge a meta escolhida',()=>{const c=makeDay(fixture(),'2026-10-12').cardio;c.planned=15;c.minimumSpeed=null;c.elapsed=900;finishCardio(c);expect(c.status).toBe('complete');expect(()=>{c.elapsed=0;finishCardio(c);}).toThrow();});
+ it('novo plano de cardio usa 60 minutos e 5 km/h sem inventar velocidade realizada',()=>{const d=fixture(),c=makeDay(d,'2026-10-12').cardio;expect(c.planned).toBe(60);expect(c.minimumSpeed).toBe(5);expect(c.speed).toBeNull();expect(summaries(d,'2026-10-12').cardio.status).toBe('Não iniciado');expect(makeDay(d,'2026-10-17').cardio.planned).toBeNull();});
 });
 describe('integridade dos indicadores',()=>{
  it('ausência não vira zero nos gráficos',()=>{const d=fixture();d.days.push(makeDay(d,'2026-10-12'));const points=metricPoints(d,'2026-10-12','2026-10-13','water','supino-vertical','Glúteos');expect(points.map(p=>p.value)).toEqual([null,null]);d.days[0].recorded.push('water');expect(metricPoints(d,'2026-10-12','2026-10-13','water','supino-vertical','Glúteos').map(p=>p.value)).toEqual([0,null]);});
