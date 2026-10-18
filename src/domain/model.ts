@@ -25,9 +25,11 @@ export const mobilityExerciseSchema = z.object({ id, name: z.string().min(1).max
 export type MobilityExercise = z.infer<typeof mobilityExerciseSchema>;
 export const mobilityProtocolSchema = z.object({ id, name: text, exercises: z.array(mobilityExerciseSchema).max(30), days: z.array(sessionNameSchema), updatedAt: timestamp });
 export type MobilityProtocol = z.infer<typeof mobilityProtocolSchema>;
-const cardioSchema = z.object({ planned: num.max(60).nullable(), elapsed: num.max(86400), runningSince: z.number().finite().nullable(), status: z.enum(['idle','paused','running','complete','partial']), mode: text, minimumSpeed: num.max(30).nullable().default(null), speed: num.max(30).nullable().default(null), intensity: z.enum(['Leve','Moderada']), rpe: num.max(10).nullable(), heartRate: num.max(250).nullable(), notes: text });
+const cardioSchema = z.object({ planVersion: z.enum(['legacy','weekly-360']).default('legacy'), planned: num.max(60).nullable(), elapsed: num.max(86400), runningSince: z.number().finite().nullable(), status: z.enum(['idle','paused','running','complete','partial']), mode: text, minimumSpeed: num.max(30).nullable().default(null), speed: num.max(30).nullable().default(null), intensity: z.enum(['Leve','Moderada']), rpe: num.max(10).nullable(), heartRate: num.max(250).nullable(), notes: text });
 export type CardioSession = z.infer<typeof cardioSchema>;
-const mobilitySessionSchema = z.object({ protocol: mobilityProtocolSchema.nullable(), sets: z.record(id,z.object({ done:z.boolean(), seconds:num.max(86400), runningSince:z.number().finite().nullable(), discomfort:num.max(10).nullable(), pain:num.max(10).nullable(), notes:text })) });
+export const sequenceSchema = z.object({ elapsed:num.max(86400), runningSince:z.number().finite().nullable(), completedAt:timestamp.nullable() });
+export type MobilitySequence = z.infer<typeof sequenceSchema>;
+const mobilitySessionSchema = z.object({ sequences:z.record(id,sequenceSchema).default({}), protocol: mobilityProtocolSchema.nullable(), sets: z.record(id,z.object({ done:z.boolean(), seconds:num.max(86400), runningSince:z.number().finite().nullable(), discomfort:num.max(10).nullable(), pain:num.max(10).nullable(), notes:text })) });
 export const recoverySchema = z.object({ sleep: num.max(24).nullable(), fatigue: num.max(10).nullable(), soreness: num.max(10).nullable(), pain: num.max(10).nullable(), jointPain: z.boolean(), symptoms: z.boolean(), notes: text });
 export type RecoveryLog = z.infer<typeof recoverySchema>;
 export const blockKeys = ['workout','meals','water','cardio','mobility','hormonal'] as const;
@@ -55,10 +57,10 @@ export const hormonalProtocolSchema=z.object({
 export type HormonalProtocol=z.infer<typeof hormonalProtocolSchema>;
 const hormonalLogSchema=z.object({id,date:dateSchema,week:z.number().int().min(1).max(52),entryId:id,substance:text,doseMg:num.min(0.01).max(10000),notes:text,at:timestamp});
 export const hormonalImportSchema=z.object({format:z.literal('oaolife-hormonal-1'),protocol:hormonalProtocolSchema});
-const currentAppDataSchema = z.object({ schemaVersion:z.literal(3), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
-// Version 2 is upgraded without changing historical measurements or targets.
+const currentAppDataSchema = z.object({ schemaVersion:z.literal(4), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
+// Older snapshots retain measurements, targets and protocols; timer state is additive.
 export const appDataSchema = z.preprocess(value => {
- if(value && typeof value === 'object' && 'schemaVersion' in value && value.schemaVersion === 2) return {...value, schemaVersion:3};
+ if(value && typeof value === 'object' && 'schemaVersion' in value && (value.schemaVersion === 2 || value.schemaVersion === 3)) return {...value, schemaVersion:4};
  return value;
 }, currentAppDataSchema);
 export type AppData = z.infer<typeof appDataSchema>;
@@ -79,3 +81,4 @@ export type MobilitySession = DailyLog['mobility'];
 export type SleepLog = Pick<RecoveryLog,'sleep'>;
 export type AdjustmentHistory = AppData['adjustments'][number];
 export interface SyncOperation { id:string; at:string; revision:number; state:'local-only'|'pending'|'conflict'; kind:string }
+

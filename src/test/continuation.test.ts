@@ -22,7 +22,7 @@ describe('conclusão simples e relatórios reais',()=>{
   await initialize(db);try {
    await mutate('registro existente','',d=>{const day=makeDay(d,'2026-10-16');day.water[0]=275;day.recorded.push('water');d.days.push(day);});
    await confirmDay('2026-10-16');const data=(await db.state.get('main'))!.data;
-   expect(dayComplete(summaries(data,'2026-10-16'))).toBe(true);expect(data.sessions).toHaveLength(0);expect(data.hormonalLogs).toEqual([]);expect(data.days[0].declarations.hormonal).toBeDefined();
+   expect(dayComplete(summaries(data,'2026-10-16'))).toBe(false);expect(data.days[0].declarations.cardio).toBeUndefined();expect(data.sessions).toHaveLength(0);expect(data.hormonalLogs).toEqual([]);expect(data.days[0].declarations.hormonal).toBeDefined();
    expect(dayReport(data,'2026-10-16')).toMatchObject({waterMl:275,cardioMinutes:null,cardioSpeed:null,caloriesConsumed:null,caloriesBurned:null});
    expect(data.days[0].meals.flat().every(v=>!v)).toBe(true);expect(data.days[0].cardio.elapsed).toBe(0);
    await confirmDay('2026-10-16');expect((await db.state.get('main'))!.data).toEqual(data);
@@ -42,7 +42,7 @@ describe('migração protege dados de abas antigas',()=>{
   await old.table('state').add({id:'main',revision:8,data:original});old.close();
   const current=new OaoDatabase(name);try{
    await initialize(current);const migrated=(await current.state.get('main'))!;
-   expect(migrated.revision).toBe(8);expect(migrated.data.schemaVersion).toBe(3);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
+   expect(migrated.revision).toBe(8);expect(migrated.data.schemaVersion).toBe(4);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
    await mutate('Novo cardio','',d=>{const newDay=makeDay(d,'2026-10-19');newDay.cardio.speed=5;d.days.push(newDay);},current);
    await old.open();
    // The v2 app validates its full snapshot, including literal schemaVersion:2, before writing.
@@ -57,3 +57,4 @@ describe('migração protege dados de abas antigas',()=>{
   const data=appDataSchema.parse({...emptyData(),hormonalProtocol:value.protocol});expect(data.hormonalLogs).toEqual([]);expect(data.hormonalProtocol!.entries[0].weekday).toBeNull();
  });
 });
+
