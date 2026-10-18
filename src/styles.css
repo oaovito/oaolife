@@ -82,3 +82,24 @@
 }
 
 @media(min-width:901px){.home-page .routine-card:nth-child(n){grid-column:span 2}}
+
+
+/* Clear daily heading and activity actions. */
+.home-page .page-title>.eyebrow{font-size:clamp(21px,2.4vw,28px);font-weight:750;line-height:1.25;letter-spacing:-.4px;text-transform:none;margin-bottom:8px;color:var(--accent)}
+.home-page .page-title>.eyebrow::first-letter{text-transform:uppercase}
+.home-page .page-title h1{font-weight:800;letter-spacing:-1px}
+button>svg{flex-shrink:0}
+.completion-button{font-weight:750}
+.set-check{background:var(--accent);color:var(--bg);border-color:var(--accent);font-size:13px;font-weight:750;min-height:44px;padding:10px 14px;gap:8px}
+.set-check.is-done{background:var(--surface2);color:var(--accent)}
+.check-row{border-color:var(--accent);font-weight:600}
+.check-row>svg:first-child{color:var(--accent)}
+.check-row.checked{border-color:var(--border)}
+.sequence-status{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+@media(max-width:760px){
+ .home-page .page-title{margin-bottom:12px}
+ .home-page .page-title>.eyebrow{font-size:21px;margin-bottom:6px}
+ .home-page .page-title h1{font-size:28px}
+ .completion-button{font-size:14px;min-height:48px}
+ .set-actions{flex-wrap:wrap}
+}
