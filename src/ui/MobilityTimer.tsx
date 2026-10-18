@@ -9,10 +9,10 @@ export function MobilityTimer({exercise,session,date,run}:{exercise:MobilityExer
  const [clock,setClock]=useState(Date.now()),[confirmReset,setConfirmReset]=useState(false);
  useEffect(()=>{setClock(Date.now());if(!running)return;const tick=()=>setClock(Date.now());const id=setInterval(tick,250);window.addEventListener('focus',tick);return()=>{clearInterval(id);window.removeEventListener('focus',tick);};},[running,sequence?.elapsed]);
  const p=sequenceProgress(exercise,sequence,clock);
- const change=(action:'start'|'pause'|'reset')=>run(()=>editDay(date,'Registrar sequência de hipercifose',day=>{
+ const change=(action:'start'|'pause'|'reset')=>{const at=Date.now();return run(()=>editDay(date,'Registrar sequência de hipercifose',day=>{
   const ex=day.mobility.protocol?.exercises.find(e=>e.id===exercise.id);if(!ex)throw Error('Aplique o protocolo a este dia antes de iniciar.');
-  if(action==='start')startSequence(day.mobility,ex);else if(action==='pause')pauseSequence(day.mobility,ex);else resetSequence(day.mobility,ex);
- }));
+  if(action==='start')startSequence(day.mobility,ex,at);else if(action==='pause')pauseSequence(day.mobility,ex,at);else resetSequence(day.mobility,ex);
+ }));};
  return <section aria-label={`Sequência de ${exercise.name}`} className="timer-panel">
   <span className="eyebrow">{p.complete?'SEQUÊNCIA CONCLUÍDA':p.resting?'Descansando':'Alongando'}</span>
   <h3>Série {p.index+1}/{exercise.sets}</h3>
