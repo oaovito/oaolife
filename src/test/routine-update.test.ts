@@ -45,6 +45,7 @@ describe('sequência automática de hipercifose',()=>{
   startSequence(session,ex,100000);syncSequence(session,ex,490000);expect(sequenceProgress(ex,session.sequences[ex.id])).toMatchObject({complete:true,active:240});
   resetSequence(session,ex);expect(sequenceProgress(ex,session.sequences[ex.id])).toMatchObject({elapsed:0,done:0,complete:false});expect(session.sets).toEqual({});
  });
+ it('declaração genérica não conclui a sequência nem o cardio do novo plano',()=>{const data=emptyData(),day=makeDay(data,'2026-10-19');data.days.push(day);day.declarations.cardio={at:new Date().toISOString(),note:'Sem detalhes'};day.declarations.mobility={at:new Date().toISOString(),note:'Sem detalhes'};const blocks=summaries(data,day.id);expect(blocks.cardio.status).not.toBe('Concluído');expect(blocks.mobility.status).not.toBe('Concluído');});
  it('mantém dias explicitamente personalizados e não altera snapshots históricos',()=>{
   const saved=currentMobilityProtocol(null);saved.days=['C1'];saved.exercises[0].duration=20;
   const old=structuredClone(saved),updated=currentMobilityProtocol(saved);expect(saved).toEqual(old);expect(updated.days).toEqual(['C1']);expect(updated.exercises[0].duration).toBe(60);

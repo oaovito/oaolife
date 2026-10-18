@@ -18,6 +18,7 @@ export function timerSeconds(timer:{elapsed:number;runningSince:number|null},clo
 export function pauseCardio(c:CardioSession,clock=Date.now()) { c.elapsed=timerSeconds(c,clock);c.runningSince=null;c.status='paused'; }
 export function startCardio(c:CardioSession,clock=Date.now()) { if(c.runningSince===null){c.runningSince=clock;c.status='running';} }
 export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada.');c.status=c.elapsed>=c.planned*60&&(c.minimumSpeed===null||(c.mode==='Esteira'&&c.speed!==null&&c.speed>=c.minimumSpeed))?'complete':'partial'; }
+export function timedCompletionRequired(day:DailyLog,key:string) { return key==='cardio'&&day.cardio.planVersion==='weekly-360'||key==='mobility'&&!!day.mobility.protocol?.exercises.some(ex=>/hipercifose/i.test(ex.name)&&ex.sets===4&&ex.duration===60&&ex.rest===60); }
 function summary(done:number,total:number,subtitle:string,partial=false):BlockSummary { return {done,total,subtitle,status:total===0?'Não programado':done>=total?'Concluído':partial?'Parcial':done?'Em andamento':'Não iniciado'}; }
 export function summaries(data:AppData,date:string,clock=Date.now()):Record<'workout'|'meals'|'water'|'cardio'|'mobility'|'hormonal',BlockSummary> {
  const cycle=cycleForDate(data,date),plan=schedule(cycle,date),day=data.days.find(d=>d.id===date)??makeDay(data,date);const session=data.sessions.find(s=>s.date===date&&s.cycleId===cycle?.id);
@@ -39,7 +40,7 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  if(logs.length)hormonal.status='Em andamento';
  const blocks={workout,meals,water,cardio,mobility,hormonal};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
-  if(blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
+  if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
  }
  return blocks;
 }

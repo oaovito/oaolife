@@ -22,7 +22,7 @@ describe('conclusão simples e relatórios reais',()=>{
   await initialize(db);try {
    await mutate('registro existente','',d=>{const day=makeDay(d,'2026-10-16');day.water[0]=275;day.recorded.push('water');d.days.push(day);});
    await confirmDay('2026-10-16');const data=(await db.state.get('main'))!.data;
-   expect(dayComplete(summaries(data,'2026-10-16'))).toBe(true);expect(data.sessions).toHaveLength(0);expect(data.hormonalLogs).toEqual([]);expect(data.days[0].declarations.hormonal).toBeDefined();
+   expect(dayComplete(summaries(data,'2026-10-16'))).toBe(false);expect(data.days[0].declarations.cardio).toBeUndefined();expect(data.sessions).toHaveLength(0);expect(data.hormonalLogs).toEqual([]);expect(data.days[0].declarations.hormonal).toBeDefined();
    expect(dayReport(data,'2026-10-16')).toMatchObject({waterMl:275,cardioMinutes:null,cardioSpeed:null,caloriesConsumed:null,caloriesBurned:null});
    expect(data.days[0].meals.flat().every(v=>!v)).toBe(true);expect(data.days[0].cardio.elapsed).toBe(0);
    await confirmDay('2026-10-16');expect((await db.state.get('main'))!.data).toEqual(data);
