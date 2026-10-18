@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Copy, Dumbbell, History, Play, RotateCcw } from 'lucide-react';
+import { Check, Copy, Dumbbell, History, Play, RotateCcw, SkipForward, Square } from 'lucide-react';
 import type { CompletedSet, PlannedExercise, WorkoutSession } from '../domain/model';
 import { cycleForDate, schedule, makeWorkout, now } from '../domain/training';
 import { ORIGINAL_PLAN, LOAD_LABEL, WEEKS } from '../domain/plan';
@@ -19,7 +19,7 @@ function SetRow({value,exercise,session,previous,run,index,expanded}:{value:Comp
  }));
  return <div className={`set-row ${value.done?'set-done':''}`}>
   <div className="set-heading"><strong>Série {index+1}</strong><span>{value.done?'Feita':value.skipped?'Não realizada':''}</span>
-   {!readonly&&<div className="set-actions"><button className={`set-check ${value.done?'is-done':''}`} aria-pressed={value.done} aria-label={`Concluir série ${index+1} de ${exercise.name}`} onClick={()=>update({done:!value.done,skipped:false})}><Check size={16}/>{value.done?'Desfazer':'Concluir'}</button>
+   {!readonly&&<div className="set-actions"><button className={`set-check ${value.done?'is-done':''}`} aria-pressed={value.done} aria-label={`Concluir série ${index+1} de ${exercise.name}`} onClick={()=>update({done:!value.done,skipped:false})}>{value.done?<RotateCcw size={20} aria-hidden="true"/>:<Check size={20} aria-hidden="true"/>}{value.done?'Desfazer':'Concluir'}</button>
    <button className="quiet" aria-label={`Não realizar série ${index+1} de ${exercise.name}`} aria-pressed={value.skipped} onClick={()=>update({done:false,skipped:!value.skipped})}>{value.skipped?'Reabrir':'Não realizada'}</button></div>}
   </div>
   <details className="set-details" open={expanded}><summary>Detalhes opcionais da série {index+1}</summary>
@@ -53,7 +53,7 @@ export function Workout({data,date,run,go}:PageProps) {
    <div className="exercise-meta prominent"><span><small>SÉRIES × REPS</small><strong>{ex.sets.length} × {ex.reps.join('–')}</strong></span><span><small>RIR</small><strong>{ex.rir.join('–')}</strong></span><span><small>DESCANSO</small><strong>{ex.rest}</strong></span></div>
    <div className="load-summary"><span>Referência <strong>{ex.reference??'A definir'}{ex.reference!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Sugerida <strong>{ex.suggested??'A definir'}{ex.suggested!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Última executada <strong>{last?.load??'Sem registro'}{last?` ${LOAD_LABEL[last.mode]}`:''}</strong></span></div>
    {ex.fst&&<p className="notice">FST-7 adaptado: até quatro séries, descanso de 30–45 s, sem séries extras.</p>}{ex.notes&&<p className="notice">{ex.notes}</p>}
-   {session!.status==='open'&&!resolved(ex)&&<div className="button-row"><button className="primary" onClick={()=>exerciseAction(ex,'complete')}>Concluir exercício</button><button className="secondary" onClick={()=>exerciseAction(ex,'skip')}>Não realizar restantes</button></div>}
+   {session!.status==='open'&&!resolved(ex)&&<div className="button-row"><button className="primary" onClick={()=>exerciseAction(ex,'complete')}><Check size={20} aria-hidden="true"/>Concluir exercício</button><button className="secondary" onClick={()=>exerciseAction(ex,'skip')}><SkipForward size={18} aria-hidden="true"/>Não realizar restantes</button></div>}
    {ex.sets.map((s,j)=>!s.done&&!s.skipped?<SetRow key={s.id} value={s} index={j} previous={ex.sets[j-1]} exercise={ex} session={session!} run={run} expanded={s.id===nextSet}/>:null)}
    <CompletedItems count={finished.length} label="Séries registradas">{ex.sets.map((s,j)=>s.done||s.skipped?<SetRow key={s.id} value={s} index={j} previous={ex.sets[j-1]} exercise={ex} session={session!} run={run} expanded={false}/>:null)}</CompletedItems>
    <details className="history"><summary><History size={15}/> Histórico e progressão</summary><p>{decision.reason}</p>
@@ -69,8 +69,9 @@ export function Workout({data,date,run,go}:PageProps) {
    {session&&<><Panel><div className="section-heading"><strong>{session.status==='open'?'Sessão em andamento':session.status==='complete'?'Treino concluído':'Treino parcial'}</strong><span>{done}/{sets.length} séries</span></div><Progress value={done} max={sets.length} label="Séries executadas"/><p>{skipped>0?`${skipped} séries não realizadas. `:''}{session.reason||'Conclua séries ou exercícios com um toque. Os detalhes são opcionais; a progressão exige dados completos.'}</p>{session.status!=='open'&&<button className="secondary" onClick={()=>run(()=>reopenWorkout(session.id),'Sessão reaberta. As sugestões desta sessão foram desfeitas.')}><RotateCcw size={16}/> Corrigir registros</button>}</Panel>
     <div className="exercise-list">{session.exercises.map((ex,i)=>!resolved(ex)?renderExercise(ex,i):null)}</div>
     <CompletedItems count={session.exercises.filter(resolved).length} label="Exercícios registrados">{session.exercises.map((ex,i)=>resolved(ex)?renderExercise(ex,i):null)}</CompletedItems>
-    {session.status==='open'&&<Panel><h3>{workoutComplete(session)?'Todas as séries registradas.':'Encerrar sessão'}</h3>{!workoutComplete(session)&&<Field label="Motivo do encerramento parcial"><textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={5000} placeholder="Opcional quando as séries restantes foram marcadas como não realizadas."/></Field>}<button className="primary" onClick={()=>run(()=>finishWorkout(session.id,reason||(!sets.some(s=>!s.done&&!s.skipped)?'Séries não realizadas indicadas pelo usuário.':'')),workoutComplete(session)?'Treino concluído.':'Treino encerrado como parcial. Apenas séries feitas foram contabilizadas.')}><Check size={17}/>{workoutComplete(session)?'Concluir treino':'Encerrar como parcial'}</button></Panel>}
+    {session.status==='open'&&<Panel><h3>{workoutComplete(session)?'Todas as séries registradas.':'Encerrar sessão'}</h3>{!workoutComplete(session)&&<Field label="Motivo do encerramento parcial"><textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={5000} placeholder="Opcional quando as séries restantes foram marcadas como não realizadas."/></Field>}<button className="primary" onClick={()=>run(()=>finishWorkout(session.id,reason||(!sets.some(s=>!s.done&&!s.skipped)?'Séries não realizadas indicadas pelo usuário.':'')),workoutComplete(session)?'Treino concluído.':'Treino encerrado como parcial. Apenas séries feitas foram contabilizadas.')}>{workoutComplete(session)?<Check size={20} aria-hidden="true"/>:<Square size={18} aria-hidden="true"/>}{workoutComplete(session)?'Concluir treino':'Encerrar como parcial'}</button></Panel>}
    </>}
   </>}
  </>;
 }
+
