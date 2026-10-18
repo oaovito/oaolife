@@ -41,7 +41,7 @@ test('seis blocos em grade cabem acima da navegação no iPhone',async({page},in
   expect(boxes[0].y).toBe(boxes[1].y);expect(boxes[1].x).toBeGreaterThan(boxes[0].x);expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
   expect(Math.max(...boxes.map(b=>b.bottom))).toBeLessThanOrEqual(navBox!.y);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await page.evaluate(()=>window.scrollTo(0,500));expect(await page.evaluate(()=>scrollY)).toBe(0);
-  expect(await cards.evaluateAll(items=>items.every(item=>{const title=item.querySelector('h3')!.getBoundingClientRect(),card=item.getBoundingClientRect();return title.bottom<=card.bottom&&title.right<=card.right;}))).toBe(true);
+  expect(await cards.evaluateAll(items=>items.flatMap(item=>{const card=item.getBoundingClientRect();return [...item.querySelectorAll('h3,.status')].filter(el=>{const r=el.getBoundingClientRect();return r.bottom>card.bottom||r.right>card.right;}).map(el=>({text:el.textContent,card:card.toJSON(),element:el.getBoundingClientRect().toJSON()}));}))).toEqual([]);
  }
  await page.setViewportSize({width:393,height:852});await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
  for(const [width,columns] of [[820,2],[1280,3]]){
