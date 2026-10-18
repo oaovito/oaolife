@@ -33,8 +33,18 @@ test('horários cabem nos campos de 320 a 430 px e persistem',async({page})=>{
  const overflowing=await page.locator('.field input').evaluateAll(inputs=>inputs.filter(input=>{const r=input.getBoundingClientRect(),p=input.closest('.field')!.getBoundingClientRect();return r.width>p.width+1||r.right>innerWidth||r.left<0;}).length);expect(overflowing).toBe(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  await page.getByLabel('Horário da refeição 1 (opcional)').fill('07:30');await page.getByLabel('Horário da refeição 5 (opcional)').fill('21:15');await page.getByRole('button',{name:'Confirmar planejamento futuro'}).click();await expect(page.getByText('Planejamento futuro atualizado. Dias já registrados mantêm suas metas.',{exact:true})).toBeVisible();await page.reload();await expect(page.getByLabel('Horário da refeição 1 (opcional)')).toHaveValue('07:30');await expect(page.getByLabel('Horário da refeição 5 (opcional)')).toHaveValue('21:15');
 });
-test('seis blocos cabem acima da navegação no iPhone',async({page},info)=>{
- await page.setViewportSize({width:393,height:852});await open(page);const cards=page.locator('.home-page>.routine-grid>.routine-card');await expect(cards).toHaveCount(6);const last=await cards.last().boundingBox(),navBox=await page.getByRole('navigation').boundingBox();expect(last!.y+last!.height).toBeLessThanOrEqual(navBox!.y);await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
+test('seis blocos em grade cabem acima da navegação no iPhone',async({page},info)=>{
+ await open(page);const cards=page.locator('.home-page>.routine-grid>.routine-card');await expect(cards).toHaveCount(6);
+ for(const [width,height] of [[320,852],[375,812],[393,852],[430,932]]){
+  await page.setViewportSize({width,height});
+  const boxes=await cards.evaluateAll(items=>items.map(item=>{const r=item.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};})),navBox=await page.getByRole('navigation').boundingBox();
+  expect(boxes[0].y).toBe(boxes[1].y);expect(boxes[1].x).toBeGreaterThan(boxes[0].x);expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
+  expect(Math.max(...boxes.map(b=>b.bottom))).toBeLessThanOrEqual(navBox!.y);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ await page.setViewportSize({width:393,height:852});await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
+ for(const [width,columns] of [[820,2],[1280,3]]){
+  await page.setViewportSize({width,height:1000});const firstRow=await cards.evaluateAll(items=>items.filter(item=>item.getBoundingClientRect().y===items[0].getBoundingClientRect().y).length);expect(firstRow).toBe(columns);
+ }
 });
 test('itens feitos recolhem e permanecem corrigíveis',async({page})=>{
  await open(page,'/alimentacao');await page.getByRole('button',{name:'500 ml de leite integral',exact:true}).first().click();await expect(page.getByRole('button',{name:'500 ml de leite integral',exact:true})).toHaveCount(1);await page.getByText('Alimentos registrados (1) · Ver e corrigir',{exact:true}).click();await expect(page.getByRole('button',{name:'500 ml de leite integral',exact:true})).toHaveCount(2);
