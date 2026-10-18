@@ -19,7 +19,7 @@ test('hipercifose alterna, pausa, reabre offline e conclui junto com cardio',asy
  const clock=await page.evaluate(()=>Date.now());await page.clock.setSystemTime(clock+300000);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
  await expect(page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true})).toBeVisible();
  const data=await savedData(page),day=data.days[0];expect(Object.values(day.mobility.sets).map((s:any)=>s.seconds)).toEqual([60,60,60,60]);expect(Object.values(day.mobility.sequences)[0]).toMatchObject({elapsed:420,runningSince:null});expect(day.cardio.runningSince).not.toBeNull();expect(day.water).toEqual([0,0,0,0,0,0]);expect(day.meals.flat().some(Boolean)).toBe(false);
- await nav(page,'Hoje');await page.getByText('Blocos concluídos (1) · Ver e corrigir',{exact:true}).click();await expect(page.getByRole('button',{name:/MOBILIDADE Alongamento/})).toContainText('Concluído');await expect(page.getByRole('button',{name:/FORÇA Treino/})).not.toContainText('Concluído');
+ await nav(page,'Hoje');await page.getByText('Blocos concluídos (1) · Ver e corrigir',{exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await expect(page.getByRole('button',{name:/MOBILIDADE Alongamento/})).toContainText('Concluído');await expect(page.getByRole('button',{name:/FORÇA Treino/})).not.toContainText('Concluído');
  await page.getByRole('button',{name:/MOBILIDADE Alongamento/}).click();await page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true}).click();await expect(page.getByRole('timer')).toHaveText('00:00');
  await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();await page.getByRole('button',{name:'Cancelar',exact:true}).click();expect(Object.values((await savedData(page)).days[0].mobility.sequences)[0]).toMatchObject({elapsed:420});
  await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();await page.getByRole('button',{name:'Confirmar reinício',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sequência',exact:true})).toBeVisible();expect((await savedData(page)).days[0].mobility.sets).toEqual({});
@@ -35,11 +35,13 @@ test('horários cabem nos campos de 320 a 430 px e persistem',async({page})=>{
 });
 test('seis blocos em grade cabem acima da navegação no iPhone',async({page},info)=>{
  await open(page);const cards=page.locator('.home-page>.routine-grid>.routine-card');await expect(cards).toHaveCount(6);
- for(const [width,height] of [[320,852],[375,812],[393,852],[430,932]]){
+ for(const [width,height] of [[320,568],[375,667],[393,852],[430,932]]){
   await page.setViewportSize({width,height});
   const boxes=await cards.evaluateAll(items=>items.map(item=>{const r=item.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};})),navBox=await page.getByRole('navigation').boundingBox();
   expect(boxes[0].y).toBe(boxes[1].y);expect(boxes[1].x).toBeGreaterThan(boxes[0].x);expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
   expect(Math.max(...boxes.map(b=>b.bottom))).toBeLessThanOrEqual(navBox!.y);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await page.evaluate(()=>window.scrollTo(0,500));expect(await page.evaluate(()=>scrollY)).toBe(0);
+  expect(await cards.evaluateAll(items=>items.every(item=>{const title=item.querySelector('h3')!.getBoundingClientRect(),card=item.getBoundingClientRect();return title.bottom<=card.bottom&&title.right<=card.right;}))).toBe(true);
  }
  await page.setViewportSize({width:393,height:852});await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
  for(const [width,columns] of [[820,2],[1280,3]]){
@@ -64,8 +66,8 @@ test('cardio exige 60 minutos, esteira e velocidade informada de pelo menos 5',a
  await page.getByLabel('Registro manual realizado (min)').fill('60');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true})).toBeVisible();await page.reload();await page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true}).click();await expect(page.getByLabel('Velocidade realizada (km/h)',{exact:true})).toHaveValue('5');expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
 });
 test('dia anterior conclui por declaração e mantém valores desconhecidos',async({page})=>{
- await open(page,'/?date=2026-10-16');await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Concluir dia sem detalhar'}).click();await expect(page.getByRole('button',{name:/MOVIMENTO Cardio/})).not.toContainText('Concluído');await page.reload();await expect(page.getByRole('button',{name:/MOVIMENTO Cardio/})).not.toContainText('Concluído');const data=await savedData(page);expect(data.sessions).toHaveLength(0);expect(data.days[0].water).toEqual([0,0,0,0,0,0]);expect(data.days[0].recorded).toEqual([]);expect(data.days[0].cardio.speed).toBeNull();
- await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Desfazer confirmação do dia'}).click();await expect(page.getByRole('heading',{name:'Feito por hoje.'})).toHaveCount(0);
+ await open(page,'/?date=2026-10-16');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toHaveCount(0);await expect(page.getByText('Resumo e fechamento do dia',{exact:true})).toHaveCount(0);await nav(page,'Ajustes');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toBeVisible();await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Concluir dia sem detalhar'}).click();await nav(page,'Hoje');await expect(page.getByRole('button',{name:/MOVIMENTO Cardio/})).not.toContainText('Concluído');await page.reload();await expect(page.getByRole('button',{name:/MOVIMENTO Cardio/})).not.toContainText('Concluído');const data=await savedData(page);expect(data.sessions).toHaveLength(0);expect(data.days[0].water).toEqual([0,0,0,0,0,0]);expect(data.days[0].recorded).toEqual([]);expect(data.days[0].cardio.speed).toBeNull();
+ await nav(page,'Ajustes');await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Desfazer confirmação do dia'}).click();await nav(page,'Hoje');await expect(page.getByRole('heading',{name:'Feito por hoje.'})).toHaveCount(0);
 });
 test('registro hormonal é um bloco com plano informado e administrações reais separadas',async({page})=>{
  await open(page);await page.getByRole('button',{name:/REGISTRO Registro hormonal/}).click();
