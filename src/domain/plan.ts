@@ -47,7 +47,7 @@ export const MEALS:Meal[]=[
  {id:'m5',title:'Refeição 5',foods:['300 g de peito de frango desfiado','150 g de macarrão cozido']}
 ];
 export const WATER_LABELS=['Água 1','Água 2','Água 3','Água 4','Água 5','Água 6'];
-export const CARDIO_DAYS=['A1','B1','A2','B2'];
+export const CARDIO_DAYS=['A1','B1','C1','A2','B2','C2'];
 export const MOBILITY_DAYS=['A1','B1','A2'];
 export const LOAD_LABEL={total:'kg total',lado:'kg por lado',halter:'kg por halter'};
 

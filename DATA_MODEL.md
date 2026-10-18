@@ -1,3 +1,7 @@
+# Atualização v4
+
+Migração de v2/v3 preserva snapshots históricos, revisão, auditoria e fila. `cardio.planVersion` diferencia o plano semanal dos registros anteriores. `mobility.sequences` persiste tempo acumulado, timestamp e conclusão por exercício. Novos backups são v4; formatos v2/v3 continuam aceitos. Abas antigas não podem validar snapshots v4 para sobrescrevê-los.
+
 ## Atualização 1.1.0 — schema 3
 
 A versão 3 do IndexedDB migra o snapshot para `schemaVersion: 3`, preservando revisão, auditoria, fila e medições. `skipped` distingue séries não realizadas; `done` pode existir com detalhes nulos. `cardio.speed` registra velocidade real e `minimumSpeed` é a meta do snapshot. Registros antigos recebem ambos nulos, mantendo tempo, modalidade e meta anteriores.
@@ -19,3 +23,4 @@ IDs estáveis: UUIDs para entidades criadas; data civil para o dia; `cycleId:dat
 Planejado e executado são distintos: referências e sugestões não preenchem a carga executada. Série executada exige dados e confirmação. Registro de dia guarda metas de água e protocolo copiado, para que mudanças futuras não alterem registros anteriores. `recorded` diferencia área sem registro de um zero efetivamente informado. `null` representa informação ausente; não é convertido em zero nos gráficos.
 
 Backup contém o agregado, auditoria e outbox. Auditoria guarda antes/depois das alterações por caminho; imagens são representadas por metadados de tamanho para não duplicar seu conteúdo em cada evento. Zod e verificações relacionais rejeitam datas inválidas, ciclos sobrepostos, duplicações, referências órfãs e treinos completos com séries ausentes. Restauração troca o conjunto inteiro após revisão; não faz merge silencioso. A revisão local após importar é superior às revisões atuais e importadas.
+

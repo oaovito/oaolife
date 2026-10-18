@@ -1,13 +1,21 @@
-## Atualização 1.1.0
-
-Novos dias programados: 60 minutos de esteira e velocidade mínima de 5,0 km/h, conforme solicitação do usuário. A velocidade real começa desconhecida. Menos tempo, outra modalidade, velocidade abaixo da meta ou não informada produzem registro parcial. O cronômetro guarda duração real; o registro manual substitui o total.
-
-Dias já salvos preservam metas anteriores e não recebem velocidade presumida. É possível aplicar explicitamente a nova meta ao dia consultado. Isso não altera tempo nem velocidade reais. Conclusão recolhe o formulário, que continua acessível para correção.
-
 # Cardio
 
-Programado em A1, B1, A2 e B2; até 60 min por sessão, máximo de referência 240 min semanais. Duração exata não é presumida: pode ser definida como preferência futura ou na sessão. Leve/moderado, preferencialmente após a musculação. C1, C2 e descanso não têm pendência de cardio.
+Plano fixo de 360 minutos semanais de esteira, com velocidade mínima de 5,0 km/h:
 
-Cronômetro usa tempo acumulado e instante de início persistidos, sem depender de intervalos rodando com o aplicativo fechado. Iniciar, pausar, retomar e finalizar gravam transações reais. Registro manual substitui a duração do cronômetro. Conclusão exige duração realizada ≥ meta escolhida; abaixo disso, parcial. Não é possível finalizar zero segundos como executado.
+| Dia | Musculação | Cardio |
+|---|---|---|
+| Segunda | A1 | 60 min |
+| Terça | B1 | 60 min |
+| Quarta | C1 | 30 min |
+| Quinta | A2 | 60 min |
+| Sexta | B2 | 60 min |
+| Sábado | C2 | 30 min |
+| Domingo | Descanso | 60 min |
 
-Modalidade, intensidade, frequência cardíaca opcional, percepção de esforço e observações ficam no dia. Sem aumento automático. Semanas 4 e 8 e interferência na recuperação dos inferiores devem motivar revisão, sem redução imposta pelo software.
+O calendário do cardio permanece fixo por dia da semana, inclusive quando a musculação é reagendada. O domingo não gera exercícios de musculação. Outros blocos mantêm suas regras.
+
+O cronômetro persiste tempo acumulado e timestamp de início. Pausa, retomada e reabertura preservam o progresso; retomar soma uma nova sessão no mesmo dia. O registro manual permite substituir o total ou adicionar uma sessão. Minutos planejados e realizados são separados. Conclusão exige a meta diária, esteira e velocidade informada de pelo menos 5,0 km/h. Sessões menores permanecem parciais. Ao alcançar a meta com os parâmetros informados, o cronômetro é finalizado automaticamente, também ao voltar ao app.
+
+A tela mostra progresso diário e semanal. O total real pode ultrapassar 360; o indicador semanal limita a contribuição de cada dia à sua própria meta, impedindo compensação automática de outro dia. Sem aumento automático de duração ou intensidade, inclusive por frequência cardíaca ou calorias.
+
+Snapshots antigos preservam metas, modalidade, velocidade e duração reais. Um botão permite aplicar explicitamente o novo plano ao dia consultado. Novos dias usam a distribuição definitiva. IndexedDB, auditoria, outbox local e backup continuam sendo a arquitetura existente; não há backend de sincronização remota configurado.

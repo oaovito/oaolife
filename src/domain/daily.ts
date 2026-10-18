@@ -1,12 +1,15 @@
 import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
-import { CARDIO_DAYS, MEALS, MOBILITY_DAYS } from './plan';
+import { MEALS, MOBILITY_DAYS } from './plan';
 import { cycleForDate, now, schedule } from './training';
-export function emptyData():AppData { return {schemaVersion:3,hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
+import { cardioTarget } from './cardio';
+import { currentMobilityProtocol } from './mobility';
+export function emptyData():AppData { return {schemaVersion:4,hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
  const cycle=cycleForDate(data,date),p=schedule(cycle,date);
- const protocol=data.mobility&&p.template&&data.mobility.days.includes(p.template)?structuredClone(data.mobility):null;
- return {declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planned:p.template&&CARDIO_DAYS.includes(p.template)?60:null,elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:p.template&&CARDIO_DAYS.includes(p.template)?5:null,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
+ const configured=currentMobilityProtocol(data.mobility);
+ const protocol=p.template&&configured.days.includes(p.template)?structuredClone(configured):null;
+ return {declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planVersion:'weekly-360',planned:cardioTarget(date),elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:5,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{},sequences:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
 }
 export function nextMeal(day:DailyLog) { const i=day.meals.findIndex(m=>!m.every(Boolean));return i<0?null:i; }
 export function toggleFood(day:DailyLog,meal:number,food:number,at=now()) { day.meals[meal][food]=!day.meals[meal][food];day.mealTimes[meal]=day.meals[meal].every(Boolean)?at:null; }
@@ -25,7 +28,7 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const meals=summary(mealDone,5,mi===null?'Alimentação concluída':`${MEALS[mi].title} · ${MEALS[mi].foods[0]}`,day.meals.some(m=>m.some(Boolean)&&!m.every(Boolean)));
  const waterDone=day.water.filter((v,i)=>v>=day.waterTargets[i]).length;
  const water=summary(waterDone,6,waterDone===6?'Hidratação concluída':`${(day.water.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR',{maximumFractionDigits:2})} de ${(day.waterTargets.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR')} litros`,day.water.some((v,i)=>v>0&&v<day.waterTargets[i]));
- const cardioScheduled=!!plan.template&&CARDIO_DAYS.includes(plan.template);const seconds=timerSeconds(day.cardio,clock);
+ const cardioScheduled=day.cardio.planned!==null;const seconds=timerSeconds(day.cardio,clock);
  const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Defina a duração · até 60 min':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}${day.cardio.minimumSpeed===null?'':` · ${day.cardio.speed??'—'} / ${day.cardio.minimumSpeed} km/h`}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
  if(cardioScheduled&&day.cardio.planned===null)cardio.status='Pendente de revisão';else if(cardioScheduled&&['running','paused'].includes(day.cardio.status))cardio.status='Em andamento';
  const mobilityScheduled=!!plan.template&&((data.mobility?data.mobility.days.includes(plan.template):MOBILITY_DAYS.includes(plan.template))||!!day.mobility.protocol?.days.includes(plan.template));
@@ -47,3 +50,4 @@ export function recipeNutrition(data:AppData,recipeId:string) {
  const r=data.recipes.find(r=>r.id===recipeId);if(!r)return null;
  return Object.fromEntries((['kcal','protein','carbs','fat'] as const).map(key=>{const values=r.ingredients.map(i=>{const f=data.foods.find(f=>f.id===i.foodId);return f?.[key]===null||!f?null:f[key]!*i.quantity/f.quantity;});return [key,values.some(v=>v===null)?null:(values as number[]).reduce((a,v)=>a+v,0)*100/r.yieldGrams];}));
 }
+

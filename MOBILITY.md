@@ -1,9 +1,11 @@
-# Alongamento e hipercifose
+# Alongamento para hipercifose
 
-Plano inicial: A1, B1 e A2, quatro séries do protocolo habitual. B2, C1 e C2 não especificados; descanso não programado. Atividades não programadas não contam como pendência.
+Exercício informado: em pé, com os cotovelos na parede. Quatro séries de 60 segundos e três descansos de 60 segundos. Total: 240 segundos ativos e 180 segundos de descanso, ou 7 minutos. Não há descanso após a quarta série.
 
-Sem protocolo real, aparece “Protocolo pendente de configuração”. Não existem exercícios terapêuticos fictícios e não há como concluir quatro séries indefinidas.
+O protocolo vem disponível nos dias A1, B1 e A2. Dias explicitamente personalizados no dispositivo são preservados. Ao criar um novo dia, a cópia do protocolo usa os parâmetros atuais de hipercifose; exercícios adicionais permanecem disponíveis. Protocolos e medições já salvos no histórico não são reescritos. Dias antigos sem protocolo oferecem aplicação explícita do protocolo atual.
 
-Cadastro local inclui nome, descrição, séries, repetições, duração, descanso, carga/resistência, instruções e imagem PNG/JPEG/WebP de até 2 MB. Dias são configuráveis. A quantidade de séries por exercício é informada pelo usuário; o aplicativo não inventa a divisão das quatro séries originais.
+A sequência alterna automaticamente entre Alongando e Descansando. Mostra série atual, tempo restante, progresso total e tempo ativo separado. Iniciar, pausar e continuar são persistidos em IndexedDB. O timestamp mantém o tempo correto no segundo plano e ao reabrir offline. Não depende de intervalos executados enquanto o sistema suspende o app; a recuperação reconcilia as etapas pelo tempo decorrido.
 
-O protocolo é copiado para o dia ao iniciar os registros, ou aplicado explicitamente ao dia pendente. Mudanças futuras não editam as cópias antigas. Cada série possui confirmação, cronômetro opcional, duração executada, dor, desconforto e observações. Somente IDs de séries do protocolo copiado entram na conclusão. O volume de musculação não inclui mobilidade.
+Cada série concluída atualiza o checklist e o bloco diário. Conclusão automática ocorre exatamente após a quarta série, sem duplicação em duas abas. O cronômetro de cardio é independente. Reiniciar exige confirmação e limpa somente o progresso daquela sequência naquele dia; a auditoria mantém a correção. A navegação por data permite consultar os registros históricos.
+
+Schema e banco v4 adicionam o estado da sequência, com migração compatível de v2/v3. Backups novos usam formato v4 e os anteriores continuam importáveis. O armazenamento e a fila locais são preservados; não há serviço remoto de sincronização configurado.

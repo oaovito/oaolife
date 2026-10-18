@@ -10,7 +10,7 @@ Repositório oficial e único: https://github.com/oaovito/oaolife
 
 O aplicativo abre no dashboard. A data vem do dispositivo. Segunda A1, terça B1, quarta C1, quinta A2, sexta B2, sábado C2, domingo descanso. A referência **17/10/2026 = C2** não define a semana de periodização: configure-a em Plano. Antes disso, o treino original pode ser consultado, sem inventar uma semana.
 
-Conclua séries ou exercícios com um toque; carga, repetições, RIR, técnica e amplitude são opcionais para o registro e obrigatórios para a progressão automática. Séries não realizadas ficam separadas dos totais executados. Conclua o treino ou encerre parcialmente com motivo. Alimentação, água, cardio e hipercifose são independentes. O dia só termina quando os blocos programados terminam. O protocolo terapêutico e os incrementos dos equipamentos precisam ser cadastrados com informações reais. Novos dias de cardio usam 60 minutos de esteira a pelo menos 5,0 km/h; a velocidade realmente realizada é informada separadamente.
+Conclua séries ou exercícios com um toque; carga, repetições, RIR, técnica e amplitude são opcionais para o registro e obrigatórios para a progressão automática. Séries não realizadas ficam separadas dos totais executados. Conclua o treino ou encerre parcialmente com motivo. Alimentação, água, cardio e hipercifose são independentes. O dia só termina quando os blocos programados terminam. O alongamento de hipercifose em pé com cotovelos na parede já está disponível: 4 séries de 60 s, 3 descansos de 60 s, sequência automática de 7 min. Os incrementos dos equipamentos continuam sendo informados separadamente. Novos dias de cardio usam 360 minutos semanais de esteira (quarta e sábado 30 min; demais dias 60 min), a pelo menos 5,0 km/h; a velocidade realmente realizada é informada separadamente.
 
 ## Instalação no iPhone
 
@@ -41,3 +41,4 @@ Itens feitos ficam recolhidos em “Ver e corrigir”. No treino, séries e exer
 Em Hoje → Resumo e fechamento do dia, “Concluir dia sem detalhar” confirma apenas a realização declarada, preserva medições existentes e não inventa cargas, tempos, quantidades ou calorias. A data selecionada pode ser aberta com `?date=AAAA-MM-DD`. A confirmação é gravada no navegador em que o usuário aperta o botão; não há alteração remota do iPhone.
 
 Em Hoje → Registro hormonal, o plano informado já está disponível, sem importação. O bloco pode ser concluído, recolhido e reaberto para correção. As administrações reais são registradas separadamente; nada é marcado como tomado automaticamente. Usa o mesmo armazenamento e backup dos demais blocos. Consulte [HORMONAL.md](HORMONAL.md).
+

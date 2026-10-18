@@ -4,6 +4,9 @@ import { emptyData, makeDay, workoutComplete, summaries, pauseCardio } from '../
 import { makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
 import { MEALS } from '../domain/plan';
+import { cardioGoalReached } from '../domain/cardio';
+import { pauseSequence, sequenceNeedsSync, syncSequence } from '../domain/mobility';
+import { finishCardio } from '../domain/daily';
 export interface StateRecord { id:'main'; revision:number; data:AppData }
 export interface AuditChange { path:string; before:unknown; after:unknown }
 export interface AuditRecord { id:string; at:string; revision:number; kind:string; detail:string; changes?:AuditChange[] }
@@ -15,7 +18,7 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
 }
 export class OaoDatabase extends Dexie {
  state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
@@ -64,8 +67,25 @@ export function confirmDay(date:string) {
    session.reason='Dia confirmado pelo usuário; detalhes não registrados permanecem desconhecidos.';
   }
   if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
+  for(const ex of day.mobility.protocol?.exercises??[])if(day.mobility.sequences[ex.id]?.runningSince!=null)pauseSequence(day.mobility,ex);
   for(const set of Object.values(day.mobility.sets))if(set.runningSince!==null){set.seconds+=Math.max(0,(Date.now()-set.runningSince)/1000);set.runningSince=null;}
   const blocks=summaries(data,date);
   for(const key of ['workout','meals','water','cardio','mobility','hormonal'] as const)if(blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
+ });
+}
+
+
+// Recheck the persisted snapshot inside one transaction so two tabs cannot finish twice.
+export async function reconcileTimers(clock=Date.now(),database=db) {
+ return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
+  const snapshot=await database.state.get('main');if(!snapshot)return;
+  const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||(day.mobility.protocol?.exercises??[]).some(ex=>sequenceNeedsSync(day.mobility,ex,clock));
+  if(!snapshot.data.days.some(needs))return;
+  await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{
+   for(const day of data.days){
+    if(day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock))finishCardio(day.cardio,clock);
+    for(const ex of day.mobility.protocol?.exercises??[])if(sequenceNeedsSync(day.mobility,ex,clock))syncSequence(day.mobility,ex,clock);
+   }
+  },database);
  });
 }
