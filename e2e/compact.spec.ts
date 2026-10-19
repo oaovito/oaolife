@@ -92,3 +92,24 @@ test('registro hormonal é um bloco com plano informado e administrações reais
  await page.getByRole('button',{name:'Concluir registro do dia',exact:true}).click();await page.getByRole('button',{name:'Hoje',exact:true}).first().click();await expect(page.locator('.home-page>.routine-grid')).not.toContainText('Registro hormonal');await page.getByText('Blocos concluídos (1) · Ver e corrigir',{exact:true}).click();await page.getByRole('button',{name:/REGISTRO Registro hormonal/}).click();await page.getByRole('button',{name:'Reabrir registro do dia',exact:true}).click();await page.getByRole('button',{name:'Desfazer registro',exact:true}).click();await expect(page.getByText('Nenhuma administração registrada.',{exact:true})).toBeVisible();expect((await savedData(page)).hormonalLogs).toEqual([]);
 });
 
+
+test('PWA instalada recupera altura omitida pelo WebKit e reposiciona menu após teclado',async({page})=>{
+ await page.setViewportSize({width:393,height:852});
+ await page.addInitScript(()=>{
+  Object.defineProperty(navigator,'standalone',{configurable:true,get:()=>true});Object.defineProperty(navigator,'userAgent',{configurable:true,get:()=> 'Mozilla/5.0 (iPhone)'});
+  Object.defineProperty(window,'innerHeight',{configurable:true,get:()=>793});Object.defineProperty(screen,'width',{configurable:true,get:()=>393});Object.defineProperty(screen,'height',{configurable:true,get:()=>852});
+  let visibleHeight=759;const viewport=window.visualViewport!;Object.defineProperty(viewport,'height',{configurable:true,get:()=>visibleHeight});
+  window.addEventListener('test-keyboard-open',()=>{visibleHeight=480;viewport.dispatchEvent(new Event('resize'));});window.addEventListener('test-keyboard-close',()=>{visibleHeight=759;viewport.dispatchEvent(new Event('resize'));});
+ });
+ await open(page);
+ await page.evaluate(()=>{document.documentElement.style.setProperty('--safe-area-top','59px');document.documentElement.style.setProperty('--safe-area-bottom','34px');window.dispatchEvent(new Event('pageshow'));});
+ const menuBottom=()=>page.locator('.sidebar').evaluate(el=>Math.round(el.getBoundingClientRect().bottom));
+ await expect.poll(menuBottom).toBe(852);await expect(page.locator('html')).toHaveAttribute('data-ios-installed','true');
+ const navBox=await page.getByRole('navigation').boundingBox();expect(Math.abs(852-(navBox!.y+navBox!.height)-40)).toBeLessThanOrEqual(1);
+ await nav(page,'Ajustes');await page.getByLabel('Altura (cm)',{exact:true}).focus();await page.evaluate(()=>window.dispatchEvent(new Event('test-keyboard-open')));
+ await expect.poll(menuBottom).toBe(480);await expect(page.locator('html')).toHaveAttribute('data-keyboard-open','true');
+ await page.evaluate(()=>window.dispatchEvent(new Event('test-keyboard-close')));await expect.poll(menuBottom).toBe(852);
+ await nav(page,'Hoje');await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));await expect.poll(menuBottom).toBe(852);
+ const last=await page.locator('.routine-card').last().boundingBox(),menu=await page.locator('.sidebar').boundingBox();expect(last!.y+last!.height).toBeLessThanOrEqual(menu!.y);
+ await page.evaluate(()=>window.scrollTo(0,500));expect(await page.evaluate(()=>scrollY)).toBe(0);
+});
