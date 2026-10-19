@@ -37,13 +37,25 @@ test('seis blocos em grade cabem acima da navegação no iPhone',async({page},in
  await open(page);const cards=page.locator('.home-page>.routine-grid>.routine-card');await expect(cards).toHaveCount(6);
  for(const [width,height] of [[320,568],[375,667],[393,852],[430,932]]){
   await page.setViewportSize({width,height});
+  const menu=await page.locator('.sidebar').boundingBox();expect(Math.abs(menu!.y+menu!.height-height)).toBeLessThanOrEqual(1);expect(menu!.height).toBeLessThanOrEqual(68);
   const boxes=await cards.evaluateAll(items=>items.map(item=>{const r=item.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};})),navBox=await page.getByRole('navigation').boundingBox();
   expect(boxes[0].y).toBe(boxes[1].y);expect(boxes[1].x).toBeGreaterThan(boxes[0].x);expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
   expect(Math.max(...boxes.map(b=>b.bottom))).toBeLessThanOrEqual(navBox!.y);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await page.evaluate(()=>window.scrollTo(0,500));expect(await page.evaluate(()=>scrollY)).toBe(0);
   expect(await cards.evaluateAll(items=>items.flatMap(item=>{const card=item.getBoundingClientRect();return [...item.querySelectorAll('h3,.status')].filter(el=>{const r=el.getBoundingClientRect();return r.bottom>card.bottom||r.right>card.right;}).map(el=>({text:el.textContent,card:card.toJSON(),element:el.getBoundingClientRect().toJSON()}));}))).toEqual([]);
  }
- await page.setViewportSize({width:393,height:852});await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
+ await page.setViewportSize({width:393,height:852});
+ await page.evaluate(()=>{document.documentElement.style.setProperty('--safe-area-top','59px');document.documentElement.style.setProperty('--safe-area-bottom','34px');});
+ const safeMenu=await page.locator('.sidebar').boundingBox(),safeNav=await page.getByRole('navigation').boundingBox(),lastCard=await cards.last().boundingBox();
+ expect(Math.abs(safeMenu!.y+safeMenu!.height-852)).toBeLessThanOrEqual(1);expect(safeMenu!.height).toBeLessThanOrEqual(102);expect(lastCard!.y+lastCard!.height).toBeLessThanOrEqual(safeMenu!.y);
+ expect(Math.abs(852-(safeNav!.y+safeNav!.height)-40)).toBeLessThanOrEqual(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+ await page.screenshot({path:info.outputPath('home-compact.png'),fullPage:true});
+ await nav(page,'Ajustes');await page.getByRole('button',{name:'Revisar exclusão',exact:true}).scrollIntoViewIfNeeded();
+ const scrolledMenu=await page.locator('.sidebar').boundingBox();expect(Math.abs(scrolledMenu!.y+scrolledMenu!.height-852)).toBeLessThanOrEqual(1);
+ expect(await page.locator('.main-shell').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+ await nav(page,'Hoje');expect(await page.locator('.main-shell').evaluate(el=>el.scrollTop)).toBe(0);
+ await page.evaluate(()=>{document.documentElement.style.removeProperty('--safe-area-top');document.documentElement.style.removeProperty('--safe-area-bottom');});
  for(const [width,columns] of [[820,2],[1280,3]]){
   await page.setViewportSize({width,height:1000});const firstRow=await cards.evaluateAll(items=>items.filter(item=>item.getBoundingClientRect().y===items[0].getBoundingClientRect().y).length);expect(firstRow).toBe(columns);
  }
