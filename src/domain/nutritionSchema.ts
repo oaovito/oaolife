@@ -1,0 +1,15 @@
+import { z } from 'zod';
+const amount=z.number().finite().nonnegative();
+export const nutrientsSchema=z.object({kcal:amount.nullable(),protein:amount.nullable(),carbs:amount.nullable(),fat:amount.nullable()});
+export type Nutrients=z.infer<typeof nutrientsSchema>;
+export const foodKeys=['milk','bread','yogurt','rice','chicken','beef','fish'] as const;
+export const proteinSchema=z.enum(['chicken','beef','fish']);
+export type Protein=z.infer<typeof proteinSchema>;
+export const referenceSchema=z.object({name:z.string().min(1).max(200),quantity:amount.positive(),unit:z.enum(['g','ml']),nutrients:nutrientsSchema,source:z.string().min(1).max(5000),note:z.string().max(5000),gramsPerUnit:amount.positive().nullable(),certainty:z.enum(['estimado','confirmado','desconhecido'])});
+export type NutritionReference=z.infer<typeof referenceSchema>;
+export const servingSchema=z.object({key:z.enum(foodKeys),label:z.string().min(1).max(500),quantity:amount.positive(),unit:z.enum(['g','ml']),reference:referenceSchema}).refine(f=>f.unit===f.reference.unit,'Unidade incompatível com a referência nutricional');
+export const mealSnapshotSchema=z.object({title:z.string().min(1).max(100),foods:z.array(servingSchema).min(1).max(10)});
+export type MealSnapshot=z.infer<typeof mealSnapshotSchema>;
+export const nutritionDaySchema=z.object({version:z.literal('five-meals-1'),protein:proteinSchema,plan:z.array(mealSnapshotSchema).length(5),consumed:z.array(z.object({at:z.string().datetime(),meal:mealSnapshotSchema}).nullable()).length(5)});
+export type NutritionDay=z.infer<typeof nutritionDaySchema>;
+export const legacyNutritionSchema=z.object({meals:z.array(z.array(z.boolean())).length(5),mealTimes:z.array(z.string().datetime().nullable()).length(5),declaration:z.object({at:z.string().datetime(),note:z.string()}).nullable()});

@@ -1,5 +1,20 @@
 # Verificação
 
+## Atualização 1.2.0 · 26/10/2026
+
+- `npm run check`: TypeScript e **129/129 testes Vitest** aprovados.
+- `npm run build`: aprovado; PWA gerada com recursos locais.
+- **54/54 testes Chromium** aprovados em perfis móvel e desktop, usando `/usr/bin/chromium` (154) com uma configuração de execução externa ao repositório. A configuração manteve os testes e servidor da suíte; só selecionou o Chromium instalado. Nenhuma afirmação de teste em iPhone físico ou WebKit.
+- `npm audit --omit=dev --audit-level=moderate`: zero vulnerabilidades de produção.
+- Não há script de lint no projeto; a checagem estática executada foi TypeScript.
+
+Os testes novos cobrem plano de cinco refeições, pares idênticos, fonte local confirmada, escala por porção, todas as alternativas de proteína, macros, desconhecido versus zero, excedente, consumo/desfazer idempotente, transações concorrentes, cópias históricas, banco v4→v5 real, backup v5, reabertura, offline, virada de dia, acessibilidade e larguras 320–430 px. Rótulos sintéticos aparecem apenas nos testes; seus valores não foram usados no produto.
+
+A vibração foi validada por chamada simulada à API (padrão `[200,80,250,80,350]`), preferência desativada, ausência/erro de suporte, animação e ausência de repetição ao reabrir. Isso não mede intensidade física. Movimento reduzido desativa partículas e animação. Safari/iPhone não oferece `navigator.vibrate`.
+
+O download dos navegadores oficiais do Playwright foi bloqueado por `403 Domain forbidden`. O domínio Gymondo, o site Itambé e a URL de produção também estavam bloqueados. Portanto, esta rodada não comprova reprodução visual do Gymondo, rótulo Itambé, WebKit, produção ou deploy.
+
+
 ## Retomada 1.1.0
 
 TypeScript/build aprovados; 96/96 testes Vitest e 47/47 Playwright locais (7 WebKit, 20 Chromium móvel, 20 desktop). Novos cenários: campos de horário 320–430 px e persistência; seis blocos acima da navegação; itens recolhidos/corrigíveis; treino sem detalhes e séries não realizadas; cardio com tempo/modalidade/velocidade; fechamento de dia sem inventar medidas; plano hormonal informado separado das administrações, conclusão e correção do bloco. Migração v2→v3 preserva histórico e impede gravação por validação v2. Backups v3 mantêm os novos campos; backups v2 são importáveis. Regressão cobre offline, atualização PWA com formulários pendentes, backup e troca de origem.

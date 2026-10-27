@@ -1,0 +1,107 @@
+{
+  "milk": {
+    "name": "Leite integral UHT",
+    "quantity": 240,
+    "unit": "ml",
+    "nutrients": {
+      "kcal": 156,
+      "protein": 5.63,
+      "carbs": 17.2,
+      "fat": 7.3
+    },
+    "source": "BRC0044G · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=qQZaSyea0xFzF6Wq279NzQ%3D%3D",
+    "note": "Porção volumétrica TBCA: copo de 240 ml; valores médios, não um rótulo específico. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "bread": {
+    "name": "Pão francês",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 300,
+      "protein": 9.83,
+      "carbs": 61.6,
+      "fat": 2.12
+    },
+    "source": "BRC0002A · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=VEl0cBnPOcyN476AEIhAIA%3D%3D",
+    "note": "Uma unidade de referência = 50 g. Duas unidades = 100 g. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": 50,
+    "certainty": "estimado"
+  },
+  "rice": {
+    "name": "Arroz branco cozido",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 138,
+      "protein": 2.41,
+      "carbs": 29.2,
+      "fat": 1.6
+    },
+    "source": "BRC0208A · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=qtqOHQ4EkR82Z0oZf8AKdA%3D%3D",
+    "note": "Referência: arroz polido com óleo de soja, cebola e alho, sem sal; peso pronto. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "chicken": {
+    "name": "Peito de frango",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 150,
+      "protein": 32.1,
+      "carbs": 0,
+      "fat": 2.45
+    },
+    "source": "BRC0114F · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=DP42TQ4ecxn47Ihwru2%2FQw%3D%3D",
+    "note": "Peito sem pele, grelhado, sem óleo e sem sal; peso pronto. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "beef": {
+    "name": "Carne bovina — patinho",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 211,
+      "protein": 36,
+      "carbs": 0,
+      "fat": 7.5
+    },
+    "source": "BRC0045F · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=2f2ojxSeOY1SSjWG5v%2FR3w%3D%3D",
+    "note": "Patinho sem gordura, grelhado, sem óleo e sem sal; peso pronto. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "fish": {
+    "name": "Peixe — tilápia",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 90,
+      "protein": 18.5,
+      "carbs": 0,
+      "fat": 1.73
+    },
+    "source": "BRC0486E · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=gVVgPpqONC1c0ccxdD1jJQ%3D%3D",
+    "note": "Filé de tilápia sem pele, grelhado, sem óleo e sem sal; peso pronto. Consulta: 26/10/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "yogurt": {
+    "name": "Iogurte Itambé Grego Flocos",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": null,
+      "protein": null,
+      "carbs": null,
+      "fat": null
+    },
+    "source": "Produto identificado no plano original; rótulo nutricional ainda não verificado.",
+    "note": "A TBCA consultada não contém este produto. Não substituir por iogurte grego natural: a composição é diferente. Cadastre o rótulo em Referências nutricionais.",
+    "gramsPerUnit": null,
+    "certainty": "desconhecido"
+  }
+}

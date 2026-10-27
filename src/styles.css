@@ -177,3 +177,31 @@ html:has(.home-layout),body:has(.home-layout){height:100%;overflow:hidden;oversc
  html[data-ios-installed=true],html[data-ios-installed=true] body,html[data-ios-installed=true] #root{height:var(--installed-viewport-height,100%);min-height:0}
  html[data-ios-installed=true][data-keyboard-open=true]{--safe-area-bottom:0px}
 }
+
+/* Nutrition cards and completion feedback keep the installed-app viewport rules. */
+.meal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}
+.meal-grid .panel{margin:0;min-width:0}
+.meal-card{border-radius:22px;padding:24px;transition:border-color .2s,background .2s}
+.meal-card.meal-consumed{border-color:var(--accent)}
+.meal-title{display:flex;align-items:center;gap:12px}
+.meal-title h2{font-size:18px}.meal-number{display:grid;place-items:center;border-radius:50%;width:38px;height:38px;background:var(--surface2);color:var(--accent);font-weight:750}
+.meal-foods{list-style:none;padding:0;margin:20px 0;line-height:1.8;font-size:14px}.meal-foods li{margin:3px 0}
+.meal-energy{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:14px 0}.meal-energy strong{font-size:28px;letter-spacing:-1px}.meal-energy span{font-size:11px;color:var(--muted)}
+.meal-macros{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0;padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.meal-macros dt{font-size:11px;color:var(--muted)}.meal-macros dd{font-size:14px;margin:6px 0 0;font-weight:650}
+.meal-action{display:flex;flex-direction:column;gap:12px;margin-top:18px}.meal-action>span{font-size:12px;color:var(--muted)}.meal-action button{width:100%;justify-content:center;min-height:48px}
+.meal-details{margin-top:16px}.meal-details summary{font-size:12px}.meal-details p{font-size:12px;margin:12px 0;overflow-wrap:anywhere}
+.protein-picker{border:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}.protein-picker legend{font-size:11px;margin-bottom:8px;color:var(--muted)}
+.protein-picker label{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:44px;border:1px solid var(--border);border-radius:999px;font-size:12px;padding:8px}.protein-picker label.selected{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.protein-picker input{width:15px;height:15px;min-height:15px;accent-color:var(--accent-ink)}.protein-picker p{width:100%;font-size:11px}
+.nutrition-summary{border-radius:24px;background:linear-gradient(125deg,var(--surface2),var(--surface));padding:26px}.nutrition-summary .progress{height:10px;margin:20px 0 10px}.nutrition-summary details{margin-top:16px}.nutrition-summary summary{font-size:12px}
+.calorie-numbers{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;margin:18px 0}.calorie-numbers span{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}.calorie-numbers strong{font-size:clamp(18px,2.6vw,30px);letter-spacing:-.8px}.calorie-numbers>div:first-child strong{color:var(--accent)}
+.nutrition-pending{padding:14px;background:var(--bg);border-radius:12px;margin:14px 0;font-size:12px}
+.completion-feedback{position:fixed;z-index:100;top:max(90px,calc(env(safe-area-inset-top) + 72px));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);display:flex;align-items:center;gap:18px;background:var(--surface);color:var(--text);border:1px solid var(--accent);border-radius:24px;padding:22px 28px;box-shadow:0 12px 60px #0004;pointer-events:none;animation:completion-enter .4s cubic-bezier(.2,1.5,.5,1)}
+.completion-feedback strong{font-size:19px;display:block}.completion-feedback p{font-size:12px;margin-top:4px}.completion-feedback>div>svg{color:var(--accent);margin-bottom:4px}
+.completion-burst{position:relative;width:64px;height:64px;flex-shrink:0}.completion-burst>span{position:absolute;inset:0;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);border-radius:50%;animation:completion-check .6s cubic-bezier(.2,1.5,.5,1)}
+.completion-burst i{position:absolute;left:28px;top:28px;width:7px;height:10px;border-radius:2px;background:var(--accent);animation:completion-particle 1s ease-out both;--angle:calc(var(--particle)*25.7deg)}.completion-burst i:nth-child(3n){background:var(--orange)}.completion-burst i:nth-child(3n + 1){background:var(--blue)}
+@keyframes completion-enter{from{opacity:0;transform:translate(-50%,-16px) scale(.92)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes completion-check{from{transform:scale(.3) rotate(-25deg)}to{transform:scale(1) rotate(0)}}
+@keyframes completion-particle{0%{opacity:0;transform:rotate(var(--angle)) translateY(5px)}20%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(-80px) rotate(90deg)}}
+@media(max-width:760px){.meal-grid{grid-template-columns:minmax(0,1fr);gap:12px}.meal-card,.nutrition-summary{padding:18px}.calorie-numbers{gap:10px;grid-template-columns:1fr 1fr}.calorie-numbers>div:first-child{grid-column:1/-1}.calorie-numbers>div:first-child strong{font-size:34px}.meal-macros dd{font-size:13px}.meal-title h2{font-size:17px}.completion-feedback{padding:18px;gap:12px}.completion-feedback strong{font-size:16px}.completion-burst{width:50px;height:50px}}
+@media(prefers-reduced-motion:reduce){.completion-feedback,.completion-burst>span{animation:none}.completion-burst i{display:none}.meal-card,.progress span{transition:none}}

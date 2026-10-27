@@ -42,7 +42,7 @@ describe('migração protege dados de abas antigas',()=>{
   await old.table('state').add({id:'main',revision:8,data:original});old.close();
   const current=new OaoDatabase(name);try{
    await initialize(current);const migrated=(await current.state.get('main'))!;
-   expect(migrated.revision).toBe(8);expect(migrated.data.schemaVersion).toBe(4);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
+   expect(migrated.revision).toBe(8);expect(migrated.data.schemaVersion).toBe(5);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
    await mutate('Novo cardio','',d=>{const newDay=makeDay(d,'2026-10-19');newDay.cardio.speed=5;d.days.push(newDay);},current);
    await old.open();
    // The v2 app validates its full snapshot, including literal schemaVersion:2, before writing.

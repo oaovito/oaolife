@@ -1,3 +1,4 @@
+import { mealsForDay, nutritionTotals } from './nutrition';
 import type { AppData, Muscle } from './model';
 import { addDays, cycleForDate, makeWorkout } from './training';
 import { timerSeconds, weeklyWeight } from './daily';
@@ -15,8 +16,8 @@ export function dayReport(data:AppData,date:string) {
   waterMl:day?.recorded.includes('water')?day.water.reduce((a,v)=>a+v,0):null,
   cardioMinutes:day?.recorded.includes('cardio')?timerSeconds(day.cardio)/60:null,
   cardioSpeed:day?.cardio.speed??null,
-  foods:MEALS.flatMap((m,i)=>m.foods.filter((_,j)=>day?.meals[i][j]).map(f=>`${m.title}: ${f}`)),
-  caloriesConsumed:null,caloriesBurned:null,
+  foods:(day?mealsForDay(day):MEALS).flatMap((m,i)=>m.foods.filter((_,j)=>day?.meals[i][j]).map(f=>`${m.title}: ${f}`)),
+  caloriesConsumed:day?.nutrition?.consumed.some(Boolean)?nutritionTotals(day)?.consumed.kcal??null:null,caloriesBurned:null,
  };
 }
 export const METRICS={weight:'Peso (kg)',average:'Média de peso em 7 dias (kg)',waist:'Cintura (cm)',load:'Carga máxima (kg, modalidade original)',reps:'Repetições executadas',volume:'Séries diretas executadas por músculo',planned:'Séries previstas',executed:'Séries executadas',rir:'RIR médio',frequency:'Frequência de treino',cardio:'Cardio realizado (min)',mobility:'Hipercifose (séries)',meals:'Alimentação (refeições)',water:'Água (ml)',sleep:'Sono (h)',recovery:'Fadiga (0–10)'} as const;

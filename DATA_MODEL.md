@@ -24,3 +24,7 @@ Planejado e executado são distintos: referências e sugestões não preenchem a
 
 Backup contém o agregado, auditoria e outbox. Auditoria guarda antes/depois das alterações por caminho; imagens são representadas por metadados de tamanho para não duplicar seu conteúdo em cada evento. Zod e verificações relacionais rejeitam datas inválidas, ciclos sobrepostos, duplicações, referências órfãs e treinos completos com séries ausentes. Restauração troca o conjunto inteiro após revisão; não faz merge silencioso. A revisão local após importar é superior às revisões atuais e importadas.
 
+
+## Migração alimentar v5
+
+`DailyLog.nutrition` guarda plano, proteína escolhida e uma cópia dos alimentos/referências de cada refeição consumida. Cada posição de consumo é única; marcar é idempotente e desfazer remove a posição. `previousNutrition` arquiva o checklist, horários e declaração do plano anterior quando o dia corrente é ativado no novo plano. Dias anteriores sem `nutrition` continuam usando `LEGACY_MEALS`, sem inferir nutrientes. `nutritionOverrides` permite ajustar referências sem alterar consumos históricos. A validação de integridade compara plano, checklist e horários de consumo. O backup v5 preserva esses campos e continua importando v2–v4.

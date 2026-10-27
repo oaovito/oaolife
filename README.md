@@ -2,7 +2,7 @@
 
 Aplicação pessoal em português para acompanhar treino, alimentação, hidratação, cardio e protocolo habitual de hipercifose. React, TypeScript, Vite e IndexedDB; dados locais, sem conta ou backend remoto.
 
-**Acesse: https://oaolife.vercel.app** · versão 1.1.0
+**Acesse: https://oaolife.vercel.app** · versão 1.2.0
 
 Repositório oficial e único: https://github.com/oaovito/oaolife
 
@@ -42,3 +42,9 @@ Em Hoje → Resumo e fechamento do dia, “Concluir dia sem detalhar” confirma
 
 Em Hoje → Registro hormonal, o plano informado já está disponível, sem importação. O bloco pode ser concluído, recolhido e reaberto para correção. As administrações reais são registradas separadamente; nada é marcado como tomado automaticamente. Usa o mesmo armazenamento e backup dos demais blocos. Consulte [HORMONAL.md](HORMONAL.md).
 
+
+## Plano alimentar 1.2.0
+
+Cinco refeições: leite integral e dois pães franceses nas refeições 1 e 3; 200 g de Itambé Grego Flocos nas refeições 2 e 4; 200 g de arroz cozido e 200 g de frango, patinho ou tilápia na refeição 5. A alimentação exibe metas e consumo por dia, permite desfazer sem duplicação e preserva as referências nutricionais de cada refeição consumida. Veja [NUTRITION.md](NUTRITION.md) para fontes, subtotais e a pendência do rótulo do iogurte.
+
+A conclusão de blocos tem animação, respeita movimento reduzido e solicita um padrão de vibração nos navegadores compatíveis. A vibração pode ser desativada em Ajustes. Safari no iPhone não disponibiliza a API de vibração; não se promete resposta háptica nesse dispositivo. O visual 1:1 do Gymondo permanece pendente de acesso à referência.

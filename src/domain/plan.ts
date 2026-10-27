@@ -39,12 +39,19 @@ export const WEEKS:TrainingWeek[] = [
  [0.85,2,3,'Retomada'],[1,1,2,'Sobrecarga'],[1,1,2,'Consolidação'],[0.55,4,5,'Recuperação'],
  [0.9,2,3,'Bloco final'],[1,1,2,'Progressão'],[1,1,2,'Consolidação final'],[0.75,2,3,'Avaliação']
 ].map((r,i)=>({week:i+1,volume:r[0] as number,rir:[r[1],r[2]] as [number,number],goal:r[3] as string}));
-export const MEALS:Meal[]=[
+export const LEGACY_MEALS:Meal[]=[
  {id:'m1',title:'Refeição 1',foods:['500 ml de leite integral','2 fatias de pão de forma']},
  {id:'m2',title:'Refeição 2',foods:['300 g de molho vermelho com carne moída','150 g de arroz branco cozido']},
  {id:'m3',title:'Refeição 3',foods:['500 ml de leite integral']},
  {id:'m4',title:'Refeição 4',foods:['200 g de iogurte Itambé Grego Flocos']},
  {id:'m5',title:'Refeição 5',foods:['300 g de peito de frango desfiado','150 g de macarrão cozido']}
+];
+export const MEALS:Meal[]=[
+ {id:'m1',title:'Refeição 1',foods:['500 ml de leite integral','2 pães franceses']},
+ {id:'m2',title:'Refeição 2',foods:['200 g de iogurte Itambé Grego Flocos']},
+ {id:'m3',title:'Refeição 3',foods:['500 ml de leite integral','2 pães franceses']},
+ {id:'m4',title:'Refeição 4',foods:['200 g de iogurte Itambé Grego Flocos']},
+ {id:'m5',title:'Refeição 5',foods:['200 g de arroz branco cozido','200 g de peito de frango']}
 ];
 export const WATER_LABELS=['Água 1','Água 2','Água 3','Água 4','Água 5','Água 6'];
 export const CARDIO_DAYS=['A1','B1','C1','A2','B2','C2'];

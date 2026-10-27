@@ -10,19 +10,7 @@ import { applyCardioPlan, cardioTarget, weeklyCardio } from '../domain/cardio';
 import { currentMobilityProtocol } from '../domain/mobility';
 import { MobilityTimer } from './MobilityTimer';
 function useTick(active:boolean){const [clock,setClock]=useState(Date.now());useEffect(()=>{setClock(Date.now());if(!active)return;const t=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(t);},[active]);return clock;}
-export function Meals({data,date,run,go}:PageProps) {
- const day=data.days.find(d=>d.id===date)??makeDay(data,date),next=nextMeal(day);
- const renderMeal=(i:number)=>{const m=MEALS[i],finished=day.meals[i].every(Boolean);return <Panel key={m.id} className={next===i?'highlight':''}>
-  <div className="section-heading"><h2>{m.title}</h2><span>{data.settings.mealTimes[i]||'Sem horário fixado'}</span></div>
-  {m.foods.map((f,j)=>!day.meals[i][j]?<CheckButton key={f} done={false} onClick={()=>run(()=>editDay(date,'Registrar alimento',d=>toggleFood(d,i,j)))}>{f}</CheckButton>:null)}
-  <CompletedItems count={day.meals[i].filter(Boolean).length} label="Alimentos registrados">{m.foods.map((f,j)=>day.meals[i][j]?<CheckButton key={f} done onClick={()=>run(()=>editDay(date,'Corrigir alimento',d=>toggleFood(d,i,j)))}>{f}</CheckButton>:null)}</CompletedItems>
-  <div className="section-heading"><span className="muted">{day.mealTimes[i]?`Concluída às ${new Date(day.mealTimes[i]!).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`:day.meals[i].some(Boolean)?'Parcialmente realizada':'Pendente'}</span><button className={finished?"secondary":"primary completion-button"} onClick={()=>run(()=>editDay(date,'Registrar refeição',d=>completeMeal(d,i)),finished?'Refeição reaberta.':'Refeição registrada.')}>{finished?<RotateCcw size={20} aria-hidden="true"/>:<Check size={20} aria-hidden="true"/>}{finished?'Desmarcar refeição':'Concluir refeição'}</button></div>
- </Panel>;};
- return <><PageTitle eyebrow="ALIMENTAÇÃO" title={next===null?'Alimentação concluída':`Próxima: refeição ${next+1}`} back={()=>go('home')}><p>Marque o que consumiu. Os itens feitos ficam recolhidos.</p></PageTitle>
- <div className="stack">{MEALS.map((_,i)=>!day.meals[i].every(Boolean)?renderMeal(i):null)}</div>
- <CompletedItems count={day.meals.filter(m=>m.every(Boolean)).length} label="Refeições concluídas">{MEALS.map((_,i)=>day.meals[i].every(Boolean)?renderMeal(i):null)}</CompletedItems>
- <Panel><details><summary>Precisão nutricional</summary><p>Estimativa inicial provisória do plano completo: 2.250–2.450 kcal, 170–185 g de proteína e 215–230 g de carboidratos. Não representa consumo medido nem é aplicada a dias parciais.</p><p>Arroz, macarrão e frango são pesados após o cozimento. Cadastre a composição real do molho e os rótulos. Calorias consumidas permanecem desconhecidas enquanto os alimentos não tiverem composição e vínculo com as porções.</p><button className="text-button" onClick={()=>go('settings')}>Cadastrar alimentos e receitas →</button></details></Panel></>;
-}
+export { Meals } from './Meals';
 export function Water({data,date,run,go}:PageProps) {
  const day=data.days.find(d=>d.id===date)??makeDay(data,date),consumed=day.water.reduce((a,v)=>a+v,0),target=day.waterTargets.reduce((a,v)=>a+v,0),done=day.water.filter((v,i)=>v>=day.waterTargets[i]).length;
  const renderBottle=(i:number)=><Panel key={i} className={day.water[i]>=day.waterTargets[i]?'bottle-complete':''}>

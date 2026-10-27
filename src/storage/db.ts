@@ -1,9 +1,10 @@
+import { activateNutrition, mealsForDay } from '../domain/nutrition';
 import Dexie, { type Table } from 'dexie';
 import { appDataSchema, type AppData, type SyncOperation } from '../domain/model';
 import { emptyData, makeDay, workoutComplete, summaries, pauseCardio, timedCompletionRequired } from '../domain/daily';
 import { makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
-import { MEALS } from '../domain/plan';
+import { LEGACY_MEALS } from '../domain/plan';
 import { cardioGoalReached } from '../domain/cardio';
 import { pauseSequence, sequenceNeedsSync, syncSequence } from '../domain/mobility';
 import { finishCardio } from '../domain/daily';
@@ -18,7 +19,7 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
 }
 export class OaoDatabase extends Dexie {
  state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
@@ -27,12 +28,22 @@ export function assertIntegrity(data:AppData) {
  for(let i=1;i<cycles.length;i++)if(daysBetween(cycles[i-1].start,cycles[i].start)<84)throw Error('Ciclos sobrepostos não são permitidos.');
  const cycleIds=new Set(data.cycles.map(c=>c.id));
  const dates=new Set<string>();for(const s of data.sessions){if(!cycleIds.has(s.cycleId))throw Error('Sessão sem ciclo válido.');const k=s.cycleId+':'+s.date;if(dates.has(k))throw Error('Sessão duplicada.');dates.add(k);if(cycleForDate(data,s.date)?.id!==s.cycleId)throw Error('Data da sessão fora do ciclo.');if(s.status==='complete'&&!workoutComplete(s))throw Error('Treino completo com séries pendentes.');if(new Set(s.exercises.map(e=>e.id)).size!==s.exercises.length)throw Error('Exercício duplicado na sessão.');for(const e of s.exercises){if(new Set(e.sets.map(v=>v.id)).size!==e.sets.length)throw Error('Série duplicada.');for(const v of e.sets){if(v.done&&v.skipped)throw Error('Série não pode ser feita e não realizada ao mesmo tempo.');if(v.done&&v.reps===0)throw Error('Repetições devem ser positivas ou não informadas.');}}}
- for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==MEALS[i].foods.length))throw Error('Quantidade de alimentos incompatível com o plano.');}
+ for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==mealsForDay(d)[i].foods.length))throw Error('Quantidade de alimentos incompatível com o plano.');
+  if(d.previousNutrition?.meals.some((m,i)=>m.length!==LEGACY_MEALS[i].foods.length))throw Error('Histórico alimentar incompatível com o plano original.');
+  if(d.nutrition){
+   const keys=[['milk','bread'],['yogurt'],['milk','bread'],['yogurt'],['rice',d.nutrition.protein]];
+   for(let i=0;i<5;i++){
+    const plan=d.nutrition.plan[i],record=d.nutrition.consumed[i];
+    if(JSON.stringify(plan.foods.map(f=>f.key))!==JSON.stringify(keys[i]))throw Error('Composição do plano alimentar inválida.');
+    if(!!record!==d.meals[i].every(Boolean)||record&&record.at!==d.mealTimes[i])throw Error('Consumo alimentar inconsistente.');
+   }
+  }
+}
  for(const d of data.decisions)if(!data.sessions.some(s=>s.id===d.sessionId&&s.cycleId===d.cycleId&&s.exercises.some(e=>e.id===d.exerciseId)))throw Error('Progressão sem exposição válida.');
  for(const r of data.recipes)for(const i of r.ingredients)if(!data.foods.some(f=>f.id===i.foodId))throw Error('Receita referencia alimento ausente.');
 }
 export async function initialize(database=db) {
- await database.transaction('rw',database.state,async()=>{const saved=await database.state.get('main');if(!saved){await database.state.add({id:'main',revision:0,data:emptyData()});return;}const parsed=appDataSchema.parse(saved.data);assertIntegrity(parsed);if(JSON.stringify(parsed)!==JSON.stringify(saved.data))await database.state.put({...saved,data:parsed});});
+ await database.transaction('rw',database.state,async()=>{const saved=await database.state.get('main');if(!saved){await database.state.add({id:'main',revision:0,data:emptyData()});return;}const parsed=appDataSchema.parse(saved.data);activateNutrition(parsed,today());assertIntegrity(parsed);if(JSON.stringify(parsed)!==JSON.stringify(saved.data))await database.state.put({...saved,data:parsed});});
 }
 export async function mutate(kind:string,detail:string,fn:(data:AppData)=>void,database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
