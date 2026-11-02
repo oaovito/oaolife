@@ -1,5 +1,16 @@
 # Verificação
 
+## Atualização 1.3.0 · 02/11/2026
+
+- `npm run check`: TypeScript e 136/136 testes Vitest aprovados.
+- `npm run build`: aprovado, incluindo Service Worker e recursos offline.
+- 58/58 testes Playwright aprovados em Chromium, perfis móvel e desktop, com `/workspace/onboarding/playwright.config.ts` e Chromium do sistema.
+- Auditoria de produção: zero vulnerabilidades. Não há script de lint; checagem estática pelo TypeScript.
+- Revisão visual real em Chromium: alimentação, início, cardio, hidratação, treino e mobilidade, móvel e desktop.
+- Cobertura nova: plano definitivo, proteínas independentes, Nescau/Toddy, referência da colher, frutas imediatas e meta opcional, excesso, ocultação e desfazer, histórico, migração Dexie v5→v6, backups, renovação local do dia, offline, contraste nos dois temas, 320–430 px, texto ampliado e movimento reduzido.
+- WebKit local indisponível: download retornou HTTP 403 Domain forbidden. Nenhum teste em iPhone físico afirmado. Vibração validada pela API simulada; Safari/iPhone não oferece navigator.vibrate.
+
+
 ## Atualização 1.2.0 · 26/10/2026
 
 - `npm run check`: TypeScript e **129/129 testes Vitest** aprovados.

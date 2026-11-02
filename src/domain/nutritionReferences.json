@@ -90,18 +90,93 @@
     "certainty": "estimado"
   },
   "yogurt": {
-    "name": "Iogurte Itambé Grego Flocos",
+    "name": "Iogurte grego natural integral",
     "quantity": 100,
     "unit": "g",
     "nutrients": {
-      "kcal": null,
-      "protein": null,
-      "carbs": null,
+      "kcal": 97,
+      "protein": 9,
+      "carbs": 3.98,
+      "fat": 5
+    },
+    "source": "BRC0133G · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=lnhzuBhD0Ql36Uz5f0oxvA%3D%3D",
+    "note": "Referência genérica natural integral (dado importado TBCA). Não representa Itambé Grego Flocos. Rótulos confirmados cadastrados têm prioridade. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "nescau": {
+    "name": "Nescau",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 390,
+      "protein": 5,
+      "carbs": 88.2,
+      "fat": 3
+    },
+    "source": "BRC0002K · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=wKViCJswMoz3pdY4KOh7vA%3D%3D",
+    "note": "TBCA: colher de sopa cheia = 15 g; rasa = 10 g. Ajuste o peso medido ou o rótulo da sua embalagem. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": 15,
+    "certainty": "estimado"
+  },
+  "toddy": {
+    "name": "Toddy",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 398,
+      "protein": 3,
+      "carbs": 93.3,
+      "fat": 1.92
+    },
+    "source": "BRC0003K · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=ArSJGKSWXIUgNZvcg3PgUQ%3D%3D",
+    "note": "TBCA: colher de sopa cheia = 15 g; rasa = 10 g. Ajuste o peso medido ou o rótulo da sua embalagem. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": 15,
+    "certainty": "estimado"
+  },
+  "banana": {
+    "name": "Banana-prata",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 107,
+      "protein": 1.11,
+      "carbs": 25.9,
+      "fat": 0.28
+    },
+    "source": "BRC0011C · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=2TForHUFkQoNZIv4AIRJVA%3D%3D",
+    "note": "Parte comestível in natura. Unidade média da TBCA = 40 g; prefira pesar a porção real. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": 40,
+    "certainty": "estimado"
+  },
+  "apple": {
+    "name": "Maçã Fuji com casca",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 59,
+      "protein": 0.29,
+      "carbs": 15.2,
       "fat": null
     },
-    "source": "Produto identificado no plano original; rótulo nutricional ainda não verificado.",
-    "note": "A TBCA consultada não contém este produto. Não substituir por iogurte grego natural: a composição é diferente. Cadastre o rótulo em Referências nutricionais.",
-    "gramsPerUnit": null,
-    "certainty": "desconhecido"
+    "source": "BRC0064C · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=B1IDbz%2BLORA1EFIyv2PCoA%3D%3D",
+    "note": "Parte comestível in natura. Unidade média = 130 g. Gordura descrita como traços pela fonte: quantidade não quantificada, não substituída por zero. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": 130,
+    "certainty": "estimado"
+  },
+  "orange": {
+    "name": "Laranja-pera",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 37,
+      "protein": 0.87,
+      "carbs": 8.63,
+      "fat": 0.21
+    },
+    "source": "BRC0020C · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=XYjI%2FfkZDOQ%2FtRn1x1N8tQ%3D%3D",
+    "note": "Parte comestível in natura. Unidade média da TBCA = 140 g; prefira pesar a porção real. Consulta: 01/11/2026. Carboidratos totais.",
+    "gramsPerUnit": 140,
+    "certainty": "estimado"
   }
 }

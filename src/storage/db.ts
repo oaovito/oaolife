@@ -19,7 +19,7 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
 }
 export class OaoDatabase extends Dexie {
  state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(6).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
@@ -28,10 +28,18 @@ export function assertIntegrity(data:AppData) {
  for(let i=1;i<cycles.length;i++)if(daysBetween(cycles[i-1].start,cycles[i].start)<84)throw Error('Ciclos sobrepostos não são permitidos.');
  const cycleIds=new Set(data.cycles.map(c=>c.id));
  const dates=new Set<string>();for(const s of data.sessions){if(!cycleIds.has(s.cycleId))throw Error('Sessão sem ciclo válido.');const k=s.cycleId+':'+s.date;if(dates.has(k))throw Error('Sessão duplicada.');dates.add(k);if(cycleForDate(data,s.date)?.id!==s.cycleId)throw Error('Data da sessão fora do ciclo.');if(s.status==='complete'&&!workoutComplete(s))throw Error('Treino completo com séries pendentes.');if(new Set(s.exercises.map(e=>e.id)).size!==s.exercises.length)throw Error('Exercício duplicado na sessão.');for(const e of s.exercises){if(new Set(e.sets.map(v=>v.id)).size!==e.sets.length)throw Error('Série duplicada.');for(const v of e.sets){if(v.done&&v.skipped)throw Error('Série não pode ser feita e não realizada ao mesmo tempo.');if(v.done&&v.reps===0)throw Error('Repetições devem ser positivas ou não informadas.');}}}
- for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==mealsForDay(d)[i].foods.length))throw Error('Quantidade de alimentos incompatível com o plano.');
+ for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==(d.nutrition?.version==='five-meals-2'&&i===3?1:mealsForDay(d)[i].foods.length)))throw Error('Quantidade de alimentos incompatível com o plano.');
   if(d.previousNutrition?.meals.some((m,i)=>m.length!==LEGACY_MEALS[i].foods.length))throw Error('Histórico alimentar incompatível com o plano original.');
   if(d.nutrition){
-   const keys=[['milk','bread'],['yogurt'],['milk','bread'],['yogurt'],['rice',d.nutrition.protein]];
+   const n=d.nutrition;const keys=n.version==='five-meals-1'?[['milk','bread'],['yogurt'],['milk','bread'],['yogurt'],['rice',n.protein]]:[['yogurt','bread'],[n.lunchProtein,'rice'],['milk',n.chocolate],n.plan[3].foods.map(f=>f.key),[n.protein,'rice']];
+   if(n.version==='five-meals-2'&&new Set(n.fruitEntries.map(f=>f.id)).size!==n.fruitEntries.length)throw Error('Fruta duplicada.');
+   if(n.version==='five-meals-2'){
+    const isFruit=(key:string)=>['banana','apple','orange'].includes(key);
+    if(n.fruitEntries.some(f=>!isFruit(f.serving.key))||n.plan[3].foods.some(f=>!isFruit(f.key)))throw Error('Selecione uma fruta válida.');
+    if(JSON.stringify(n.plan[3].foods)!==JSON.stringify(n.fruitPlan??[]))throw Error('Planejamento de frutas inconsistente.');
+    if(n.consumed[3]&&(!n.fruitEntries.length||n.fruitEntries.some(f=>!f.counted)||JSON.stringify(n.consumed[3].meal.foods)!==JSON.stringify(n.fruitEntries.map(f=>f.serving))))throw Error('Consumo de frutas inconsistente.');
+   }
+
    for(let i=0;i<5;i++){
     const plan=d.nutrition.plan[i],record=d.nutrition.consumed[i];
     if(JSON.stringify(plan.foods.map(f=>f.key))!==JSON.stringify(keys[i]))throw Error('Composição do plano alimentar inválida.');

@@ -1,3 +1,11 @@
+# Atualização 1.3.0 — schema 6
+
+IndexedDB 6 e backup `oaolife-backup-6`; importa backups 2–5. Nutrição é uma união versionada: `five-meals-1` histórico e `five-meals-2` atual. O novo plano guarda `lunchProtein` e `protein` independentes, `chocolate`, `chocolateGrams`, `fruitPlan` opcional e `fruitEntries` com ID, instante, porção e estado contado. Conclusão de fruta cria snapshot sem duplicar suas calorias. Desfazer mantém entradas como rascunhos não contados.
+
+`archivedNutrition` preserva integralmente os planos anteriores do dia de atualização, seus checklists, horários e declarações. `previousNutrition` continua preservando o plano original sem nutrientes. Dias passados não são convertidos no plano novo. A ativação ocorre apenas no dia corrente. Refeições completas arquivadas continuam nos totais do próprio dia. Referências de consumo e frutas registradas são snapshots, não valores recalculados a partir de tabelas novas. Validações cobrem exclusividade das proteínas, frutas, IDs e correspondência entre conclusão e horários.
+
+O design não altera metas de outros blocos, auditoria, outbox ou arquitetura. As seções abaixo documentam as versões anteriores.
+
 # Atualização v4
 
 Migração de v2/v3 preserva snapshots históricos, revisão, auditoria e fila. `cardio.planVersion` diferencia o plano semanal dos registros anteriores. `mobility.sequences` persiste tempo acumulado, timestamp e conclusão por exercício. Novos backups são v4; formatos v2/v3 continuam aceitos. Abas antigas não podem validar snapshots v4 para sobrescrevê-los.

@@ -1,4 +1,4 @@
-import { nutritionDaySchema, legacyNutritionSchema, referenceSchema, foodKeys } from './nutritionSchema';
+import { nutritionDaySchema, archivedNutritionSchema, legacyNutritionSchema, referenceSchema, foodKeys } from './nutritionSchema';
 import { z } from 'zod';
 export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s => { const d = new Date(s+'T12:00:00Z'); return !Number.isNaN(+d) && d.toISOString().slice(0,10) === s; }, 'Data inválida');
 const id = z.string().min(1).max(160);
@@ -36,7 +36,7 @@ export type RecoveryLog = z.infer<typeof recoverySchema>;
 export const blockKeys = ['workout','meals','water','cardio','mobility','hormonal'] as const;
 export type BlockKey = typeof blockKeys[number];
 const declarationSchema = z.object({ at: timestamp, note: text });
-export const dailySchema = z.object({ nutrition:nutritionDaySchema.nullable().default(null), previousNutrition:legacyNutritionSchema.nullable().default(null), declarations: z.partialRecord(z.enum(blockKeys), declarationSchema).default({}), id: dateSchema, cycleId: id.nullable(), timezone: text, createdAt: timestamp, recorded:z.array(z.enum(['meals','water','cardio','mobility','recovery'])).default([]), meals: z.array(z.array(z.boolean()).min(1).max(10)).length(5), mealTimes: z.array(timestamp.nullable()).length(5), water: z.array(num.max(5000)).length(6), waterTargets: z.array(num.min(1).max(5000)).length(6), cardio: cardioSchema, mobility: mobilitySessionSchema, recovery: recoverySchema });
+export const dailySchema = z.object({ archivedNutrition:z.array(archivedNutritionSchema).default([]), nutrition:nutritionDaySchema.nullable().default(null), previousNutrition:legacyNutritionSchema.nullable().default(null), declarations: z.partialRecord(z.enum(blockKeys), declarationSchema).default({}), id: dateSchema, cycleId: id.nullable(), timezone: text, createdAt: timestamp, recorded:z.array(z.enum(['meals','water','cardio','mobility','recovery'])).default([]), meals: z.array(z.array(z.boolean()).min(1).max(10)).length(5), mealTimes: z.array(timestamp.nullable()).length(5), water: z.array(num.max(5000)).length(6), waterTargets: z.array(num.min(1).max(5000)).length(6), cardio: cardioSchema, mobility: mobilitySessionSchema, recovery: recoverySchema });
 export type DailyLog = z.infer<typeof dailySchema>;
 export const measurementSchema = z.object({ id, date:dateSchema, weight:num.min(20).max(400).nullable(), waist:num.min(20).max(300).nullable(), systolic:num.min(40).max(300).nullable(), diastolic:num.min(20).max(200).nullable(), restingHR:num.min(20).max(250).nullable(), body:text, notes:text });
 export type BodyMeasurement = z.infer<typeof measurementSchema>;
@@ -58,10 +58,10 @@ export const hormonalProtocolSchema=z.object({
 export type HormonalProtocol=z.infer<typeof hormonalProtocolSchema>;
 const hormonalLogSchema=z.object({id,date:dateSchema,week:z.number().int().min(1).max(52),entryId:id,substance:text,doseMg:num.min(0.01).max(10000),notes:text,at:timestamp});
 export const hormonalImportSchema=z.object({format:z.literal('oaolife-hormonal-1'),protocol:hormonalProtocolSchema});
-const currentAppDataSchema = z.object({ schemaVersion:z.literal(5), nutritionOverrides:z.partialRecord(z.enum(foodKeys),referenceSchema).default({}), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
+const currentAppDataSchema = z.object({ schemaVersion:z.literal(6), nutritionOverrides:z.partialRecord(z.enum(foodKeys),referenceSchema).default({}), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
 // Older snapshots retain measurements, targets and protocols; timer state is additive.
 export const appDataSchema = z.preprocess(value => {
- if(value && typeof value === 'object' && 'schemaVersion' in value && (value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4)) return {...value, schemaVersion:5};
+ if(value && typeof value === 'object' && 'schemaVersion' in value && (value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4 || value.schemaVersion === 5)) return {...value, schemaVersion:6};
  return value;
 }, currentAppDataSchema);
 export type AppData = z.infer<typeof appDataSchema>;

@@ -6,7 +6,7 @@ import { now, uid, today } from '../domain/training';
 const toBase64=(arr:Uint8Array)=>{let s='';for(let i=0;i<arr.length;i+=8192)s+=String.fromCharCode(...arr.subarray(i,i+8192));return btoa(s);};
 const fromBase64=(s:string)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const envelope=z.object({format:z.literal('oaolife-encrypted-1'),iterations:z.literal(310000),salt:z.string().max(64),iv:z.string().max(32),ciphertext:z.string().max(70000000)});
-const payload=z.object({format:z.enum(['oaolife-backup-2','oaolife-backup-3','oaolife-backup-4','oaolife-backup-5']),exportedAt:z.string().datetime(),data:appDataSchema,audit:z.array(z.object({id:z.string(),at:z.string().datetime(),revision:z.number().int().nonnegative(),kind:z.string(),detail:z.string(),changes:z.array(z.object({path:z.string(),before:z.unknown(),after:z.unknown()})).optional()})),outbox:z.array(z.object({id:z.string(),at:z.string().datetime(),revision:z.number().int().nonnegative(),state:z.enum(['local-only','pending','conflict']),kind:z.string()}))});
+const payload=z.object({format:z.enum(['oaolife-backup-2','oaolife-backup-3','oaolife-backup-4','oaolife-backup-5','oaolife-backup-6']),exportedAt:z.string().datetime(),data:appDataSchema,audit:z.array(z.object({id:z.string(),at:z.string().datetime(),revision:z.number().int().nonnegative(),kind:z.string(),detail:z.string(),changes:z.array(z.object({path:z.string(),before:z.unknown(),after:z.unknown()})).optional()})),outbox:z.array(z.object({id:z.string(),at:z.string().datetime(),revision:z.number().int().nonnegative(),state:z.enum(['local-only','pending','conflict']),kind:z.string()}))});
 async function key(password:string,salt:Uint8Array<ArrayBuffer>) { const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']); }
 export async function encryptBackup(value:unknown,password:string) {
  if(password.length<12)throw Error('Use uma senha de backup com pelo menos 12 caracteres. Guarde-a: ela não pode ser recuperada.');
@@ -24,7 +24,7 @@ export async function decryptBackup(content:string,password:string) {
 }
 export async function exportBackup(password:string) {
  const snapshot=await db.transaction('r',db.state,db.audit,db.outbox,async()=>({data:(await db.state.get('main'))!.data,audit:await db.audit.toArray(),outbox:await db.outbox.toArray()}));
- const content=await encryptBackup({format:'oaolife-backup-5',exportedAt:now(),...snapshot},password);
+ const content=await encryptBackup({format:'oaolife-backup-6',exportedAt:now(),...snapshot},password);
  const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`oaolife-${now().slice(0,10)}.oaolife`;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
  await mutate('Backup exportado','Arquivo criptografado gerado; confirme o armazenamento externo.',d=>{d.settings.lastBackup=now();});
 }

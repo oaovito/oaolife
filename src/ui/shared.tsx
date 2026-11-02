@@ -20,3 +20,7 @@ export function formatDate(date:string,full=false){return new Intl.DateTimeForma
 export function formatSeconds(seconds:number){const s=Math.floor(seconds);return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
 export function formNumber(form:FormData,key:string){const value=String(form.get(key)||'').trim();return value===''?null:Number(value);}
 
+
+export function Metric({label,value,unit,emphasis=false}:{label:string;value:ReactNode;unit?:string;emphasis?:boolean}) {
+ return <div className={`metric ${emphasis?'metric-emphasis':''}`}><span className="metric-label">{label}</span><div className="metric-value"><strong>{value}</strong>{unit&&<span>{unit}</span>}</div></div>;
+}

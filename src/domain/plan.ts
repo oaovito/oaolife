@@ -47,11 +47,11 @@ export const LEGACY_MEALS:Meal[]=[
  {id:'m5',title:'Refeição 5',foods:['300 g de peito de frango desfiado','150 g de macarrão cozido']}
 ];
 export const MEALS:Meal[]=[
- {id:'m1',title:'Refeição 1',foods:['500 ml de leite integral','2 pães franceses']},
- {id:'m2',title:'Refeição 2',foods:['200 g de iogurte Itambé Grego Flocos']},
- {id:'m3',title:'Refeição 3',foods:['500 ml de leite integral','2 pães franceses']},
- {id:'m4',title:'Refeição 4',foods:['200 g de iogurte Itambé Grego Flocos']},
- {id:'m5',title:'Refeição 5',foods:['200 g de arroz branco cozido','200 g de peito de frango']}
+ {id:'m1',title:'Refeição 1',foods:['200 g de iogurte grego','2 pães franceses']},
+ {id:'m2',title:'Refeição 2',foods:['200 g de peito de frango','200 g de arroz branco cozido']},
+ {id:'m3',title:'Refeição 3',foods:['500 ml de leite integral','1 colher de sopa de Nescau']},
+ {id:'m4',title:'Refeição 4',foods:['Frutas à vontade — registre o consumo']},
+ {id:'m5',title:'Refeição 5',foods:['200 g de peito de frango','200 g de arroz branco cozido']}
 ];
 export const WATER_LABELS=['Água 1','Água 2','Água 3','Água 4','Água 5','Água 6'];
 export const CARDIO_DAYS=['A1','B1','C1','A2','B2','C2'];
