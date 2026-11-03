@@ -2,7 +2,7 @@
 
 Aplicação pessoal em português para acompanhar treino, alimentação, hidratação, cardio e protocolo habitual de hipercifose. React, TypeScript, Vite e IndexedDB; dados locais, sem conta ou backend remoto.
 
-**Acesse: https://oaolife.vercel.app** · versão 1.3.0
+**Acesse: https://oaolife.vercel.app** · versão 1.3.1
 
 Repositório oficial e único: https://github.com/oaovito/oaolife
 
@@ -48,3 +48,5 @@ Em Hoje → Registro hormonal, o plano informado já está disponível, sem impo
 Cinco refeições: iogurte grego e dois pães; proteína e arroz; leite com Nescau ou Toddy; frutas livres; proteína e arroz. Seletores independentes, frutas contabilizadas imediatamente e meta opcional. Concluídas saem da lista e ficam no histórico recolhido, com desfazer. Migração preserva planos anteriores e valores consumidos. Fontes, quantidades e cálculos em [NUTRITION.md](NUTRITION.md).
 
 Tokens compartilhados em `src/design-system.css`, temas claro/escuro contrastantes, métricas grandes, botões primários/secundários/pausa/alerta, foco visível e controles de toque. Painel inicial, alimentação, treino, água, cardio e mobilidade foram revisados. A animação de conclusão respeita movimento reduzido; vibração pode ser desligada nos Ajustes. Safari no iPhone não disponibiliza essa API; não se promete vibração nesse dispositivo.
+
+O ciclo de treino começa em **02/11/2026 como semana 1**. Os percentuais semanais originais continuam ativos; duas séries podem ocorrer nas semanas reduzidas. Veja [TRAINING_PLAN.md](TRAINING_PLAN.md).

@@ -1,5 +1,10 @@
 # Verificação
 
+## Atualização 1.3.1 · 03/11/2026
+
+TypeScript, 141/141 testes Vitest e build aprovados. 60/60 testes Chromium (móvel e desktop) aprovados. Novos cenários cobrem marco 02/11 como semana 1, percentuais originais, transições semanais, migração real v6→v7, preservação de séries registradas, auditoria idempotente, novo dispositivo, 20 séries do B1 da primeira semana e reabertura offline. Fixtures antigas usam data determinística anterior à nova configuração. Não há script de lint nem validação em iPhone físico nesta rodada.
+
+
 ## Atualização 1.3.0 · 02/11/2026
 
 - `npm run check`: TypeScript e 136/136 testes Vitest aprovados.

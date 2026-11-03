@@ -5,7 +5,8 @@ export const now = () => new Date().toISOString();
 export function today(timezone=Intl.DateTimeFormat().resolvedOptions().timeZone) { const parts=new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()); return `${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}-${parts.find(p=>p.type==='day')!.value}`; }
 export function addDays(date:string,n:number) { const d=new Date(date+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
 export function daysBetween(start:string,date:string) { return Math.round((+new Date(date+'T12:00:00Z')-+new Date(start+'T12:00:00Z'))/86400000); }
-export function cycleForDate(data:AppData,date:string) { return [...data.cycles].sort((a,b)=>b.start.localeCompare(a.start)).find(c=>date>=c.start && daysBetween(c.start,date)<84); }
+export function cycleEnd(cycle:TrainingCycle) {return cycle.end??addDays(cycle.start,83);}
+export function cycleForDate(data:AppData,date:string) { return [...data.cycles].sort((a,b)=>b.start.localeCompare(a.start)).find(c=>date>=c.start && date<=cycleEnd(c)); }
 export const CALENDAR_REFERENCE = { date:'2026-10-17', template:'C2' as const, index:5 };
 export function weeklyTemplate(date:string):SessionName|null {
  const names:SessionName[]=['A1','B1','C1','A2','B2','C2'];
@@ -14,7 +15,7 @@ export function weeklyTemplate(date:string):SessionName|null {
 }
 export function schedule(cycle:TrainingCycle|undefined,date:string):{template:SessionName|null;week:number|null;rest:boolean} {
  const diff=cycle?daysBetween(cycle.start,date):-1;
- const week=cycle&&diff>=0&&diff<84?Math.floor(diff/7)+1:null;
+ const week=cycle&&diff>=0&&diff<84&&date<=cycleEnd(cycle)?Math.floor(diff/7)+1:null;
  const template=cycle&&Object.hasOwn(cycle.overrides,date)?cycle.overrides[date]:weeklyTemplate(date);
  return {template,week,rest:template===null};
 }
@@ -43,7 +44,7 @@ export function makeWorkout(data:AppData,date:string):WorkoutSession|null {
 }
 export function nextExposure(data:AppData,s:WorkoutSession,id:string) {
  const c=data.cycles.find(c=>c.id===s.cycleId)!;
- for(let d=addDays(s.date,1);daysBetween(c.start,d)<84;d=addDays(d,1)){const p=schedule(c,d);if(!p.template||!p.week)continue;const t=ORIGINAL_PLAN.find(t=>t.id===p.template)!;const index=t.exercises.findIndex(e=>e.id===id);if(index>=0)return {date:d,sets:allocateSets(t.exercises,WEEKS[p.week-1].volume)[index],week:p.week};}
+ for(let d=addDays(s.date,1);d<=cycleEnd(c);d=addDays(d,1)){const p=schedule(c,d);if(!p.template||!p.week)continue;const t=ORIGINAL_PLAN.find(t=>t.id===p.template)!;const index=t.exercises.findIndex(e=>e.id===id);if(index>=0)return {date:d,sets:allocateSets(t.exercises,WEEKS[p.week-1].volume)[index],week:p.week};}
  return null;
 }
 export function reschedule(data:AppData,from:string,to:string) {
@@ -53,4 +54,31 @@ export function reschedule(data:AppData,from:string,to:string) {
  const a=schedule(cycle,from).template,b=schedule(cycle,to).template;if(!a)throw Error('Não há treino nesta data.');
  cycle.overrides[from]=b;cycle.overrides[to]=a;
  data.adjustments.push({id:uid(),at:now(),kind:'Reagendamento',detail:`${a}: ${from} → ${to}; ${b||'descanso'}: ${to} → ${from}`});
+}
+
+export const TRAINING_ANCHOR='2026-11-02';
+export function anchorTrainingCycle(data:AppData,date:string):boolean {
+ const marker='training-anchor-2026-11-02';
+ if(date<TRAINING_ANCHOR||data.adjustments.some(a=>a.id===marker))return false;
+ const end=addDays(TRAINING_ANCHOR,83);
+ const candidates=data.cycles.filter(c=>c.start>=TRAINING_ANCHOR&&c.start<=end).sort((a,b)=>a.start.localeCompare(b.start));
+ const target=candidates[0]??{id:uid(),start:TRAINING_ANCHOR,originalVersion:'original-1' as const,createdAt:now(),overrides:{}};
+ if(!candidates.length)data.cycles.push(target);
+ for(const c of data.cycles){if(c.id!==target.id&&c.start<TRAINING_ANCHOR&&cycleEnd(c)>=TRAINING_ANCHOR){for(const [day,template] of Object.entries(c.overrides))if(day>=TRAINING_ANCHOR&&day<=end&&!Object.hasOwn(target.overrides,day))target.overrides[day]=template;c.end=addDays(TRAINING_ANCHOR,-1);}}
+ target.start=TRAINING_ANCHOR;target.end=candidates[1]?addDays(candidates[1].start,-1):end;
+ for(const s of data.sessions){if(s.date<TRAINING_ANCHOR||s.date>cycleEnd(target))continue;s.cycleId=target.id;
+  if(s.date>=date&&s.status==='open'){
+   const planned=makeWorkout(data,s.date);if(!planned||planned.template!==s.template)continue;
+   s.week=planned.week;s.volume=planned.volume;
+   for(const ex of s.exercises){const p=planned.exercises.find(e=>e.id===ex.id);if(!p)continue;ex.rir=p.rir;
+    const untouched=(v:typeof ex.sets[number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
+    while(ex.sets.length>p.sets.length&&untouched(ex.sets.at(-1)!))ex.sets.pop();
+    while(ex.sets.length<p.sets.length){let index=ex.sets.length;while(ex.sets.some(v=>v.id===`${ex.id}:${index}`))index++;ex.sets.push({...p.sets[ex.sets.length],id:`${ex.id}:${index}`});}
+   }
+  }
+ }
+ for(const day of data.days)if(day.id>=TRAINING_ANCHOR&&day.id<=cycleEnd(target))day.cycleId=target.id;
+ for(const decision of data.decisions){const s=data.sessions.find(s=>s.id===decision.sessionId);if(s)decision.cycleId=s.cycleId;}
+ data.adjustments.push({id:marker,at:now(),kind:'Semana 1 em 02/11/2026',detail:'Periodização preservada; ciclo ancorado em 02/11/2026. Histórico de execução preservado.'});
+ return true;
 }

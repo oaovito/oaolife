@@ -1,3 +1,7 @@
+# Atualização 1.3.1 — schema 7
+
+`TrainingCycle.end` opcional permite encerrar o ciclo anterior em 01/11/2026 sem apagar seus registros. O ciclo corrigido começa em 02/11/2026, preservando os percentuais originais das 12 semanas. A migração idempotente é identificada pelo ajuste `training-anchor-2026-11-02`; sessões/dias/decisões mantêm relações válidas, com execução preservada. Mudanças em banco existente incrementam revisão e registram auditoria/outbox na mesma transação. A mesma correção se aplica na restauração e retorno ao app. Backup 7 importa formatos 2–6; versões antigas não podem sobrescrever schema 7.
+
 # Atualização 1.3.0 — schema 6
 
 IndexedDB 6 e backup `oaolife-backup-6`; importa backups 2–5. Nutrição é uma união versionada: `five-meals-1` histórico e `five-meals-2` atual. O novo plano guarda `lunchProtein` e `protein` independentes, `chocolate`, `chocolateGrams`, `fruitPlan` opcional e `fruitEntries` com ID, instante, porção e estado contado. Conclusão de fruta cria snapshot sem duplicar suas calorias. Desfazer mantém entradas como rascunhos não contados.

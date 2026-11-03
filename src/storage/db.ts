@@ -2,7 +2,7 @@ import { activateNutrition, mealsForDay } from '../domain/nutrition';
 import Dexie, { type Table } from 'dexie';
 import { appDataSchema, type AppData, type SyncOperation } from '../domain/model';
 import { emptyData, makeDay, workoutComplete, summaries, pauseCardio, timedCompletionRequired } from '../domain/daily';
-import { makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
+import { TRAINING_ANCHOR, addDays, anchorTrainingCycle, cycleEnd, makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
 import { LEGACY_MEALS } from '../domain/plan';
 import { cardioGoalReached } from '../domain/cardio';
@@ -19,13 +19,14 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
 }
 export class OaoDatabase extends Dexie {
  state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(6).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});}
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(6).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(7).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){await tx.table('state').put({...state,data:appDataSchema.parse(state.data)});}});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
  for(const items of [data.cycles,data.sessions,data.days,data.measurements,data.photos,data.foods,data.recipes,data.decisions,data.adjustments,data.hormonalLogs]){const ids=items.map(x=>x.id);if(new Set(ids).size!==ids.length)throw Error('Backup contém IDs duplicados.');}
  const cycles=[...data.cycles].sort((a,b)=>a.start.localeCompare(b.start));
- for(let i=1;i<cycles.length;i++)if(daysBetween(cycles[i-1].start,cycles[i].start)<84)throw Error('Ciclos sobrepostos não são permitidos.');
+ for(let i=1;i<cycles.length;i++)if(cycleEnd(cycles[i-1])>=cycles[i].start)throw Error('Ciclos sobrepostos não são permitidos.');
+ for(const c of cycles)if(cycleEnd(c)<c.start||daysBetween(c.start,cycleEnd(c))>=84)throw Error('Fim de ciclo inválido.');
  const cycleIds=new Set(data.cycles.map(c=>c.id));
  const dates=new Set<string>();for(const s of data.sessions){if(!cycleIds.has(s.cycleId))throw Error('Sessão sem ciclo válido.');const k=s.cycleId+':'+s.date;if(dates.has(k))throw Error('Sessão duplicada.');dates.add(k);if(cycleForDate(data,s.date)?.id!==s.cycleId)throw Error('Data da sessão fora do ciclo.');if(s.status==='complete'&&!workoutComplete(s))throw Error('Treino completo com séries pendentes.');if(new Set(s.exercises.map(e=>e.id)).size!==s.exercises.length)throw Error('Exercício duplicado na sessão.');for(const e of s.exercises){if(new Set(e.sets.map(v=>v.id)).size!==e.sets.length)throw Error('Série duplicada.');for(const v of e.sets){if(v.done&&v.skipped)throw Error('Série não pode ser feita e não realizada ao mesmo tempo.');if(v.done&&v.reps===0)throw Error('Repetições devem ser positivas ou não informadas.');}}}
  for(const d of data.days){if(d.cycleId&&!cycleIds.has(d.cycleId))throw Error('Registro diário sem ciclo.');if(d.meals.some((m,i)=>m.length!==(d.nutrition?.version==='five-meals-2'&&i===3?1:mealsForDay(d)[i].foods.length)))throw Error('Quantidade de alimentos incompatível com o plano.');
@@ -51,7 +52,7 @@ export function assertIntegrity(data:AppData) {
  for(const r of data.recipes)for(const i of r.ingredients)if(!data.foods.some(f=>f.id===i.foodId))throw Error('Receita referencia alimento ausente.');
 }
 export async function initialize(database=db) {
- await database.transaction('rw',database.state,async()=>{const saved=await database.state.get('main');if(!saved){await database.state.add({id:'main',revision:0,data:emptyData()});return;}const parsed=appDataSchema.parse(saved.data);activateNutrition(parsed,today());assertIntegrity(parsed);if(JSON.stringify(parsed)!==JSON.stringify(saved.data))await database.state.put({...saved,data:parsed});});
+ await database.transaction('rw',database.state,database.audit,database.outbox,async()=>{const saved=await database.state.get('main');if(!saved){const data=emptyData();anchorTrainingCycle(data,today());await database.state.add({id:'main',revision:0,data});return;}const parsed=appDataSchema.parse(saved.data);activateNutrition(parsed,today());const anchored=anchorTrainingCycle(parsed,today());assertIntegrity(parsed);if(JSON.stringify(parsed)!==JSON.stringify(saved.data)){const revision=saved.revision+(anchored?1:0);await database.state.put({...saved,revision,data:parsed});if(anchored){const id=uid(),at=now(),kind='Ancorar semana 1 em 02/11/2026';await database.audit.add({id,at,revision,kind,detail:'Periodização preservada',changes:diffAudit(saved.data,parsed)});await database.outbox.add({id,at,revision,state:'local-only',kind});}}});
 }
 export async function mutate(kind:string,detail:string,fn:(data:AppData)=>void,database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
@@ -72,7 +73,7 @@ export function finishWorkout(id:string,partialReason='') {
  });
 }
 export function reopenWorkout(id:string) {return mutate('Reabrir treino para corrigir',id,d=>{const s=d.sessions.find(s=>s.id===id);if(!s)throw Error('Sessão não encontrada.');s.status='open';s.closedAt=null;for(const p of d.decisions.filter(p=>p.sessionId===id&&!p.undoneAt))p.undoneAt=now();});}
-export function startCycle(start:string) {return mutate('Novo ciclo',start,d=>{for(const c of d.cycles)if(Math.abs(daysBetween(c.start,start))<84)throw Error('O ciclo se sobrepõe a outro. Escolha uma data após o fim do ciclo anterior.');d.cycles.push({id:uid(),start,originalVersion:'original-1',createdAt:now(),overrides:{}});});}
+export function startCycle(start:string) {return mutate('Novo ciclo',start,d=>{for(const c of d.cycles)if(start<=cycleEnd(c)&&start>=addDays(c.start,-83))throw Error('O ciclo se sobrepõe a outro. Escolha uma data após o fim do ciclo anterior.');d.cycles.push({id:uid(),start,originalVersion:'original-1',createdAt:now(),overrides:{}});});}
 export async function requestPersistence() {return navigator.storage?.persist?await navigator.storage.persist():false;}
 export function remoteStatus(online:boolean) {return online?'Modo local · backend remoto não configurado':'Offline · registros salvos neste dispositivo';}
 export function dayPlan(data:AppData,date:string) {return schedule(cycleForDate(data,date),date);}
@@ -98,6 +99,7 @@ export function confirmDay(date:string) {
 export async function reconcileTimers(clock=Date.now(),database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
   const snapshot=await database.state.get('main');if(!snapshot)return;
+  if(today()>=TRAINING_ANCHOR&&!snapshot.data.adjustments.some(a=>a.id==='training-anchor-2026-11-02'))await mutate('Ancorar semana 1 em 02/11/2026','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
   const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||(day.mobility.protocol?.exercises??[]).some(ex=>sequenceNeedsSync(day.mobility,ex,clock));
   if(!snapshot.data.days.some(needs))return;
   await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{

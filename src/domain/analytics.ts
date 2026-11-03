@@ -1,6 +1,6 @@
 import { mealsForDay, nutritionTotals } from './nutrition';
 import type { AppData, Muscle } from './model';
-import { addDays, cycleForDate, makeWorkout } from './training';
+import { cycleEnd, addDays, cycleForDate, makeWorkout } from './training';
 import { timerSeconds, weeklyWeight } from './daily';
 import { MEALS } from './plan';
 
@@ -51,7 +51,7 @@ export function metricPoints(data:AppData,start:string,end:string,metric:Metric,
 }
 export function cycleReport(data:AppData,cycleId:string) {
  const cycle=data.cycles.find(c=>c.id===cycleId);if(!cycle)return null;
- const end=addDays(cycle.start,83),days=data.days.filter(d=>d.id>=cycle.start&&d.id<=end),sessions=data.sessions.filter(s=>s.cycleId===cycleId);
+ const end=cycleEnd(cycle),days=data.days.filter(d=>d.id>=cycle.start&&d.id<=end),sessions=data.sessions.filter(s=>s.cycleId===cycleId);
  const first=sessions.filter(s=>s.week===1),last=sessions.filter(s=>s.week===12);
  const setCount=(items:typeof sessions)=>items.flatMap(s=>s.exercises.flatMap(e=>e.sets)).filter(s=>s.done).length;
  const waist=data.measurements.filter(m=>m.date>=cycle.start&&m.date<=end&&m.waist!==null).sort((a,b)=>a.date.localeCompare(b.date));

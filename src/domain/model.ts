@@ -20,7 +20,7 @@ const plannedExerciseSchema = z.object({ id, name: text, muscle: z.enum(groups),
 export type PlannedExercise = z.infer<typeof plannedExerciseSchema>;
 export const workoutSchema = z.object({ id, cycleId: id, date: dateSchema, timezone: text, template: sessionNameSchema, week: z.number().int().min(1).max(12), volume: num.max(1), exercises: z.array(plannedExerciseSchema).max(20), status: z.enum(['open','complete','partial']), reason: text, startedAt: timestamp, closedAt: timestamp.nullable() });
 export type WorkoutSession = z.infer<typeof workoutSchema>;
-export const trainingCycleSchema = z.object({ id, start: dateSchema, originalVersion: z.literal('original-1'), createdAt: timestamp, overrides: z.record(dateSchema, sessionNameSchema.nullable()) });
+export const trainingCycleSchema = z.object({ id, start: dateSchema, end:dateSchema.optional(), originalVersion: z.literal('original-1'), createdAt: timestamp, overrides: z.record(dateSchema, sessionNameSchema.nullable()) });
 export type TrainingCycle = z.infer<typeof trainingCycleSchema>;
 export const mobilityExerciseSchema = z.object({ id, name: z.string().min(1).max(200), description: text, sets: z.number().int().min(1).max(20), reps: num.max(300).nullable(), duration: num.max(3600).nullable(), rest: num.max(600), resistance: text, instructions: text, image: z.string().max(3000000).refine(s => !s || /^data:image\/(png|jpeg|webp);base64,/.test(s), 'Use imagem PNG, JPEG ou WebP') });
 export type MobilityExercise = z.infer<typeof mobilityExerciseSchema>;
@@ -58,10 +58,10 @@ export const hormonalProtocolSchema=z.object({
 export type HormonalProtocol=z.infer<typeof hormonalProtocolSchema>;
 const hormonalLogSchema=z.object({id,date:dateSchema,week:z.number().int().min(1).max(52),entryId:id,substance:text,doseMg:num.min(0.01).max(10000),notes:text,at:timestamp});
 export const hormonalImportSchema=z.object({format:z.literal('oaolife-hormonal-1'),protocol:hormonalProtocolSchema});
-const currentAppDataSchema = z.object({ schemaVersion:z.literal(6), nutritionOverrides:z.partialRecord(z.enum(foodKeys),referenceSchema).default({}), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
+const currentAppDataSchema = z.object({ schemaVersion:z.literal(7), nutritionOverrides:z.partialRecord(z.enum(foodKeys),referenceSchema).default({}), hormonalProtocol:hormonalProtocolSchema.nullable().default(null), hormonalLogs:z.array(hormonalLogSchema).default([]), profile:z.object({ id:z.literal('local-user'), age:num.max(120), height:num.max(250), initialWeight:num.max(400) }), settings:settingsSchema, cycles:z.array(trainingCycleSchema), sessions:z.array(workoutSchema), days:z.array(dailySchema), measurements:z.array(measurementSchema), photos:z.array(photoSchema), foods:z.array(nutritionSchema), recipes:z.array(recipeSchema), mobility:mobilityProtocolSchema.nullable(), decisions:z.array(progressionSchema), adjustments:z.array(adjustmentSchema) });
 // Older snapshots retain measurements, targets and protocols; timer state is additive.
 export const appDataSchema = z.preprocess(value => {
- if(value && typeof value === 'object' && 'schemaVersion' in value && (value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4 || value.schemaVersion === 5)) return {...value, schemaVersion:6};
+ if(value && typeof value === 'object' && 'schemaVersion' in value && (value.schemaVersion === 2 || value.schemaVersion === 3 || value.schemaVersion === 4 || value.schemaVersion === 5 || value.schemaVersion === 6)) return {...value, schemaVersion:7};
  return value;
 }, currentAppDataSchema);
 export type AppData = z.infer<typeof appDataSchema>;

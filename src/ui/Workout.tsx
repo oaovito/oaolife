@@ -63,6 +63,7 @@ export function Workout({data,date,run,go}:PageProps) {
   </details></Panel>;
  };
  return <><PageTitle eyebrow="TREINAMENTO" title={plan.template?`${plan.template} · ${template?.title}`:'Descanso'} back={()=>go('home')}><p>{plan.week?`Semana ${plan.week} · ${WEEKS[plan.week-1].goal}`:'Configure a semana da periodização para iniciar séries.'}</p></PageTitle>
+  {session&&session.week!==plan.week&&<p className="notice">Registro preservado da semana {session.week} do ciclo anterior. O novo planejamento começou em 02/11/2026.</p>}
   {!plan.template?<Empty>Hoje é dia de descanso.</Empty>:<>
    {!plan.week&&<Panel><h3>Qual é a sua semana no ciclo?</h3><button className="primary" onClick={()=>go('plan')}>Configurar periodização</button></Panel>}
    {!session&&<Panel><div className="section-heading"><h3>Planejamento {plan.week?'do dia':'original'}</h3><span>{preview?preview.exercises.reduce((n,e)=>n+e.sets.length,0):template!.exercises.reduce((n,e)=>n+e.sets,0)} séries</span></div><div className="plan-exercises">{(preview?.exercises||template!.exercises).map(e=><div key={e.id}><strong>{e.name}</strong><span>{Array.isArray(e.sets)?e.sets.length:e.sets} × {e.reps.join('–')} · {e.reference??'A definir'}{e.reference!==null?` ${LOAD_LABEL[e.mode]}`:''}</span></div>)}</div>{plan.week&&<button className="primary" onClick={()=>run(()=>openWorkout(date),'Treino aberto. Você pode concluir sem preencher detalhes opcionais.')}><Play size={17}/>Iniciar treino</button>}</Panel>}
