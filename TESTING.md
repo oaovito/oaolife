@@ -91,3 +91,32 @@ Nenhum schema ou plano de treinamento/nutrição foi alterado. A migração do b
 
 
 CI da preparação Vercel confirmada: https://github.com/oaovito/oaolife/actions/runs/38971287133, commit d9b651d. Instalação pelo lockfile, 86 Vitest, build, auditoria e 26 Playwright passaram. Continua pendente a validação de uma URL Vercel, pois a conta ainda não está autenticada nesta sessão.
+
+### Estabilidade horizontal (novembro/2026)
+
+`e2e/horizontal-layout.spec.ts` percorre dez rotas em 320, 375, 390,
+430 e 1440 px, com detalhes abertos e fechados. Verifica tanto o documento
+quanto `.main-shell` (o verdadeiro scroller móvel), limites dos elementos,
+conteúdo interno dos indicadores e tentativas de `scrollLeft`.
+O teste de toque usa eventos reais via CDP no projeto Chromium móvel para
+arrastos laterais, diagonais e verticais; é explicitamente ignorado nos
+outros motores, que não oferecem essa API.
+
+`e2e/horizontal-interactions.spec.ts` verifica consumo/desfazer refeições,
+água personalizada offline após recarregar, campos e conclusão de séries,
+orientação, cronômetros, confirmação de reinício e persistência do tema.
+Ambos os arquivos também rodam no projeto WebKit. Os testes existentes de
+PWA verificam áreas seguras e mudanças simuladas do teclado. Isso não
+substitui validação em Safari num iPhone físico nem testa gestos do sistema.
+
+Causa reproduzida: a 320 px, a grade de indicadores do treino aumentava a
+largura rolável de `.main-shell` para 355 px. O documento continuava em
+320 px, portanto verificar apenas `documentElement.scrollWidth` não
+capturava o defeito. Colunas com mínimo zero, conteúdo responsivo e proteção
+horizontal no scroller corrigem a origem sem bloquear `touchmove`.
+
+Validação local desta correção: `npm run check` (141 testes), `npm run build`
+e suíte Playwright completa (95 aprovados, 2 gestos CDP não aplicáveis
+ignorados). O ambiente usou Chromium instalado e WebKit WPE headless com
+bibliotecas em scratch, via configuração local temporária; nenhuma dependência
+ou arquivo de lock foi alterado. Não há script de lint configurado.
