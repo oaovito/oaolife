@@ -178,5 +178,110 @@
     "note": "Parte comestível in natura. Unidade média da TBCA = 140 g; prefira pesar a porção real. Consulta: 01/11/2026. Carboidratos totais.",
     "gramsPerUnit": 140,
     "certainty": "estimado"
+  },
+  "greekNatural": {
+    "name": "Iogurte grego natural",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": null,
+      "protein": null,
+      "carbs": null,
+      "fat": null
+    },
+    "source": "Rótulo/composição ainda não informado",
+    "note": "Informe o rótulo do produto. Não se presume teor proteico de skyr ou iogurte proteico.",
+    "gramsPerUnit": null,
+    "certainty": "desconhecido"
+  },
+  "skimMilk": {
+    "name": "Leite desnatado",
+    "quantity": 100,
+    "unit": "ml",
+    "nutrients": {
+      "kcal": null,
+      "protein": null,
+      "carbs": null,
+      "fat": null
+    },
+    "source": "Rótulo/composição ainda não informado",
+    "note": "Informe o rótulo por ml. Não converter gramas em ml sem densidade conhecida.",
+    "gramsPerUnit": null,
+    "certainty": "desconhecido"
+  },
+  "skimPowder": {
+    "name": "Leite em pó desnatado",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 362,
+      "protein": 34.7,
+      "carbs": 53,
+      "fat": 0.9
+    },
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "TACO alimento 456. Peso seco.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "oats": {
+    "name": "Aveia em flocos",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 394,
+      "protein": 13.9,
+      "carbs": 66.6,
+      "fat": 8.5
+    },
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "TACO alimento 7. Peso seco.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "plainRice": {
+    "name": "Arroz branco cozido sem óleo",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 128,
+      "protein": 2.5,
+      "carbs": 28.1,
+      "fat": 0.2
+    },
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "TACO alimento 3. Peso preparado; azeite contabilizado separadamente.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
+  },
+  "vegetables": {
+    "name": "Legumes preparados",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": null,
+      "protein": null,
+      "carbs": null,
+      "fat": null
+    },
+    "source": "Rótulo/composição ainda não informado",
+    "note": "Informe a composição, proporções e preparo. Não existe valor único para legumes.",
+    "gramsPerUnit": null,
+    "certainty": "desconhecido"
+  },
+  "oliveOil": {
+    "name": "Azeite de oliva",
+    "quantity": 100,
+    "unit": "g",
+    "nutrients": {
+      "kcal": 884,
+      "protein": null,
+      "carbs": null,
+      "fat": 100
+    },
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "TACO alimento 260. Proteínas e carboidratos marcados NA pela tabela; informe rótulo para quantificar, inclusive zeros explícitos.",
+    "gramsPerUnit": null,
+    "certainty": "estimado"
   }
 }

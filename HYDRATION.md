@@ -1,10 +1,25 @@
-# Hidratação
+# Hidratação — liquids-1
 
-Seis garrafas identificadas como Água 1, Água 2, Água 3, Água 4, Água 5 e Água 6, independentes das refeições e do treino. Meta inicial usa o limite inferior informado, 500 ml cada (3 L). Ajustes permitem confirmar 500–600 ml por garrafa (3–3,6 L) para dias futuros. Nada é aumentado automaticamente.
+Meta inicial configurável: 4000 ml; unidade visual padrão 500 ml (8 garrafas).
+Aceita 600 ml ou outro volume configurado. Consumo, restante, percentual e
+frações equivalentes são calculados, sem arredondar o volume armazenado.
+A interface informa quando exibe equivalências arredondadas a três casas.
 
-Cada garrafa guarda o volume total real. Botões 500 e 600 ml substituem esse total; não somam novamente. Campo personalizado permite consumo parcial, zero explícito e correções. Conclusão individual ocorre ao atingir a meta salva naquele dia. Conclusão geral exige as seis metas; percentual de volume é mostrado separadamente.
+Cada adição manual (250/500/600 ml ou personalizada) guarda ID, data/hora e ml.
+É possível corrigir, excluir e desfazer o último registro. IDs repetidos não
+são somados duas vezes. Refeições nunca adicionam líquidos automaticamente.
+Não se confunde volume total da bebida com água efetiva de composição desconhecida.
 
-Água e alimento têm confirmações independentes. Leite (1 L diário) pertence somente à alimentação. As seis águas permanecem disponíveis também nos dias de descanso. A numeração mantém a ordem dos registros existentes, sem alterar volumes ou metas salvos.
+Dias novos guardam a meta e unidade visual configuradas. O dia atual migra uma
+vez; as seis garrafas antigas permanecem intactas e são somadas como consumo
+anterior, sem gerar cópias nas entradas novas. Seus controles de correção
+continuam disponíveis quando há consumo. Dias históricos usam a interface antiga.
 
-Uso relatado de lítio exige consistência; o software não recomenda mudanças automáticas de água ou sódio. Alterações clínicas devem ser avaliadas pelo profissional responsável.
+A virada segue a meia-noite local existente, também offline e ao retomar o app.
+Não havia horário de redefinição configurável. Horários de refeições não são
+horários de redefinição. Histórico, IndexedDB e backup criptografado permanecem.
 
+A meta é uma referência individual, distribuída entre manhã/tarde/noite sem
+cotas horárias rígidas. A UI permite ajuste e não orienta compensação rápida,
+volumes adicionais automáticos ou eletrólitos. Orientação clínica existente é
+preservada. Sincronização remota continua não configurada.

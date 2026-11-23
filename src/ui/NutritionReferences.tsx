@@ -5,7 +5,7 @@ import { today } from '../domain/training';
 import { mutate } from '../storage/db';
 import { Panel, Field, formNumber, type PageProps } from './shared';
 export function NutritionReferences({data,run}:Pick<PageProps,'data'|'run'>) {
- const [selected,setSelected]=useState<typeof foodKeys[number]>('yogurt');
+ const [selected,setSelected]=useState<typeof foodKeys[number]>('greekNatural');
  const ref=nutritionReference(data,selected);
  return <Panel><details><summary>Referências nutricionais do plano</summary><p>Atualize o rótulo ou especifique o corte e preparo. O novo valor atualiza o planejamento de hoje e dos próximos dias. Refeições consumidas e dias anteriores mantêm seus valores originais.</p>
  <Field label="Alimento do plano"><select value={selected} onChange={e=>setSelected(e.target.value as typeof selected)}>{foodKeys.map(k=><option key={k} value={k}>{DEFAULT_REFERENCES[k].name}</option>)}</select></Field>

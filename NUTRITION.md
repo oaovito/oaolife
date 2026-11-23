@@ -1,48 +1,51 @@
-# Alimentação 1.3.0 — plano definitivo
+# Alimentação — four-meals-1
 
-Somente estas cinco refeições são ativas a partir da atualização:
+O plano ativo tem exatamente quatro refeições: café da manhã e lanche líquidos;
+almoço e jantar sólidos. Porções oficiais em `domain/plan.ts` e construção dos
+snapshots em `domain/nutrition.ts`:
 
-| Refeição | Quantidade | kcal | Proteínas (g) | Carboidratos (g) | Gorduras (g) |
-|---|---|---:|---:|---:|---:|
-| 1 | 200 g iogurte grego natural integral + 2 pães franceses (100 g) | 494 | 27,83 | 69,56 | 12,12 |
-| 2 | 200 g frango pronto + 200 g arroz cozido | 576 | 69,02 | 58,40 | 8,10 |
-| 3 | 500 ml leite integral + 15 g Nescau (colher cheia de referência) | 383,50 | 12,48 | 49,06 | 15,66 |
-| 4 | Frutas à vontade, gramas ou unidades registradas | variável | variável | variável | variável |
-| 5 | 200 g frango pronto + 200 g arroz cozido | 576 | 69,02 | 58,40 | 8,10 |
+| Refeição | Ingredientes |
+| --- | --- |
+| Café | Grego natural 200 g, leite desnatado 300 ml, leite em pó desnatado 40 g, aveia 50 g |
+| Almoço | Frango grelhado 200 g, arroz branco cozido 250 g, legumes 150 g, azeite 10 g |
+| Lanche | Grego natural 200 g, leite desnatado 300 ml, leite em pó desnatado 40 g, aveia 30 g |
+| Jantar | Patinho grelhado 180 g, arroz branco cozido 200 g, legumes 150 g, azeite 5 g |
 
-Bebidas realmente zero calorias são livres na refeição 1; não registram água. Leite também não registra água.
+Carnes/arroz/legumes são pesados preparados; aveia e pó são secos. As vitaminas
+são batidas, com opcionais descritos na interface. Não há whey, feijão, banana,
+morango ou skyr no plano ativo. Alimentos antigos permanecem legíveis no histórico.
 
-Cada seletor de proteína é independente. Com 200 g de arroz, patinho resulta em **698 kcal / 76,82 P / 58,40 C / 18,20 G**; tilápia em **456 kcal / 41,82 P / 58,40 C / 6,66 G**. Pesos são após preparo. Frango é a seleção inicial, sem impor igualdade entre refeições.
+Metas individuais configuráveis: 2525 kcal e 190 g proteína, dentro das faixas
+iniciais de 2500–2550 kcal e 185–200 g. Cada dia guarda suas metas; ajustes alteram
+hoje e próximos dias. Não se alteram as quantidades oficiais para atingir a meta.
 
-A troca para 15 g de Toddy resulta em **384,70 kcal / 12,18 P / 49,83 C / 15,50 G** na refeição 3. A colher cheia de ambos tem referência de 15 g na TBCA, mas a composição é diferente; colher rasa é 10 g. Peso editável para corresponder à colher efetiva. Rótulo confirmado local tem prioridade sobre a referência genérica.
+## Fontes e limites
 
-**Subtotal inicial sem frutas: 2.029,50 kcal / 178,35 P / 235,42 C / 43,98 G.** Não é uma meta diária definitiva. A quantidade planejada opcional de frutas completa a meta; não cria consumo nem limita a ingestão. Frutas reais entram imediatamente nas calorias e macros, mesmo antes da conclusão. Restantes = max(0, meta − consumo); excedente = max(0, consumo − meta). Sem meta completa, restantes e percentual não são inventados. Os valores são calculados sem arredondamento intermediário; a tela arredonda kcal para inteiros e macros para uma decimal.
+`nutritionReferences.json` contém fonte, unidade, porção, preparo e qualidade.
+TACO 4ª edição, NEPA/UNICAMP: alimentos 3 (arroz sem óleo), 7 (aveia), 456
+(leite em pó desnatado) e 260 (azeite). As referências de carnes TBCA já existentes
+foram mantidas. Não se reaproveita o arroz com óleo do plano antigo.
 
-## Referências documentadas
+Iogurte natural grego não herda os 9 g/100 g de proteína da referência genérica
+antiga. Exige rótulo compatível. Leite líquido exige rótulo por ml; não convertemos
+g em ml por suposição. Legumes exigem composição e preparo. TACO marca proteína
+e carboidratos do azeite como NA; permanecem pendentes até um rótulo quantificar
+esses campos, inclusive zeros explícitos.
 
-Fontes e URLs individuais ficam em `src/domain/nutritionReferences.json`, visíveis em cada refeição. Referências anteriores consultadas em 26/10/2026; iogurte, achocolatados e frutas em 01/11/2026 na [TBCA](https://www.tbca.net.br/). São estimativas de composição, não promessa de equivalência com qualquer produto. Carboidratos totais; energia publicada, sem recalcular por 4/4/9 a partir de macros arredondados.
+Subtotal conhecido (não é total diário): **1993,2 kcal; 179,13 g proteína;
+222,13 g carboidratos; 41,82 g gordura**. Valores ausentes são `null`, nunca zero.
+A tela distingue subtotal de total, mostra diferenças quando calculáveis e sugere
+ajustes sem executá-los. Cadastros confirmados e referências editadas têm prioridade.
 
-| Referência TBCA | Base | kcal | P | C | G |
-|---|---|---:|---:|---:|---:|
-| BRC0133G · iogurte grego natural integral | 100 g | 97 | 9 | 3,98 | 5 |
-| BRC0002A · pão francês | 100 g | 300 | 9,83 | 61,6 | 2,12 |
-| BRC0044G · leite integral UHT, porção volumétrica | 240 ml | 156 | 5,63 | 17,2 | 7,3 |
-| BRC0208A · arroz cozido com óleo, cebola e alho, sem sal | 100 g | 138 | 2,41 | 29,2 | 1,6 |
-| BRC0114F · peito de frango sem pele, grelhado sem óleo/sal | 100 g | 150 | 32,1 | 0 | 2,45 |
-| BRC0045F · patinho sem gordura, grelhado sem óleo/sal | 100 g | 211 | 36 | 0 | 7,5 |
-| BRC0486E · tilápia sem pele, grelhada sem óleo/sal | 100 g | 90 | 18,5 | 0 | 1,73 |
-| BRC0002K · achocolatado Nescau | 100 g | 390 | 5 | 88,2 | 3 |
-| BRC0003K · achocolatado Toddy | 100 g | 398 | 3 | 93,3 | 1,92 |
-| BRC0011C · banana prata, unidade comestível 40 g | 100 g | 107 | 1,11 | 25,9 | 0,28 |
-| BRC0064C · maçã Fuji com casca, unidade 130 g | 100 g | 59 | 0,29 | 15,2 | traços não quantificados |
-| BRC0020C · laranja pera, unidade comestível 140 g | 100 g | 37 | 0,87 | 8,63 | 0,21 |
+Apenas refeições completas entram no consumo do novo plano. Cada conclusão
+salva uma cópia das porções/referências; editar o rótulo depois não muda esse consumo.
+Checklist parcial, ocultação, expansão e desfazer permanecem disponíveis.
 
-O iogurte genérico não representa o rótulo Itambé Grego Flocos. Produtos/referências confirmados neste dispositivo têm prioridade. Ajustes → Referências nutricionais permite corrigir nutrientes, fonte e peso unitário. Dados ausentes e traços não quantificados permanecem desconhecidos, nunca zero. O consumo já salvo mantém a própria cópia de fontes e quantidades.
+## Migração
 
-## Estado e histórico
-
-Após persistir uma conclusão, o cartão sai em até 160 ms (sem animação com movimento reduzido) e passa para “Refeições concluídas — X/5”, recolhida inicialmente. Horário, alimentos, macros e desfazer continuam disponíveis. Desfazer frutas remove sua contagem, mantendo as entradas como rascunho para corrigir/reconfirmar. IDs e transações evitam duplicação. Novo dia local começa com cinco pendências.
-
-Porções parciais das demais refeições ficam no checklist; só refeições completas entram no contador, conforme o fluxo existente. Alterar referências não apaga parciais. A migração arquiva plano, checklist, horários e declaração do dia corrente; refeições completas antigas continuam no consumo desse dia. Dias históricos não são reescritos e valores antigos não conhecidos não são inventados.
-
-IndexedDB/schema 6, backup `oaolife-backup-6`, importa formatos 2–5. Armazenamento Dexie, fila, auditoria e backups criptografados são os existentes; não há backend de sincronização remota. Treino, cardio 360 min/semana, alongamento 4×60 s + 3×60 s, meta de água e registro hormonal permanecem preservados. Não há lista de compras no aplicativo.
+Schema 8 / IndexedDB 8. Somente o dia atual troca de plano na inicialização ou
+restauração. O plano antigo e seus horários/checklists/declarações ficam em
+`archivedNutrition` (ou `previousNutrition` para o plano sem dados nutricionais).
+Consumo completo anterior conhecido continua somado no dia. Datas anteriores não
+são reescritas. Reabrir não duplica arquivos nem registros, e toda alteração da
+migração entra na auditoria/fila local. Os planos five-meals-1/2 continuam suportados.

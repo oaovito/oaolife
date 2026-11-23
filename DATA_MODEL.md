@@ -1,3 +1,13 @@
+# Schema 8 — quatro refeições e líquidos
+
+Compatível com schemas 2–7. `daily.meals`/`mealTimes` admitem 4 ou 5 posições,
+validadas contra a versão do snapshot. `four-meals-1` tem quatro snapshots e
+metas `calorieGoal`/`proteinGoal`. Os demais formatos de nutrição ficam legíveis.
+`daily.hydration` é nulo para registros antigos ou `{version:'liquids-1',target,
+bottle,entries:[{id,at,ml}]}`. Os arrays antigos `water`/`waterTargets` são mantidos.
+Configurações adicionadas: `hydrationTarget`, `bottleVolume`, `calorieGoal`,
+`proteinGoal`. Migração transacional, auditada e idempotente; sem exclusões.
+
 # Atualização 1.3.1 — schema 7
 
 `TrainingCycle.end` opcional permite encerrar o ciclo anterior em 01/11/2026 sem apagar seus registros. O ciclo corrigido começa em 02/11/2026, preservando os percentuais originais das 12 semanas. A migração idempotente é identificada pelo ajuste `training-anchor-2026-11-02`; sessões/dias/decisões mantêm relações válidas, com execução preservada. Mudanças em banco existente incrementam revisão e registram auditoria/outbox na mesma transação. A mesma correção se aplica na restauração e retorno ao app. Backup 7 importa formatos 2–6; versões antigas não podem sobrescrever schema 7.

@@ -1,14 +1,14 @@
 import type { AppData, DailyLog } from './model';
 import type { MealSnapshot, Nutrients, NutritionDay, NutritionReference, Protein, CurrentNutritionDay, PreviousNutritionDay, Serving, FruitKey, Chocolate } from './nutritionSchema';
-import { LEGACY_MEALS, MEALS } from './plan';
-import references from './nutritionReferences.json';
+import { LEGACY_MEALS, MEALS, FIVE_MEALS } from './plan';
+import references from './nutritionReferences.json' with { type: 'json' };
 export const NUTRIENT_KEYS=['kcal','protein','carbs','fat'] as const;
 export const DEFAULT_REFERENCES=references as Record<keyof AppData['nutritionOverrides'],NutritionReference>;
 export const PROTEINS:Record<Protein,string>={chicken:'Frango',beef:'Carne',fish:'Peixe'};
-type NutritionData=Pick<AppData,'nutritionOverrides'>&Partial<Pick<AppData,'foods'>>;
+type NutritionData=Pick<AppData,'nutritionOverrides'>&Partial<Pick<AppData,'foods'|'settings'>>;
 export function nutritionReference(data:NutritionData,key:keyof typeof DEFAULT_REFERENCES):NutritionReference {
  if(data.nutritionOverrides[key])return structuredClone(data.nutritionOverrides[key]!);
- const patterns:Record<typeof key,RegExp[]>={milk:[/leite/,/integral/],bread:[/pao/,/frances/],yogurt:[/iogurte/,/grego/],rice:[/arroz/,/branco|polido/,/cozid/],chicken:[/frango/,/peito/,/cozid|grelhad|assad/],beef:[/patinho/,/grelhad|cozid/],fish:[/tilapia/,/grelhad/],nescau:[/nescau/],toddy:[/toddy/],banana:[/banana/,/prata/],apple:[/maca/,/fuji/],orange:[/laranja/,/pera/]};
+ const patterns:Record<typeof key,RegExp[]>={milk:[/leite/,/integral/],bread:[/pao/,/frances/],yogurt:[/iogurte/,/grego/],rice:[/arroz/,/branco|polido/,/cozid/],chicken:[/frango/,/peito/,/cozid|grelhad|assad/],beef:[/patinho/,/grelhad|cozid/],fish:[/tilapia/,/grelhad/],nescau:[/nescau/],toddy:[/toddy/],banana:[/banana/,/prata/],apple:[/maca/,/fuji/],orange:[/laranja/,/pera/],greekNatural:[/iogurte/,/grego/,/natural/],skimMilk:[/leite/,/desnatado/],skimPowder:[/leite/,/po/,/desnatado/],oats:[/aveia/],plainRice:[/arroz/,/cozid/,/sem oleo/],vegetables:[/legumes/],oliveOil:[/azeite/,/oliva/]};
  const base=DEFAULT_REFERENCES[key];
  const registered=[...(data.foods??[])].reverse().find(f=>{
   const name=(f.name+' '+f.brand).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -31,14 +31,14 @@ export function createPreviousNutrition(data:NutritionData,protein:Protein='chic
  const breakfast=[food('milk',500,'500 ml de leite integral'),food('bread',2*(bread.gramsPerUnit??50),'2 pães franceses')];
  const yogurt=[food('yogurt',200,'200 g de iogurte Itambé Grego Flocos')];
  const foods=[breakfast,yogurt,breakfast,yogurt,[food('rice',200,'200 g de arroz branco cozido'),food(protein,200,`200 g de ${protein==='chicken'?'peito de frango':protein==='beef'?'carne bovina':'peixe'}`)]];
- return {version:'five-meals-1',protein,plan:foods.map((f,i)=>({title:MEALS[i].title,foods:structuredClone(f)})),consumed:Array(5).fill(null)};
+ return {version:'five-meals-1',protein,plan:foods.map((f,i)=>({title:FIVE_MEALS[i].title,foods:structuredClone(f)})),consumed:Array(5).fill(null)};
 }
 
 export function serving(data:NutritionData,key:keyof typeof DEFAULT_REFERENCES,quantity:number|null,label?:string):Serving {
  const reference=nutritionReference(data,key);
  return {key,quantity,unit:reference.unit,reference,label:label??`${quantity??'Quantidade a informar'} ${reference.unit} de ${reference.name}`};
 }
-export function createNutrition(data:NutritionData,protein:Protein='chicken'):CurrentNutritionDay {
+export function createFiveMealNutrition(data:NutritionData,protein:Protein='chicken'):CurrentNutritionDay {
  const chocolateGrams=nutritionReference(data,'nescau').gramsPerUnit;
  return {version:'five-meals-2',protein,lunchProtein:'chicken',chocolate:'nescau',chocolateGrams,fruitPlan:null,fruitEntries:[],plan:[
   {title:'Refeição 1',foods:[serving(data,'yogurt',200),serving(data,'bread',2*(nutritionReference(data,'bread').gramsPerUnit??50),'2 pães franceses')]},
@@ -56,7 +56,7 @@ function current(day:DailyLog):CurrentNutritionDay {
  return day.nutrition;
 }
 export function setMealConsumed(day:DailyLog,index:number,consumed:boolean,at=new Date().toISOString()) {
- if(index<0||index>=5)throw Error('Refeição inválida.');
+ if(index<0||index>=day.meals.length)throw Error('Refeição inválida.');
  if(day.meals[index].every(Boolean)===consumed)return;
  const n=day.nutrition;
  if(n?.version==='five-meals-2'&&index===3){
@@ -74,7 +74,7 @@ export function syncMealRecord(day:DailyLog,index:number,at=new Date().toISOStri
  }else n.consumed[index]=null;
 }
 export function chooseProtein(day:DailyLog,protein:Protein,data:NutritionData,index:1|4=4) {
- const n=day.nutrition;if(!n)throw Error('Plano histórico sem seletor.');
+ const n=day.nutrition;if(!n||n.version==='four-meals-1')throw Error('O plano oficial mantém as quantidades e proteínas definidas.');
  if(n.version==='five-meals-1'){
   if(index!==4)throw Error('Este plano histórico não possui seletor na refeição 2.');
   n.protein=protein;n.plan[4]=createPreviousNutrition(data,protein).plan[4];
@@ -104,9 +104,9 @@ export function removeFruit(day:DailyLog,id:string) {
 }
 export function clearFruitPlan(day:DailyLog) {const n=current(day);n.fruitPlan=null;n.plan[3].foods=[];}
 export function refreshNutritionPlan(day:DailyLog,data:NutritionData) {
- const n=day.nutrition;if(!n||n.version!=='five-meals-2')return;
+ const n=day.nutrition;if(!n)return;if(n.version==='four-meals-1'){const base=createNutrition(data);n.plan=base.plan;return;}if(n.version!=='five-meals-2')return;
  const checks=structuredClone(day.meals),times=[...day.mealTimes];
- const base=createNutrition(data,n.protein);n.plan[0]=base.plan[0];
+ const base=createFiveMealNutrition(data,n.protein);n.plan[0]=base.plan[0];
  chooseProtein(day,n.lunchProtein,data,1);chooseProtein(day,n.protein,data,4);chooseChocolate(day,n.chocolate,data,n.chocolateGrams);
  day.meals=checks;day.mealTimes=times;
  // Fruit quantities and their references stay explicit; they are never inferred.
@@ -131,8 +131,21 @@ export function nutritionTotals(day:DailyLog) {
  return {planned,subtotal,consumed,knownPlanned,knownConsumed,archivedUnknown,fruitUnplanned,remaining:complete?Math.max(0,planned.kcal!-consumed.kcal!):null,excess:complete?Math.max(0,consumed.kcal!-planned.kcal!):null,progress:complete?(planned.kcal!>0?consumed.kcal!/planned.kcal!*100:0):null,done:n.consumed.filter(Boolean).length};
 }
 export function activateNutrition(data:AppData,date:string) {
- const day=data.days.find(d=>d.id===date);if(!day||day.nutrition?.version==='five-meals-2')return;
+ const day=data.days.find(d=>d.id===date);if(!day||day.nutrition?.version==='four-meals-1')return;
  if(day.nutrition)day.archivedNutrition.push({nutrition:structuredClone(day.nutrition),meals:structuredClone(day.meals),mealTimes:[...day.mealTimes],declaration:day.declarations.meals??null});
  else day.previousNutrition??={meals:structuredClone(day.meals),mealTimes:[...day.mealTimes],declaration:day.declarations.meals??null};
- day.nutrition=createNutrition(data);day.meals=MEALS.map(m=>m.foods.map(()=>false));day.mealTimes=Array(5).fill(null);delete day.declarations.meals;
+ day.nutrition=createNutrition(data);day.meals=MEALS.map(m=>m.foods.map(()=>false));day.mealTimes=Array(4).fill(null);delete day.declarations.meals;
+}
+
+export function createNutrition(data:NutritionData):import('./nutritionSchema').FourMealNutritionDay {
+ const keys:[keyof typeof DEFAULT_REFERENCES,number][][]=[
+ [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',50]],
+ [['chicken',200],['plainRice',250],['vegetables',150],['oliveOil',10]],
+ [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',30]],
+ [['beef',180],['plainRice',200],['vegetables',150],['oliveOil',5]],
+ ];
+ return {version:'four-meals-1',calorieGoal:data.settings?.calorieGoal??2525,proteinGoal:data.settings?.proteinGoal??190,protein:'beef',plan:keys.map((foods,i)=>({title:MEALS[i].title,foods:foods.map(([key,quantity],j)=>serving(data,key,quantity,MEALS[i].foods[j]))})),consumed:Array(4).fill(null)};
+}
+export function knownNutrients(meals:MealSnapshot[]):Nutrients {
+ return Object.fromEntries(NUTRIENT_KEYS.map(k=>[k,meals.flatMap(m=>m.foods).reduce((sum,f)=>sum+(mealNutrients({title:'',foods:[f]})[k]??0),0)])) as Nutrients;
 }

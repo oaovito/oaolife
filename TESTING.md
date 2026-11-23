@@ -120,3 +120,23 @@ e suíte Playwright completa (95 aprovados, 2 gestos CDP não aplicáveis
 ignorados). O ambiente usou Chromium instalado e WebKit WPE headless com
 bibliotecas em scratch, via configuração local temporária; nenhuma dependência
 ou arquivo de lock foi alterado. Não há script de lint configurado.
+
+### Quatro refeições e hidratação de 4.000 ml
+
+`src/test/four-meals-water.test.ts` valida porções oficiais, duas refeições
+líquidas, subtotal TACO/TBCA, dados desconhecidos, consumo apenas após conclusão,
+snapshots, IDs de água, correção/exclusão, dia novo e migração idempotente com
+preservação do histórico e dos demais módulos. Backups com histórico incompatível
+são rejeitados. Os testes de nutrição anteriores usam fixtures explícitas do plano
+antigo para continuar verificando compatibilidade.
+
+`e2e/nutrition.spec.ts` valida plano atual, histórico de cinco refeições, metas,
+equivalências de 600 ml, oito registros de 500 ml, acessibilidade, temas, offline
+e virada diária nos projetos WebKit, Chromium móvel e desktop. Os demais testes
+foram adaptados apenas onde o comportamento esperado mudou (quatro refeições e
+registro de líquidos em ml). Cobertura de treino/cardio/mobilidade foi mantida.
+
+Validação local: 146 testes unitários e 101 testes de navegador aprovados;
+dois testes CDP não aplicáveis ignorados. Build TypeScript/Vite aprovado.
+Navegadores headless não substituem teste em iPhone físico. Referências de
+produtos não fornecidos não foram preenchidas com fixtures dos testes.

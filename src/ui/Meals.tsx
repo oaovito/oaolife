@@ -1,3 +1,5 @@
+import { nutrientText, Macros, FoodDetails } from './NutritionDetails';
+import { FourMeals } from './FourMeals';
 import { useEffect, useRef, useState } from 'react';
 import { Check, RotateCcw, Flame, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 import { makeDay, nextMeal, toggleFood } from '../domain/daily';
@@ -6,10 +8,7 @@ import { addFruit, chooseChocolate, chooseProtein, clearFruitPlan, mealNutrients
 import { fruitKeys, type Chocolate, type FruitKey, type MealSnapshot, type Nutrients, type Protein } from '../domain/nutritionSchema';
 import { editDay } from '../storage/db';
 import { PageTitle, Panel, Progress, Field, CheckButton, type PageProps } from './shared';
-export const nutrientText=(v:number|null,unit='g')=>v===null?'Não informado':`${v.toLocaleString('pt-BR',{maximumFractionDigits:unit==='kcal'?0:1})} ${unit}`;
-function Macros({value}:{value:Nutrients}) {return <dl className="meal-macros">{([['protein','Proteínas'],['carbs','Carboidratos'],['fat','Gorduras']] as const).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{nutrientText(value[key])}</dd></div>)}</dl>;}
-function FoodDetails({meal}:{meal:MealSnapshot}) {return <>{meal.foods.map((f,j)=><div className="food-reference" key={j}><strong>{f.label}</strong><p>{f.reference.name} · {f.quantity??'Quantidade pendente'} {f.unit} · {nutrientText(mealNutrients({title:'',foods:[f]}).kcal,'kcal')}</p><Macros value={mealNutrients({title:'',foods:[f]})}/><p>{f.reference.note}</p><p className="source-text">{f.reference.source}</p></div>)}</>;}
-export function Meals({data,date,run,go}:PageProps) {
+export function LegacyMeals({data,date,run,go}:PageProps) {
  const [busy,setBusy]=useState(false),busyRef=useRef(false),[selection,setSelection]=useState<Record<number,string>>({}),[leaving,setLeaving]=useState<number|null>(null),[closing,setClosing]=useState(false),exitTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const day=data.days.find(d=>d.id===date)??makeDay(data,date),next=nextMeal(day),totals=nutritionTotals(day),meals=mealsForDay(day),n=day.nutrition,current=n?.version==='five-meals-2'?n:null;
  useEffect(()=>()=>{if(exitTimer.current)clearTimeout(exitTimer.current);},[]);
@@ -56,3 +55,5 @@ export function Meals({data,date,run,go}:PageProps) {
  {day.previousNutrition&&<Panel><details><summary>Registros anteriores à troca do plano neste dia</summary>{LEGACY_MEALS.map((m,i)=><p key={m.id}>{m.title}: {m.foods.filter((_,j)=>day.previousNutrition!.meals[i][j]).join(', ')||'Sem consumo detalhado'}</p>)}<p>Os nutrientes desses registros não eram conhecidos e não foram inventados.</p></details></Panel>}
  </>;
 }
+
+export function Meals(props:PageProps){const day=props.data.days.find(d=>d.id===props.date)??makeDay(props.data,props.date);return day.nutrition?.version==='four-meals-1'?<FourMeals {...props}/>:<LegacyMeals {...props}/>;}

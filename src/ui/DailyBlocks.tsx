@@ -11,7 +11,7 @@ import { currentMobilityProtocol } from '../domain/mobility';
 import { MobilityTimer } from './MobilityTimer';
 function useTick(active:boolean){const [clock,setClock]=useState(Date.now());useEffect(()=>{setClock(Date.now());if(!active)return;const t=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(t);},[active]);return clock;}
 export { Meals } from './Meals';
-export function Water({data,date,run,go}:PageProps) {
+export function LegacyWater({data,date,run,go}:PageProps) {
  const day=data.days.find(d=>d.id===date)??makeDay(data,date),consumed=day.water.reduce((a,v)=>a+v,0),target=day.waterTargets.reduce((a,v)=>a+v,0),done=day.water.filter((v,i)=>v>=day.waterTargets[i]).length;
  const renderBottle=(i:number)=><Panel key={i} className={day.water[i]>=day.waterTargets[i]?'bottle-complete':''}>
   <div className="section-heading"><span className="icon-box blue"><Droplets size={22}/></span><span className="eyebrow">GARRAFA {i+1}</span></div><h3>{WATER_LABELS[i]}</h3><p>{day.water[i]} de {day.waterTargets[i]} ml · {day.water[i]>=day.waterTargets[i]?'Concluída':day.water[i]?'Parcial':'Não iniciada'}</p>

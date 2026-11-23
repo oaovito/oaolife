@@ -46,7 +46,7 @@ export const LEGACY_MEALS:Meal[]=[
  {id:'m4',title:'Refeição 4',foods:['200 g de iogurte Itambé Grego Flocos']},
  {id:'m5',title:'Refeição 5',foods:['300 g de peito de frango desfiado','150 g de macarrão cozido']}
 ];
-export const MEALS:Meal[]=[
+export const FIVE_MEALS:Meal[]=[
  {id:'m1',title:'Refeição 1',foods:['200 g de iogurte grego','2 pães franceses']},
  {id:'m2',title:'Refeição 2',foods:['200 g de peito de frango','200 g de arroz branco cozido']},
  {id:'m3',title:'Refeição 3',foods:['500 ml de leite integral','1 colher de sopa de Nescau']},
@@ -58,3 +58,10 @@ export const CARDIO_DAYS=['A1','B1','C1','A2','B2','C2'];
 export const MOBILITY_DAYS=['A1','B1','A2'];
 export const LOAD_LABEL={total:'kg total',lado:'kg por lado',halter:'kg por halter'};
 
+
+export const MEALS:Meal[]=[
+ {id:'m1',title:'Café da manhã · líquida',foods:['200 g de iogurte grego natural','300 ml de leite desnatado','40 g de leite em pó desnatado','50 g de aveia']},
+ {id:'m2',title:'Almoço · sólida',foods:['200 g de peito de frango grelhado','250 g de arroz branco cozido','150 g de legumes','10 g de azeite de oliva']},
+ {id:'m3',title:'Lanche · líquida',foods:['200 g de iogurte grego natural','300 ml de leite desnatado','40 g de leite em pó desnatado','30 g de aveia']},
+ {id:'m4',title:'Jantar · sólida',foods:['180 g de patinho magro grelhado','200 g de arroz branco cozido','150 g de legumes','5 g de azeite de oliva']},
+];

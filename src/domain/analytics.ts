@@ -1,3 +1,4 @@
+import { waterConsumed, waterGoal } from './hydration';
 import { mealsForDay, nutritionTotals } from './nutrition';
 import type { AppData, Muscle } from './model';
 import { cycleEnd, addDays, cycleForDate, makeWorkout } from './training';
@@ -13,7 +14,7 @@ export function dayReport(data:AppData,date:string) {
   setsDone:sets.filter(s=>s.done).length,
   setsSkipped:sets.filter(s=>s.skipped).length,
   incompleteSets:sets.filter(s=>s.done&&(s.load===null||s.reps===null||s.rir===null||s.technique===null||s.range===null)).length,
-  waterMl:day?.recorded.includes('water')?day.water.reduce((a,v)=>a+v,0):null,
+  waterMl:day?.recorded.includes('water')?waterConsumed(day):null,
   cardioMinutes:day?.recorded.includes('cardio')?timerSeconds(day.cardio)/60:null,
   cardioSpeed:day?.cardio.speed??null,
   foods:[...(day?mealsForDay(day):MEALS).flatMap((m,i)=>day?.nutrition?.version==='five-meals-2'&&i===3?day.nutrition.fruitEntries.filter(f=>f.counted).map(f=>`${m.title}: ${f.serving.label}`):m.foods.filter((_,j)=>day?.meals[i][j]).map(f=>`${m.title}: ${f}`)),...(day?.archivedNutrition??[]).flatMap(a=>a.nutrition.plan.flatMap((m,i)=>(a.nutrition.consumed[i]?.meal??m).foods.filter((_,j)=>a.meals[i][j]).map(f=>`Plano anterior · ${m.title}: ${f.label}`)))],
@@ -42,7 +43,7 @@ export function metricPoints(data:AppData,start:string,end:string,metric:Metric,
  case 'cardio':value=day?.recorded.includes('cardio')?timerSeconds(day.cardio)/60:null;break;
  case 'mobility':value=day?.recorded.includes('mobility')?Object.values(day.mobility.sets).filter(v=>v.done).length:null;break;
  case 'meals':value=day?.recorded.includes('meals')?day.meals.filter(m=>m.every(Boolean)).length:null;break;
- case 'water':value=day?.recorded.includes('water')?day.water.reduce((a,v)=>a+v,0):null;break;
+ case 'water':value=day?.recorded.includes('water')?waterConsumed(day):null;break;
  case 'sleep':value=day?.recovery.sleep??null;break;
  case 'recovery':value=day?.recovery.fatigue??null;break;
  }
@@ -55,6 +56,6 @@ export function cycleReport(data:AppData,cycleId:string) {
  const first=sessions.filter(s=>s.week===1),last=sessions.filter(s=>s.week===12);
  const setCount=(items:typeof sessions)=>items.flatMap(s=>s.exercises.flatMap(e=>e.sets)).filter(s=>s.done).length;
  const waist=data.measurements.filter(m=>m.date>=cycle.start&&m.date<=end&&m.waist!==null).sort((a,b)=>a.date.localeCompare(b.date));
- return {confirmedWithoutDetails:days.filter(d=>Object.keys(d.declarations).length>0).length,skippedSets:sessions.flatMap(s=>s.exercises.flatMap(e=>e.sets)).filter(s=>s.skipped).length,start:cycle.start,end,week1Sets:setCount(first),week12Sets:setCount(last),firstWeight:weeklyWeight(data,addDays(cycle.start,6)),lastWeight:weeklyWeight(data,end),waistChange:waist.length>=2?waist.at(-1)!.waist!-waist[0].waist!:null,daysLogged:days.length,meals:days.filter(d=>d.recorded.includes('meals')).reduce((a,d)=>a+d.meals.filter(m=>m.every(Boolean)).length,0),waterDays:days.filter(d=>d.recorded.includes('water')&&d.water.every((v,i)=>v>=d.waterTargets[i])).length,cardioMinutes:days.filter(d=>d.recorded.includes('cardio')).reduce((a,d)=>a+timerSeconds(d.cardio)/60,0),mobilitySets:days.reduce((a,d)=>a+Object.values(d.mobility.sets).filter(s=>s.done).length,0),averageSleep:average(days.map(d=>d.recovery.sleep)),averageFatigue:average(days.map(d=>d.recovery.fatigue)),completedSessions:sessions.filter(s=>s.status==='complete').length,partialSessions:sessions.filter(s=>s.status==='partial').length};
+ return {confirmedWithoutDetails:days.filter(d=>Object.keys(d.declarations).length>0).length,skippedSets:sessions.flatMap(s=>s.exercises.flatMap(e=>e.sets)).filter(s=>s.skipped).length,start:cycle.start,end,week1Sets:setCount(first),week12Sets:setCount(last),firstWeight:weeklyWeight(data,addDays(cycle.start,6)),lastWeight:weeklyWeight(data,end),waistChange:waist.length>=2?waist.at(-1)!.waist!-waist[0].waist!:null,daysLogged:days.length,meals:days.filter(d=>d.recorded.includes('meals')).reduce((a,d)=>a+d.meals.filter(m=>m.every(Boolean)).length,0),waterDays:days.filter(d=>d.recorded.includes('water')&&waterConsumed(d)>=waterGoal(d)).length,cardioMinutes:days.filter(d=>d.recorded.includes('cardio')).reduce((a,d)=>a+timerSeconds(d.cardio)/60,0),mobilitySets:days.reduce((a,d)=>a+Object.values(d.mobility.sets).filter(s=>s.done).length,0),averageSleep:average(days.map(d=>d.recovery.sleep)),averageFatigue:average(days.map(d=>d.recovery.fatigue)),completedSessions:sessions.filter(s=>s.status==='complete').length,partialSessions:sessions.filter(s=>s.status==='partial').length};
 }
 function average(values:(number|null)[]){const present=values.filter((v):v is number=>v!==null);return present.length?present.reduce((a,v)=>a+v,0)/present.length:null;}

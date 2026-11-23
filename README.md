@@ -12,6 +12,8 @@ O aplicativo abre no dashboard. A data vem do dispositivo. Segunda A1, terça B1
 
 Conclua séries ou exercícios com um toque; carga, repetições, RIR, técnica e amplitude são opcionais para o registro e obrigatórios para a progressão automática. Séries não realizadas ficam separadas dos totais executados. Conclua o treino ou encerre parcialmente com motivo. Alimentação, água, cardio e hipercifose são independentes. O dia só termina quando os blocos programados terminam. O alongamento de hipercifose em pé com cotovelos na parede já está disponível: 4 séries de 60 s, 3 descansos de 60 s, sequência automática de 7 min. Os incrementos dos equipamentos continuam sendo informados separadamente. Novos dias de cardio usam 360 minutos semanais de esteira (quarta e sábado 30 min; demais dias 60 min), a pelo menos 5,0 km/h; a velocidade realmente realizada é informada separadamente.
 
+O plano alimentar ativo tem quatro refeições (duas líquidas e duas sólidas), com porções e referências em [NUTRITION.md](NUTRITION.md). A meta inicial de líquidos é 4.000 ml, ajustável, com garrafa visual de 500 ou 600 ml, registros manuais e histórico. Metas de energia e proteína também são configuráveis; referências ausentes permanecem explícitas, sem inventar totais. Planos antigos e consumos realizados são preservados.
+
 ## Instalação no iPhone
 
 Abra https://oaolife.vercel.app no Safari → Compartilhar → Adicionar à Tela de Início. Aguarde o primeiro carregamento conectado para armazenar os recursos. Não é preciso assinatura Apple Developer. A validação em iPhone físico deve complementar os testes automatizados; não está presumida.

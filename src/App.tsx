@@ -1,3 +1,4 @@
+import { Water } from './ui/Water';
 import { version } from '../package.json';
 import { CompletionFeedback } from './ui/CompletionFeedback';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +9,7 @@ import { dateSchema } from './domain/model';
 import { addDays } from './domain/training';
 import { Home } from './ui/Home';
 import { Workout } from './ui/Workout';
-import { Meals, Water, Cardio, Mobility } from './ui/DailyBlocks';
+import { Meals, Cardio, Mobility } from './ui/DailyBlocks';
 import { Plan } from './ui/Plan';
 import { ProgressPage } from './ui/ProgressPage';
 import { Hormonal } from './ui/Hormonal';
