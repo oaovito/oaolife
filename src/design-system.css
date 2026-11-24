@@ -46,8 +46,21 @@ input,select,textarea{font-size:var(--font-md);min-height:var(--control-height);
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}.meal-exit{animation:none}.progress>span,button{transition:none}}
 /* Keep each training value readable on narrow phones instead of breaking ranges. */
 @media(max-width:400px){
+ /* Leave room for the wider offline icon and date controls with fallback fonts. */
+ .topbar{gap:6px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .mobile-brand{font-size:20px}
+ .date-picker{min-width:0}
+ .connection{margin-left:0}
  .exercise-meta.prominent{grid-template-columns:minmax(0,1fr)}
  .exercise-meta.prominent>span{flex-direction:row;align-items:center;justify-content:space-between;gap:12px;text-align:left}
  .exercise-meta.prominent strong{font-size:1.5rem;white-space:nowrap}
  .exercise-meta.prominent small{flex:1;min-width:0}
+}
+/* Short screens need the full card width for multi-line activity titles.
+   Keep the icon beside the value so neither the value nor status is squeezed. */
+@media(max-width:760px) and (max-height:700px){
+ .home-layout .routine-card{grid-template-rows:auto minmax(0,1fr) auto;gap:2px 6px;padding:6px 8px}
+ .home-layout .routine-card:nth-child(n) h3{grid-column:1/-1;grid-row:1}
+ .home-layout .routine-card .icon-box{grid-column:1;grid-row:2;align-self:center}
+ .home-layout .routine-card .routine-value{grid-column:2;grid-row:2}
 }

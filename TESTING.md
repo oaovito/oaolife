@@ -140,3 +140,24 @@ Validação local: 146 testes unitários e 101 testes de navegador aprovados;
 dois testes CDP não aplicáveis ignorados. Build TypeScript/Vite aprovado.
 Navegadores headless não substituem teste em iPhone físico. Referências de
 produtos não fornecidos não foram preenchidas com fixtures dos testes.
+
+### Fontes alternativas e cabeçalho offline em 320 px
+
+A execução no GitHub expôs duas diferenças de métricas da fonte DejaVu Sans:
+o título de mobilidade ocupava linhas demais na coluna ao lado do ícone e
+empurrava o status para fora do cartão; o ícone offline, maior que o indicador
+online, fazia o cabeçalho alcançar 322,3 px em uma viewport de 320 px.
+Em telas baixas, o título agora usa toda a largura do cartão, com ícone e valor
+na linha seguinte. Em telas estreitas, o cabeçalho usa espaçamento e marca
+compactos, removendo a largura mínima desnecessária do seletor de data.
+Não há ocultação de conteúdo nem interceptação de eventos de toque.
+
+O teste de regressão em `e2e/horizontal-layout.spec.ts` força essa fonte,
+verifica títulos, valores e status em quatro tamanhos e testa o cabeçalho
+offline, inclusive consultando uma data anterior com o botão Hoje visível.
+
+Validação local: 146 testes unitários, build e auditoria de produção aprovados
+(zero vulnerabilidades). Na suíte de navegador, 103 testes passaram e dois
+gestos CDP não aplicáveis foram ignorados. O teste restante, de reabertura do
+treino offline no desktop, teve timeout aguardando o controlador do Service
+Worker; passou em três repetições isoladas, sem alteração do código ou do teste.

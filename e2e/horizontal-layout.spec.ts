@@ -49,3 +49,28 @@ test('gestos horizontais e diagonais não deslocam a página; gesto vertical rol
  expect(await page.locator('.main-shell').evaluate(el=>el.scrollTop)).toBeGreaterThan(30);
  await assertFits(page);
 });
+
+test('fontes alternativas preservam títulos, status e cabeçalho offline em telas pequenas',async({page,context})=>{
+ await page.clock.install({time:new Date('2026-11-02T12:00:00-03:00')});
+ await page.goto('/');await expect(page.locator('.routine-card')).toHaveCount(6);
+ // DejaVu Sans reproduces the wider fallback metrics used by Linux WebKit CI.
+ await page.addStyleTag({content:':root{font-family:"DejaVu Sans",sans-serif}'});
+ for(const [width,height] of [[320,568],[375,667],[390,700],[430,932]]){
+  await page.setViewportSize({width,height});await assertFits(page);
+  expect(await page.locator('.routine-card').evaluateAll(cards=>cards.flatMap(card=>{
+   const bounds=card.getBoundingClientRect();
+   return [...card.querySelectorAll('h3,.status,.routine-value')].filter(el=>{
+    const r=el.getBoundingClientRect();return r.left<bounds.left||r.right>bounds.right||r.top<bounds.top||r.bottom>bounds.bottom;
+   }).map(el=>el.textContent);
+  }))).toEqual([]);
+ }
+ await page.setViewportSize({width:320,height:700});await page.goto('/hidratacao');
+ await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
+ await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+ await context.setOffline(true);await page.reload();await expect(page.locator('.offline-banner')).toBeVisible();
+ await page.addStyleTag({content:':root{font-family:"DejaVu Sans",sans-serif}'});
+ await assertFits(page);
+ await page.getByRole('button',{name:'Dia anterior',exact:true}).click();
+ await expect(page.getByRole('banner').getByRole('button',{name:'Hoje',exact:true})).toBeVisible();await assertFits(page);
+ await context.setOffline(false);
+});
