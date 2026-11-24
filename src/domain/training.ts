@@ -56,17 +56,17 @@ export function reschedule(data:AppData,from:string,to:string) {
  data.adjustments.push({id:uid(),at:now(),kind:'Reagendamento',detail:`${a}: ${from} → ${to}; ${b||'descanso'}: ${to} → ${from}`});
 }
 
-export const TRAINING_ANCHOR='2026-11-02';
-export function anchorTrainingCycle(data:AppData,date:string):boolean {
+const PREVIOUS_TRAINING_ANCHOR='2026-11-02';
+function anchorPreviousTrainingCycle(data:AppData,date:string):boolean {
  const marker='training-anchor-2026-11-02';
- if(date<TRAINING_ANCHOR||data.adjustments.some(a=>a.id===marker))return false;
- const end=addDays(TRAINING_ANCHOR,83);
- const candidates=data.cycles.filter(c=>c.start>=TRAINING_ANCHOR&&c.start<=end).sort((a,b)=>a.start.localeCompare(b.start));
- const target=candidates[0]??{id:uid(),start:TRAINING_ANCHOR,originalVersion:'original-1' as const,createdAt:now(),overrides:{}};
+ if(date<PREVIOUS_TRAINING_ANCHOR||data.adjustments.some(a=>a.id===marker))return false;
+ const end=addDays(PREVIOUS_TRAINING_ANCHOR,83);
+ const candidates=data.cycles.filter(c=>c.start>=PREVIOUS_TRAINING_ANCHOR&&c.start<=end).sort((a,b)=>a.start.localeCompare(b.start));
+ const target=candidates[0]??{id:uid(),start:PREVIOUS_TRAINING_ANCHOR,originalVersion:'original-1' as const,createdAt:now(),overrides:{}};
  if(!candidates.length)data.cycles.push(target);
- for(const c of data.cycles){if(c.id!==target.id&&c.start<TRAINING_ANCHOR&&cycleEnd(c)>=TRAINING_ANCHOR){for(const [day,template] of Object.entries(c.overrides))if(day>=TRAINING_ANCHOR&&day<=end&&!Object.hasOwn(target.overrides,day))target.overrides[day]=template;c.end=addDays(TRAINING_ANCHOR,-1);}}
- target.start=TRAINING_ANCHOR;target.end=candidates[1]?addDays(candidates[1].start,-1):end;
- for(const s of data.sessions){if(s.date<TRAINING_ANCHOR||s.date>cycleEnd(target))continue;s.cycleId=target.id;
+ for(const c of data.cycles){if(c.id!==target.id&&c.start<PREVIOUS_TRAINING_ANCHOR&&cycleEnd(c)>=PREVIOUS_TRAINING_ANCHOR){for(const [day,template] of Object.entries(c.overrides))if(day>=PREVIOUS_TRAINING_ANCHOR&&day<=end&&!Object.hasOwn(target.overrides,day))target.overrides[day]=template;c.end=addDays(PREVIOUS_TRAINING_ANCHOR,-1);}}
+ target.start=PREVIOUS_TRAINING_ANCHOR;target.end=candidates[1]?addDays(candidates[1].start,-1):end;
+ for(const s of data.sessions){if(s.date<PREVIOUS_TRAINING_ANCHOR||s.date>cycleEnd(target))continue;s.cycleId=target.id;
   if(s.date>=date&&s.status==='open'){
    const planned=makeWorkout(data,s.date);if(!planned||planned.template!==s.template)continue;
    s.week=planned.week;s.volume=planned.volume;
@@ -77,8 +77,47 @@ export function anchorTrainingCycle(data:AppData,date:string):boolean {
    }
   }
  }
- for(const day of data.days)if(day.id>=TRAINING_ANCHOR&&day.id<=cycleEnd(target))day.cycleId=target.id;
+ for(const day of data.days)if(day.id>=PREVIOUS_TRAINING_ANCHOR&&day.id<=cycleEnd(target))day.cycleId=target.id;
  for(const decision of data.decisions){const s=data.sessions.find(s=>s.id===decision.sessionId);if(s)decision.cycleId=s.cycleId;}
  data.adjustments.push({id:marker,at:now(),kind:'Semana 1 em 02/11/2026',detail:'Periodização preservada; ciclo ancorado em 02/11/2026. Histórico de execução preservado.'});
+ return true;
+}
+
+// A new explicit start does not rewrite the completed weeks before November 23.
+export const TRAINING_ANCHOR='2026-11-23';
+const TRAINING_MARKER='training-anchor-2026-11-23';
+export function trainingAnchorPending(data:AppData,date:string) {
+ return (date>=PREVIOUS_TRAINING_ANCHOR&&!data.adjustments.some(a=>a.id==='training-anchor-2026-11-02'))||(date>=TRAINING_ANCHOR&&!data.adjustments.some(a=>a.id===TRAINING_MARKER));
+}
+export function anchorTrainingCycle(data:AppData,date:string):boolean {
+ const previousChanged=anchorPreviousTrainingCycle(data,date);
+ if(date<TRAINING_ANCHOR||data.adjustments.some(a=>a.id===TRAINING_MARKER))return previousChanged;
+ const future=data.cycles.filter(c=>c.start>TRAINING_ANCHOR).sort((a,b)=>a.start.localeCompare(b.start))[0];
+ const end=future&&future.start<=addDays(TRAINING_ANCHOR,83)?addDays(future.start,-1):addDays(TRAINING_ANCHOR,83);
+ const target=data.cycles.find(c=>c.start===TRAINING_ANCHOR)??{id:uid(),start:TRAINING_ANCHOR,originalVersion:'original-1' as const,createdAt:now(),overrides:{}};
+ if(!data.cycles.includes(target))data.cycles.push(target);
+ for(const c of data.cycles){if(c.id!==target.id&&c.start<TRAINING_ANCHOR&&cycleEnd(c)>=TRAINING_ANCHOR){
+  for(const [day,template] of Object.entries(c.overrides))if(day>=TRAINING_ANCHOR&&day<=end&&!Object.hasOwn(target.overrides,day))target.overrides[day]=template;
+  c.end=addDays(TRAINING_ANCHOR,-1);
+ }}
+ target.end=end;
+ for(const session of data.sessions){
+  if(session.date<TRAINING_ANCHOR||session.date>end)continue;
+  session.cycleId=target.id;
+  // Preserve closed sessions as executed. Open sessions, including Monday 23,
+  // receive the new plan without removing any entered or completed set.
+  if(session.status!=='open')continue;
+  const planned=makeWorkout(data,session.date);if(!planned||planned.template!==session.template)continue;
+  session.week=planned.week;session.volume=planned.volume;
+  for(const exercise of session.exercises){
+   const next=planned.exercises.find(e=>e.id===exercise.id);if(!next)continue;exercise.rir=next.rir;
+   const untouched=(v:typeof exercise.sets[number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
+   while(exercise.sets.length>next.sets.length&&untouched(exercise.sets.at(-1)!))exercise.sets.pop();
+   while(exercise.sets.length<next.sets.length){let index=exercise.sets.length;while(exercise.sets.some(v=>v.id===`${exercise.id}:${index}`))index++;exercise.sets.push({...next.sets[exercise.sets.length],id:`${exercise.id}:${index}`});}
+  }
+ }
+ for(const day of data.days)if(day.id>=TRAINING_ANCHOR&&day.id<=end)day.cycleId=target.id;
+ for(const decision of data.decisions){const session=data.sessions.find(s=>s.id===decision.sessionId);if(session)decision.cycleId=session.cycleId;}
+ data.adjustments.push({id:TRAINING_MARKER,at:now(),kind:'Semana 1 em 23/11/2026',detail:'Semana 1 com 75% do volume a partir de 23/11/2026. Séries registradas e sessões encerradas preservadas.'});
  return true;
 }

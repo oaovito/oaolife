@@ -161,3 +161,31 @@ Validação local: 146 testes unitários, build e auditoria de produção aprova
 gestos CDP não aplicáveis foram ignorados. O teste restante, de reabertura do
 treino offline no desktop, teve timeout aguardando o controlador do Service
 Worker; passou em três repetições isoladas, sem alteração do código ou do teste.
+
+### Atualização visível e retomada das atividades
+
+O aviso sempre mostra **Atualizar agora**. Apenas gravações pendentes,
+formulários não salvos ou uma ativação em andamento desabilitam o botão.
+Sessões abertas e cronômetros persistidos não exigem encerramento artificial.
+O motivo de encerramento parcial integra a proteção de formulários.
+Ajustes oferece **Verificar atualizações** e exibe a versão do pacote.
+
+`e2e/updates.spec.ts` substitui o teste antigo que exigia encerrar o treino.
+A troca real do Service Worker é exercitada em WebKit, Chromium móvel e desktop,
+verificando água, sessão, séries, preferências, cronômetros, retomada offline,
+campos pendentes, cabeçalho em 320–1440 px, checagem manual e ativação em outra
+aba sem descartar o rascunho da aba original. Nenhuma atualização apaga caches
+manualmente ou remove dados locais.
+
+### Reinício da semana 1 em 23/11/2026
+
+`training-week23.test.ts` valida o novo calendário, 75% do volume (22 séries
+no A1), preservação dos registros anteriores e das sessões encerradas,
+atualização das sessões abertas desde segunda-feira, reagendamentos, ciclos
+futuros, auditoria e migração idempotente na virada local. O teste de navegador
+confere a segunda-feira, registro de série, recarga offline e semana 2 em 30/11.
+A migração antiga de 02/11 continua coberta para compatibilidade de backups.
+
+Validação local da versão 1.3.2: 151 testes unitários, build TypeScript/Vite,
+18 testes de atualização e calendário nos três navegadores e 38 testes de
+regressão de interface aprovados. Auditoria de produção sem vulnerabilidades.

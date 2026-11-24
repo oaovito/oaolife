@@ -3,7 +3,7 @@ import { activateNutrition, mealsForDay } from '../domain/nutrition';
 import Dexie, { type Table } from 'dexie';
 import { appDataSchema, type AppData, type SyncOperation } from '../domain/model';
 import { emptyData, makeDay, workoutComplete, summaries, pauseCardio, timedCompletionRequired } from '../domain/daily';
-import { TRAINING_ANCHOR, addDays, anchorTrainingCycle, cycleEnd, makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
+import { trainingAnchorPending, addDays, anchorTrainingCycle, cycleEnd, makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
 import { LEGACY_MEALS } from '../domain/plan';
 import { cardioGoalReached } from '../domain/cardio';
@@ -101,7 +101,7 @@ export function confirmDay(date:string) {
 export async function reconcileTimers(clock=Date.now(),database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
   const snapshot=await database.state.get('main');if(!snapshot)return;
-  if(today()>=TRAINING_ANCHOR&&!snapshot.data.adjustments.some(a=>a.id==='training-anchor-2026-11-02'))await mutate('Ancorar semana 1 em 02/11/2026','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
+  if(trainingAnchorPending(snapshot.data,today()))await mutate('Aplicar início configurado da periodização','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
   const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||(day.mobility.protocol?.exercises??[]).some(ex=>sequenceNeedsSync(day.mobility,ex,clock));
   if(!snapshot.data.days.some(needs))return;
   await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{

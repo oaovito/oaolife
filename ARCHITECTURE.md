@@ -16,7 +16,7 @@ Persistência por agregado: `state/main` reúne as entidades de domínio; audito
 
 Sessões são snapshots do planejamento ao abrir o treino. Novas sugestões não editam snapshots já abertos. Não existe registro automático de execução. Cada alteração lê a última revisão dentro da transação, preservando alterações concorrentes de outras abas. A restauração exige a mesma revisão analisada pelo usuário.
 
-Service Worker gerado com Workbox: precache dos arquivos construídos, fallback de navegação e atualização em espera. Nada de dados pessoais em Cache Storage. Ativação bloqueada durante sessão ou cronômetro ativo e operações de gravação.
+Service Worker gerado com Workbox: precache dos arquivos construídos, fallback de navegação e atualização em espera. Nada de dados pessoais em Cache Storage. Ativação bloqueada durante formulários não salvos e operações de gravação. Sessões e cronômetros persistidos sobrevivem à atualização explícita, sem encerramento artificial. A aplicação impede novas interações durante a ativação e libera uma nova tentativa se o Service Worker não responder.
 
 
 ## Adaptação à Vercel

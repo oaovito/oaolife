@@ -16,7 +16,7 @@ Fonte executável auditável: `src/domain/plan.ts`, `ORIGINAL_PLAN`, versão `or
 
 Referência fixa: sábado 17/10/2026 = C2. 16/10 B2, 18/10 descanso, 19/10 A1, 20/10 B1, 21/10 C1, 22/10 A2, 23/10 B2, 24/10 C2, 25/10 descanso. Funciona sem internet. Data local revalidada à meia-noite, em até um minuto se o relógio/fuso mudar, no foco, pageshow e retorno visível. Uma data explicitamente consultada fica selecionada até tocar Hoje.
 
-A data inicial do ciclo define a semana (intervalos de sete dias), sem alterar a divisão semanal. O formulário de semana atual calcula o início pela segunda-feira da semana selecionada e mostra a data antes da confirmação. A partir da versão 1.3.1, o ciclo foi explicitamente ancorado em 02/11/2026 por solicitação do usuário; a semana é calculada pela data local. Reagendamento troca duas datas do mesmo ciclo sem sessão registrada; não desloca semanas posteriores.
+A data inicial do ciclo define a semana (intervalos de sete dias), sem alterar a divisão semanal. O formulário de semana atual calcula o início pela segunda-feira da semana selecionada e mostra a data antes da confirmação. A partir da versão 1.3.1, o ciclo foi explicitamente ancorado em 02/11/2026 por solicitação do usuário; a semana é calculada pela data local. Na versão 1.3.2, uma nova solicitação define 23/11/2026 como início da semana 1 (75% das séries, RIR 3–4). O ciclo anterior termina em 22/11; registros anteriores e sessões encerradas são preservados. Sessões abertas desde 23/11 recebem a nova distribuição, mantendo séries já preenchidas/concluídas. A migração é idempotente e conserva ciclos futuros explicitamente configurados. Reagendamento troca duas datas do mesmo ciclo sem sessão registrada; não desloca semanas posteriores.
 
 ## C2 original
 
