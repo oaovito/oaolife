@@ -4,13 +4,11 @@ import { activateHormonalPlan } from '../domain/hormonal';
 import { activateMealPlan, activateNutrition, FOUR_MEAL_PLAN, FOUR_MEAL_PLAN_2111, isPlanLayout, mealsForDay } from '../domain/nutrition';
 import Dexie, { type Table } from 'dexie';
 import { appDataSchema, blockKeys, type AppData, type SyncOperation } from '../domain/model';
-import { emptyData, makeDay, workoutComplete, summaries, pauseCardio, timedCompletionRequired } from '../domain/daily';
+import { emptyData, makeDay, workoutComplete, summaries, stopCardioTimer, timedCompletionRequired } from '../domain/daily';
 import { trainingAnchorPending, addDays, anchorTrainingCycle, reconcileOpenSessions, cycleEnd, makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
 import { LEGACY_MEALS } from '../domain/plan';
-import { cardioGoalReached } from '../domain/cardio';
 import { mobilityTimersRunning, stopMobilityTimers } from '../domain/mobility';
-import { finishCardio } from '../domain/daily';
 import { migrateV9, migrationPending } from '../domain/migrations';
 export interface SnapshotRecord { id:string; at:string; revision:number; reason:string; data:unknown }
 export interface StateRecord { id:'main'; revision:number; data:AppData }
@@ -92,7 +90,7 @@ export function confirmDay(date:string) {
    session.status=workoutComplete(session)?'complete':'partial';session.closedAt=now();
    session.reason='Dia confirmado pelo usuário; detalhes não registrados permanecem desconhecidos.';
   }
-  if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
+  stopCardioTimer(day.cardio);
   stopMobilityTimers(day.mobility);
   const blocks=summaries(data,date);
   for(const key of blockKeys)if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
@@ -106,11 +104,12 @@ export async function reconcileTimers(clock=Date.now(),database=db) {
   const snapshot=await database.state.get('main');if(!snapshot)return;
   if(trainingAnchorPending(snapshot.data,today()))await mutate('Aplicar início configurado da periodização','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
   if(migrationPending(snapshot.data))await mutate('Atualização 9','Metas e referências alimentares; séries do plano vigente',data=>{migrateV9(data,today());},database);
-  const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||mobilityTimersRunning(day.mobility);
+  const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null||mobilityTimersRunning(day.mobility);
   if(!snapshot.data.days.some(needs))return;
-  await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{
+  await mutate('Encerrar cronômetros antigos','Cardio e postura sem cronômetro; tempo decorrido preservado',data=>{
    for(const day of data.days){
-    if(day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock))finishCardio(day.cardio,clock);
+    // Cardio sem cronômetro: encerra cronômetros antigos, preservando o tempo já registrado.
+    stopCardioTimer(day.cardio,clock);
     // Postura sem cronômetro: encerra cronômetros antigos, preservando o tempo já registrado.
     stopMobilityTimers(day.mobility,clock);
    }

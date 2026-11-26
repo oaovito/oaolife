@@ -79,13 +79,10 @@ test('campos e conclusão de séries funcionam sem ampliar a página em retrato 
  await expect(reps).toHaveValue('12');
 });
 
-test('cronômetro de cardio, séries de postura e tema claro mantêm controles visíveis',async({page})=>{
+test('registro de cardio, séries de postura e tema claro mantêm controles visíveis',async({page})=>{
  await page.goto('/cardio');
- await page.getByRole('button',{name:'Iniciar',exact:true}).click();
- await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();
- await page.clock.fastForward(2000);
- await page.getByRole('button',{name:'Pausar',exact:true}).click();
- await expect(page.getByRole('timer',{name:'Tempo realizado de cardio'})).toHaveText('00:02');
+ await page.getByRole('button',{name:'Concluir 60 min',exact:true}).click();
+ await expect(page.getByRole('button',{name:'60 min concluídos',exact:true})).toHaveAttribute('aria-pressed','true');
  await stableWidth(page);
  await page.goto('/mobilidade');
  for(const n of [1,2,3,4])await page.getByRole('button',{name:`Série ${n}`,exact:true}).click();

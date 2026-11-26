@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, BarChart3, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, House, Scale, Scissors, Undo2, Utensils, Wind } from 'lucide-react';
+import { AlarmClock, AlertTriangle, BarChart3, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, House, Scale, Scissors, Undo2, Utensils, Wind } from 'lucide-react';
 import { summaries, dayComplete, makeDay } from '../domain/daily';
 import { cycleForDate, schedule, makeWorkout } from '../domain/training';
 import { ORIGINAL_PLAN, WEEKS } from '../domain/plan';
@@ -27,6 +27,7 @@ function WeighIn({data,date,run}:Pick<PageProps,'data'|'date'|'run'>){
 
 type Module = { key:BlockKey; code:string; title:string; icon:typeof Dumbbell };
 const MODULES:Module[]=[
+ {key:'despertar',code:'00',title:'Despertar 06:00',icon:AlarmClock},
  {key:'workout',code:'01',title:'Treino',icon:Dumbbell},
  {key:'meals',code:'02',title:'Alimentação',icon:Utensils},
  {key:'water',code:'03',title:'Hidratação',icon:Droplets},
@@ -36,7 +37,7 @@ const MODULES:Module[]=[
  {key:'mancare',code:'07',title:'ManCare',icon:Scissors},
  {key:'casa',code:'08',title:'Cuidado Casa',icon:House},
 ];
-const isRoutine=(key:BlockKey):key is RoutineBlock=>key==='mancare'||key==='casa';
+const isRoutine=(key:BlockKey):key is RoutineBlock=>key==='despertar'||key==='mancare'||key==='casa';
 const int=(v:number)=>Math.round(v).toLocaleString('pt-BR');
 const liters=(ml:number)=>(ml/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2});
 type Figure={value:string;unit:string;detail:string;remaining:string;progress:number;max:number};
@@ -75,7 +76,6 @@ export function Home({data,date,go,run}:PageProps){
  const alerts:string[]=[],sync=useSyncState(),syncWarning=syncAlert(sync);
  const perfect=useMemo(()=>perfectDays(data,date),[data,date]),rank=useMemo(()=>rankFor(perfect.total),[perfect.total]);
  const {promotion,close:closePromotion}=usePromotion(rank,date===today());
- if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
 
  // ManCare e Cuidado Casa: cada item é marcado direto em Hoje, com um toque.
  // Item com etapas (Máquina de roupa): cada toque registra a próxima etapa, na ordem fixa.
@@ -107,12 +107,12 @@ export function Home({data,date,go,run}:PageProps){
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
-   {next?<button className="primary next-action" onClick={()=>isRoutine(next.key)?document.getElementById(`module-${next.key}`)?.querySelector<HTMLButtonElement>('.routine-item[aria-pressed=false]')?.focus():go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {isRoutine(next.key)?routineItems(next.key,date).filter(i=>!routineDone(day,i)).map(i=>i.steps?routineProgress(day,i).next!.label:i.name).join(', '):figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
+   {next?.key==='despertar'?<button className="primary next-action" aria-pressed={false} onClick={()=>void run(()=>editDay(date,'Despertar 06:00',d=>{toggleRoutine(d,'despertar','despertar',new Date().toISOString());}))}><span><small>PRÓXIMA AÇÃO · UM TOQUE CONFIRMA</small>Despertar 06:00 · acordei às 6h</span><Check size={20} aria-hidden="true"/></button>:next?<button className="primary next-action" onClick={()=>isRoutine(next.key)?document.getElementById(`module-${next.key}`)?.querySelector<HTMLButtonElement>('.routine-item[aria-pressed=false]')?.focus():go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {isRoutine(next.key)?routineItems(next.key,date).filter(i=>!routineDone(day,i)).map(i=>i.steps?routineProgress(day,i).next!.label:i.name).join(', '):figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
   </section>
   {isSunday(date)&&<WeighIn data={data} date={date} run={run}/>}
   {reportReleased(data,weekStart(date),date)&&isSunday(date)&&<button className="secondary report-ready" onClick={()=>openReports(go)}><BarChart3 size={18} aria-hidden="true"/>Relatório da semana disponível<ChevronRight size={18} aria-hidden="true"/></button>}
   {alerts.length>0&&<ul className="alerts" aria-label="Alertas">{alerts.map(a=><li key={a}><AlertTriangle size={15} aria-hidden="true"/><span>{a}</span></li>)}</ul>}
-  <div className="module-grid" id="daily-routine">{MODULES.filter(m=>blocks[m.key].status!=='Não programado'&&(open||blocks[m.key].status!=='Concluído')).map(card)}</div>
+  <div className="module-grid" id="daily-routine">{MODULES.filter(m=>blocks[m.key].status!=='Não programado'&&(open||blocks[m.key].status!=='Concluído')&&(m.key!=='despertar'||blocks[m.key].status==='Concluído')).map(card)}</div>
   {done.length>0&&<button className="secondary completed-toggle" aria-expanded={open} aria-controls="daily-routine" onClick={()=>setShowDone(open?null:date)}><Check size={16} aria-hidden="true"/>{open?'Ocultar módulos concluídos':`Concluídos (${done.length}) · ver e corrigir`}</button>}
  </div>;
 }

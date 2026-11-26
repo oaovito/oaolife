@@ -8,8 +8,8 @@ import { cardioGoalReached, weeklyCardio, CARDIO_WEEKLY_MINUTES } from './cardio
 // Relatório semanal (segunda a domingo). Liberado depois do cardio de domingo concluído,
 // ou automaticamente quando a semana termina. Só usa registros reais: ausência ≠ zero.
 
-export type ModuleKey='workout'|'meals'|'water'|'cardio'|'mobility'|'mancare'|'casa';
-export const MODULE_LABELS:Record<ModuleKey,string>={workout:'Treino',meals:'Alimentação',water:'Hidratação',cardio:'Cardio',mobility:'Alongamento',mancare:'ManCare',casa:'Cuidado Casa'};
+export type ModuleKey='workout'|'meals'|'water'|'cardio'|'mobility'|'despertar'|'mancare'|'casa';
+export const MODULE_LABELS:Record<ModuleKey,string>={workout:'Treino',meals:'Alimentação',water:'Hidratação',cardio:'Cardio',mobility:'Alongamento',despertar:'Despertar 06:00',mancare:'ManCare',casa:'Cuidado Casa'};
 const MODULES=Object.keys(MODULE_LABELS) as ModuleKey[];
 
 export interface DayLine {date:string;kcal:number|null;protein:number|null;waterMl:number|null;waterGoal:number;cardioMin:number;cardioPlanned:number|null;setsDone:number;setsPlanned:number;mobilityDone:boolean;done:Record<ModuleKey,boolean|null>}

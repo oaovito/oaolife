@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import Dexie from 'dexie';
-import { finishCardio, emptyData, makeDay, summaries } from '../domain/daily';
+import { settleCardio, emptyData, makeDay, summaries } from '../domain/daily';
 import { ORIGINAL_PLAN, WEEKS } from '../domain/plan';
 import { anchorTrainingCycle, makeWorkout, now, setFactor, weeklyVolume, cycleForDate, schedule, addDays } from '../domain/training';
 import { mealNutrients, nutritionTotals, setMealConsumed, nutritionReference, activateMealPlan, FOUR_MEAL_PLAN_2111, serving } from '../domain/nutrition';
@@ -106,10 +106,10 @@ describe('plano alimentar vigente (26/11/2026) · TACO/TBCA',()=>{
 describe('cardio · prescrição rígida (seg, ter, qui, sex, dom · 60 min = 300/semana)',()=>{
  it('minutos extras ou em dia sem cardio não compensam outro dia; semana fecha com as 5 sessões',()=>{
   const data=emptyData();
-  for(const [id,min] of [['2026-11-23',120],['2026-11-24',120],['2026-11-25',120]] as const){const d=makeDay(data,id);d.cardio.elapsed=min*60;d.cardio.speed=5;if(d.cardio.planned!==null)finishCardio(d.cardio);data.days.push(d);}
+  for(const [id,min] of [['2026-11-23',120],['2026-11-24',120],['2026-11-25',120]] as const){const d=makeDay(data,id);d.cardio.elapsed=min*60;d.cardio.speed=5;settleCardio(d.cardio);data.days.push(d);}
   let week=weeklyCardio(data,'2026-11-26');expect(week.actual).toBe(360);expect(week.credited).toBe(120);expect(week.remaining).toBe(180);expect(week.reached).toBe(false);
   data.days.push(makeDay(data,'2026-11-26'));expect(summaries(data,'2026-11-26').cardio.status).toBe('Não iniciado');
-  for(const id of ['2026-11-26','2026-11-27','2026-11-29']){const d=data.days.find(v=>v.id===id)??makeDay(data,id);if(!data.days.includes(d))data.days.push(d);d.cardio.elapsed=3600;d.cardio.speed=5;finishCardio(d.cardio);}
+  for(const id of ['2026-11-26','2026-11-27','2026-11-29']){const d=data.days.find(v=>v.id===id)??makeDay(data,id);if(!data.days.includes(d))data.days.push(d);d.cardio.elapsed=3600;d.cardio.speed=5;settleCardio(d.cardio);}
   week=weeklyCardio(data,'2026-11-29');expect(week.credited).toBe(300);expect(week.reached).toBe(true);expect(week.sessions).toEqual({done:5,total:5});
  });
  it('migração 9 aplica 60 min nos dias fixos aos dias abertos de hoje em diante, preservando tempo registrado e dias concluídos',()=>{
