@@ -71,7 +71,8 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   Velocidade mínima 5,0 km/h só na esteira (`src/domain/cardio.ts`).
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
-  domingo; sem configuração de dias), cronômetro por timestamp.
+  domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série
+  (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.
 - **Ajustes** não exibe tutorial de instalação no iPhone (removido a pedido).
 - **Hoje** mostra só os blocos do programa do dia (blocos "Não programado" ficam ocultos).
 - **Registro hormonal**: só segunda e quinta, com o plano informado pré-preenchido
@@ -87,7 +88,10 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   ilimitada, sem expiração nem poda; envios só acrescentam/atualizam. Sem lembretes de backup manual.
 - **Contador de dias cumpridos**: elemento de maior destaque em Hoje. Conta dias com todo o
   programa do dia concluído desde 26/11/2026, sem limite e independente do plano atual; patente
-  nova a cada 10 dias (`src/domain/rank.ts`, `perfectDays` em `weeklyReport.ts`).
+  nova a cada 10 dias (`src/domain/rank.ts`, `perfectDays` em `weeklyReport.ts`). 101 patentes até o
+  dia 1000: Exército (0–169), Marechal I–III (170–199), 8 ordens × graus I–X (200–999; ordem nova a
+  cada 100 dias), Mil Dias (1000+). Cerimônia de promoção animada por classe (uma vez por patente);
+  galeria em Evolução → Patentes (toque na insígnia de Hoje).
 - **Dados pessoais** no repositório público estão marcados (`// DADO PESSOAL:`) e listados em
   docs/PERSONAL_DATA_INVENTORY.md para migração futura a um repositório privado.
 - **Refeições concluídas** saem da lista principal e ficam corrigíveis no histórico.

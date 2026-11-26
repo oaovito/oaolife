@@ -49,3 +49,14 @@ test('relatório da semana só é liberado depois do cardio de domingo',async({p
  await expect(page.getByText(/é liberado depois do cardio de domingo/)).toBeVisible();
  await expect(page.getByRole('combobox',{name:'Semana'})).toContainText('16 de nov. a 22 de nov.');
 });
+
+test('galeria de patentes: 101 insígnias até o dia 1000, cerimônia e atalho a partir do contador',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:/^Ver todas as patentes/}).click();
+ await expect(page.getByRole('tab',{name:'Patentes'})).toHaveAttribute('aria-selected','true');
+ await expect(page.locator('.rank-card')).toHaveCount(101);
+ await expect(page.locator('.rank-card[data-state=current]')).toContainText('Recruta');
+ await page.getByRole('button',{name:/^Mil Dias, dia 1000/}).click();
+ const dialog=page.getByRole('dialog');await expect(dialog).toContainText('Mil Dias');await expect(dialog).toContainText('DIA 1000');
+ await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+ const width=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);expect(width).toBeLessThanOrEqual(0);
+});

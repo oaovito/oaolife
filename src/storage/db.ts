@@ -9,7 +9,7 @@ import { trainingAnchorPending, addDays, anchorTrainingCycle, reconcileOpenSessi
 import { progressionFor } from '../domain/progression';
 import { LEGACY_MEALS } from '../domain/plan';
 import { cardioGoalReached } from '../domain/cardio';
-import { pauseSequence, sequenceNeedsSync, syncSequence } from '../domain/mobility';
+import { mobilityTimersRunning, stopMobilityTimers } from '../domain/mobility';
 import { finishCardio } from '../domain/daily';
 import { migrateV9, migrationPending } from '../domain/migrations';
 export interface SnapshotRecord { id:string; at:string; revision:number; reason:string; data:unknown }
@@ -93,8 +93,7 @@ export function confirmDay(date:string) {
    session.reason='Dia confirmado pelo usuário; detalhes não registrados permanecem desconhecidos.';
   }
   if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
-  for(const ex of day.mobility.protocol?.exercises??[])if(day.mobility.sequences[ex.id]?.runningSince!=null)pauseSequence(day.mobility,ex);
-  for(const set of Object.values(day.mobility.sets))if(set.runningSince!==null){set.seconds+=Math.max(0,(Date.now()-set.runningSince)/1000);set.runningSince=null;}
+  stopMobilityTimers(day.mobility);
   const blocks=summaries(data,date);
   for(const key of ['workout','meals','water','cardio','mobility','hormonal'] as const)if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
  });
@@ -107,12 +106,13 @@ export async function reconcileTimers(clock=Date.now(),database=db) {
   const snapshot=await database.state.get('main');if(!snapshot)return;
   if(trainingAnchorPending(snapshot.data,today()))await mutate('Aplicar início configurado da periodização','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
   if(migrationPending(snapshot.data))await mutate('Atualização 9','Metas e referências alimentares; séries do plano vigente',data=>{migrateV9(data,today());},database);
-  const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||(day.mobility.protocol?.exercises??[]).some(ex=>sequenceNeedsSync(day.mobility,ex,clock));
+  const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||mobilityTimersRunning(day.mobility);
   if(!snapshot.data.days.some(needs))return;
   await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{
    for(const day of data.days){
     if(day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock))finishCardio(day.cardio,clock);
-    for(const ex of day.mobility.protocol?.exercises??[])if(sequenceNeedsSync(day.mobility,ex,clock))syncSequence(day.mobility,ex,clock);
+    // Postura sem cronômetro: encerra cronômetros antigos, preservando o tempo já registrado.
+    stopMobilityTimers(day.mobility,clock);
    }
   },database);
  });

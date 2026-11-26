@@ -10,13 +10,13 @@ import type { BlockKey, BlockSummary } from '../domain/model';
 import { isSunday, perfectDays, recordWeight, reportReleased, weekStart } from '../domain/weeklyReport';
 import { syncAlert, useSyncState } from './CloudSync';
 import { rankFor } from '../domain/rank';
-import { RankCounter } from './RankBadge';
-import { uid } from '../domain/training';
+import { Promotion, RankCounter, usePromotion } from './RankBadge';
+import { uid, today } from '../domain/training';
 import { mutate } from '../storage/db';
 import { Segments, type PageProps, type Page } from './shared';
 
 export const PROGRESS_VIEW_KEY='oaolife:progress-view';
-export function openReports(go:(p:Page)=>void){try{sessionStorage.setItem(PROGRESS_VIEW_KEY,'reports');}catch{/* sem armazenamento: abre a visão padrão */}go('progress');}
+export function openReports(go:(p:Page)=>void,view:'reports'|'ranks'='reports'){try{sessionStorage.setItem(PROGRESS_VIEW_KEY,view);}catch{/* sem armazenamento: abre a visão padrão */}go('progress');}
 
 function WeighIn({data,date,run}:Pick<PageProps,'data'|'date'|'run'>){
  const saved=data.measurements.find(m=>m.date===date&&m.weight!==null);const [edit,setEdit]=useState(false);
@@ -69,9 +69,9 @@ export function Home({data,date,go,run}:PageProps){
  };
 
  const alerts:string[]=[],sync=useSyncState(),syncWarning=syncAlert(sync);
- const perfect=useMemo(()=>perfectDays(data,date),[data,date]);
+ const perfect=useMemo(()=>perfectDays(data,date),[data,date]),rank=useMemo(()=>rankFor(perfect.total),[perfect.total]);
+ const {promotion,close:closePromotion}=usePromotion(rank,date===today());
  if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
- if(Object.values(day.mobility.sequences).some(s=>s.runningSince!==null))alerts.push('Sequência de postura em andamento.');
 
  const card=(m:Module)=>{const b=blocks[m.key],f=figure(m.key),Icon=m.icon,s=state(b);
   return <button key={m.key} className={`module module-${m.key}`} data-state={s} onClick={()=>go(m.key as Page)} aria-label={`${m.title}: ${b.status}. ${f.value} ${f.unit}. ${f.remaining}`}>
@@ -85,7 +85,8 @@ export function Home({data,date,go,run}:PageProps){
  const open=showDone===date;
  return <div className="home-page command">
   <header className="ops-header"><span className="ops-tag">{new Intl.DateTimeFormat('pt-BR',{weekday:'short',day:'2-digit',month:'short'}).format(new Date(date+'T12:00:00')).replace(/\./g,'')}{plan.template&&plan.week?` · Semana ${plan.week} · ${WEEKS[plan.week-1].goal} · RIR ${WEEKS[plan.week-1].rir.join('–')}`:plan.template?' · Configure a semana no Plano':''}</span><h1>{plan.template?<><span className="ops-code">{plan.template}</span> {template?.title}</>:'Descanso da musculação'}</h1></header>
-  <RankCounter rank={rankFor(perfect.total)} {...perfect} warning={syncWarning} onWarning={()=>go('settings')}/>
+  <RankCounter rank={rank} {...perfect} warning={syncWarning} onWarning={()=>go('settings')} onOpen={()=>openReports(go,'ranks')}/>
+  {promotion&&<Promotion rank={promotion} day={promotion.startDay} onClose={closePromotion}/>}
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
