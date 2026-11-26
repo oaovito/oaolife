@@ -24,5 +24,5 @@ export function CompletionFeedback({data,date}:{data:AppData|undefined;date:stri
  },[data,date]);
  useEffect(()=>{if(!celebration)return;const timer=setTimeout(()=>setCelebration(null),2800);return()=>clearTimeout(timer);},[celebration]);
  if(!celebration)return null;
- return <div key={celebration.id} className="completion-feedback" role="status" aria-live="polite"><div className="completion-burst" aria-hidden="true">{Array.from({length:14},(_,i)=><i key={i} style={{'--particle':i} as React.CSSProperties}/>)}<span><Check size={38} strokeWidth={3}/></span></div><div><Sparkles size={18} aria-hidden="true"/><strong>{celebration.text}</strong><p>Mais um passo por você.</p></div></div>;
+ return <div key={celebration.id} className="completion-feedback" role="status" aria-live="polite"><div className="completion-burst" aria-hidden="true"><span><Check size={38} strokeWidth={3}/></span></div><div><Sparkles size={18} aria-hidden="true"/><strong>{celebration.text}</strong><p>Objetivo cumprido.</p></div></div>;
 }
