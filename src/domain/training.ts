@@ -29,7 +29,16 @@ export function allocateSets(exercises:Exercise[],factor:number) {
  while(remaining>0){let moved=false;for(const {i} of order){if(remaining&&counts[i]<exercises[i].sets){counts[i]++;remaining--;moved=true;}}if(!moved)break;}
  return counts;
 }
-export function weeklyVolume(week:number) { const volumes:Record<string,number>={}; for(const t of ORIGINAL_PLAN){const counts=allocateSets(t.exercises,WEEKS[week-1].volume);t.exercises.forEach((e,i)=>{volumes[e.muscle]=(volumes[e.muscle]||0)+counts[i];});}return volumes; }
+export type SetPolicy=AppData['settings']['setPolicy'];
+// Fator aplicado ao número de séries prescrito. 'full' exibe exatamente as séries do
+// plano em todas as semanas; a periodização continua a definir o RIR.
+export function setFactor(policy:SetPolicy|undefined,week:number) {
+ const volume=WEEKS[week-1].volume;
+ if(policy==='periodized')return volume;
+ if(policy==='full-deload')return week===4||week===8?volume:1;
+ return 1;
+}
+export function weeklyVolume(week:number,policy:SetPolicy='full') { const volumes:Record<string,number>={}; for(const t of ORIGINAL_PLAN){const counts=allocateSets(t.exercises,setFactor(policy,week));t.exercises.forEach((e,i)=>{volumes[e.muscle]=(volumes[e.muscle]||0)+counts[i];});}return volumes; }
 export function suggestedLoad(data:AppData,exercise:Exercise,date:string) {
  const decision=[...data.decisions].filter(d=>d.exerciseId===exercise.id&&d.date<date&&!d.undoneAt&&d.mode===exercise.mode).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt))[0];
  const lastSession=[...data.sessions].filter(s=>s.date<date&&s.exercises.some(e=>e.id===exercise.id&&e.sets.some(v=>v.done&&v.load!==null&&v.mode===exercise.mode))).sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -39,12 +48,12 @@ export function suggestedLoad(data:AppData,exercise:Exercise,date:string) {
 }
 export function makeWorkout(data:AppData,date:string):WorkoutSession|null {
  const cycle=cycleForDate(data,date); const plan=schedule(cycle,date);if(!cycle||!plan.template||!plan.week)return null;
- const t=ORIGINAL_PLAN.find(t=>t.id===plan.template)!;const w=WEEKS[plan.week-1];const counts=allocateSets(t.exercises,w.volume);
- return {id:`${cycle.id}:${date}`,cycleId:cycle.id,date,timezone:data.settings.timezone,template:t.id,week:plan.week,volume:w.volume,status:'open',reason:'',startedAt:now(),closedAt:null,exercises:t.exercises.map((e,i):PlannedExercise=>({id:e.id,name:e.name,muscle:e.muscle,reps:[...e.reps],reference:e.reference,suggested:suggestedLoad(data,e,date),mode:e.mode,rir:[...w.rir],rest:e.fst?'30–45 s':e.compound?'2–3 min':'60–120 s',notes:e.notes||'',fst:!!e.fst,sets:Array.from({length:counts[i]},(_,j)=>({id:`${e.id}:${j}`,done:false,skipped:false,load:null,reps:null,rir:null,technique:null,range:null,notes:'',mode:e.mode}))}))};
+ const t=ORIGINAL_PLAN.find(t=>t.id===plan.template)!;const w=WEEKS[plan.week-1];const factor=setFactor(data.settings.setPolicy,plan.week);const counts=allocateSets(t.exercises,factor);
+ return {id:`${cycle.id}:${date}`,cycleId:cycle.id,date,timezone:data.settings.timezone,template:t.id,week:plan.week,volume:factor,status:'open',reason:'',startedAt:now(),closedAt:null,exercises:t.exercises.map((e,i):PlannedExercise=>({id:e.id,name:e.name,muscle:e.muscle,reps:[...e.reps],reference:e.reference,suggested:suggestedLoad(data,e,date),mode:e.mode,rir:[...w.rir],rest:e.fst?'30–45 s':e.compound?'2–3 min':'60–120 s',notes:e.notes||'',fst:!!e.fst,sets:Array.from({length:counts[i]},(_,j)=>({id:`${e.id}:${j}`,done:false,skipped:false,load:null,reps:null,rir:null,technique:null,range:null,notes:'',mode:e.mode}))}))};
 }
 export function nextExposure(data:AppData,s:WorkoutSession,id:string) {
  const c=data.cycles.find(c=>c.id===s.cycleId)!;
- for(let d=addDays(s.date,1);d<=cycleEnd(c);d=addDays(d,1)){const p=schedule(c,d);if(!p.template||!p.week)continue;const t=ORIGINAL_PLAN.find(t=>t.id===p.template)!;const index=t.exercises.findIndex(e=>e.id===id);if(index>=0)return {date:d,sets:allocateSets(t.exercises,WEEKS[p.week-1].volume)[index],week:p.week};}
+ for(let d=addDays(s.date,1);d<=cycleEnd(c);d=addDays(d,1)){const p=schedule(c,d);if(!p.template||!p.week)continue;const t=ORIGINAL_PLAN.find(t=>t.id===p.template)!;const index=t.exercises.findIndex(e=>e.id===id);if(index>=0)return {date:d,sets:allocateSets(t.exercises,setFactor(data.settings.setPolicy,p.week))[index],week:p.week};}
  return null;
 }
 export function reschedule(data:AppData,from:string,to:string) {
@@ -68,13 +77,7 @@ function anchorPreviousTrainingCycle(data:AppData,date:string):boolean {
  target.start=PREVIOUS_TRAINING_ANCHOR;target.end=candidates[1]?addDays(candidates[1].start,-1):end;
  for(const s of data.sessions){if(s.date<PREVIOUS_TRAINING_ANCHOR||s.date>cycleEnd(target))continue;s.cycleId=target.id;
   if(s.date>=date&&s.status==='open'){
-   const planned=makeWorkout(data,s.date);if(!planned||planned.template!==s.template)continue;
-   s.week=planned.week;s.volume=planned.volume;
-   for(const ex of s.exercises){const p=planned.exercises.find(e=>e.id===ex.id);if(!p)continue;ex.rir=p.rir;
-    const untouched=(v:typeof ex.sets[number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
-    while(ex.sets.length>p.sets.length&&untouched(ex.sets.at(-1)!))ex.sets.pop();
-    while(ex.sets.length<p.sets.length){let index=ex.sets.length;while(ex.sets.some(v=>v.id===`${ex.id}:${index}`))index++;ex.sets.push({...p.sets[ex.sets.length],id:`${ex.id}:${index}`});}
-   }
+   reshapeOpenSession(data,s);
   }
  }
  for(const day of data.days)if(day.id>=PREVIOUS_TRAINING_ANCHOR&&day.id<=cycleEnd(target))day.cycleId=target.id;
@@ -107,17 +110,26 @@ export function anchorTrainingCycle(data:AppData,date:string):boolean {
   // Preserve closed sessions as executed. Open sessions, including Monday 23,
   // receive the new plan without removing any entered or completed set.
   if(session.status!=='open')continue;
-  const planned=makeWorkout(data,session.date);if(!planned||planned.template!==session.template)continue;
-  session.week=planned.week;session.volume=planned.volume;
-  for(const exercise of session.exercises){
-   const next=planned.exercises.find(e=>e.id===exercise.id);if(!next)continue;exercise.rir=next.rir;
-   const untouched=(v:typeof exercise.sets[number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
-   while(exercise.sets.length>next.sets.length&&untouched(exercise.sets.at(-1)!))exercise.sets.pop();
-   while(exercise.sets.length<next.sets.length){let index=exercise.sets.length;while(exercise.sets.some(v=>v.id===`${exercise.id}:${index}`))index++;exercise.sets.push({...next.sets[exercise.sets.length],id:`${exercise.id}:${index}`});}
-  }
+  reshapeOpenSession(data,session);
  }
  for(const day of data.days)if(day.id>=TRAINING_ANCHOR&&day.id<=end)day.cycleId=target.id;
  for(const decision of data.decisions){const session=data.sessions.find(s=>s.id===decision.sessionId);if(session)decision.cycleId=session.cycleId;}
  data.adjustments.push({id:TRAINING_MARKER,at:now(),kind:'Semana 1 em 23/11/2026',detail:'Semana 1 com 75% do volume a partir de 23/11/2026. Séries registradas e sessões encerradas preservadas.'});
  return true;
+}
+
+// Ajusta uma sessão aberta ao planejamento vigente sem apagar séries com qualquer dado.
+// Séries vazias excedentes são removidas; séries faltantes são acrescentadas.
+export function reshapeOpenSession(data:AppData,session:WorkoutSession):boolean {
+ if(session.status!=='open')return false;
+ const planned=makeWorkout(data,session.date);if(!planned||planned.template!==session.template)return false;
+ const before=JSON.stringify(session);
+ session.week=planned.week;session.volume=planned.volume;
+ for(const exercise of session.exercises){
+  const next=planned.exercises.find(e=>e.id===exercise.id);if(!next)continue;exercise.rir=next.rir;
+  const untouched=(v:typeof exercise.sets[number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
+  while(exercise.sets.length>next.sets.length&&untouched(exercise.sets.at(-1)!))exercise.sets.pop();
+  while(exercise.sets.length<next.sets.length){let index=exercise.sets.length;while(exercise.sets.some(v=>v.id===`${exercise.id}:${index}`))index++;exercise.sets.push({...next.sets[exercise.sets.length],id:`${exercise.id}:${index}`});}
+ }
+ return JSON.stringify(session)!==before;
 }

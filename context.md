@@ -1,3 +1,5 @@
+> **Nota (26/11/2026):** as diretrizes vigentes estão em [CLAUDE.md](CLAUDE.md) e [docs/](docs/). Este arquivo é histórico; decisões posteriores prevalecem.
+
 # oaolife — continuidade
 
 ## Retomada no Codex — versão 1.1.0 preparada

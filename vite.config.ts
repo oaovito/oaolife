@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react(), tailwind(), VitePWA({
     registerType: 'prompt', injectRegister: false,
     includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
-    manifest: { name: 'oaolife', short_name: 'oaolife', description: 'Seu plano. Sua evolução. Todos os dias.', lang: 'pt-BR', start_url: '.', scope: '.', display: 'standalone', background_color: '#101311', theme_color: '#101311', orientation: 'portrait-primary', icons: [
+    manifest: { name: 'oaolife', short_name: 'oaolife', description: 'Seu plano. Sua evolução. Todos os dias.', lang: 'pt-BR', start_url: '.', scope: '.', display: 'standalone', background_color: '#0c0e0b', theme_color: '#0c0e0b', orientation: 'portrait-primary', icons: [
       { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
     ] },

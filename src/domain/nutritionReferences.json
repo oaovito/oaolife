@@ -184,30 +184,30 @@
     "quantity": 100,
     "unit": "g",
     "nutrients": {
-      "kcal": null,
-      "protein": null,
-      "carbs": null,
-      "fat": null
+      "kcal": 97,
+      "protein": 9,
+      "carbs": 3.98,
+      "fat": 5
     },
-    "source": "Rótulo/composição ainda não informado",
-    "note": "Informe o rótulo do produto. Não se presume teor proteico de skyr ou iogurte proteico.",
+    "source": "BRC0133G · TBCA · https://www.tbca.net.br/base-dados/int_composicao_alimentos.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=lnhzuBhD0Ql36Uz5f0oxvA%3D%3D",
+    "note": "Referência genérica TBCA para iogurte grego natural (sem açúcar). Marcas variam; cadastre o rótulo confirmado para substituir. Consulta: 01/11/2026; aplicada ao plano em 26/11/2026.",
     "gramsPerUnit": null,
-    "certainty": "desconhecido"
+    "certainty": "estimado"
   },
   "skimMilk": {
-    "name": "Leite desnatado",
+    "name": "Leite desnatado UHT",
     "quantity": 100,
     "unit": "ml",
     "nutrients": {
-      "kcal": null,
-      "protein": null,
-      "carbs": null,
-      "fat": null
+      "kcal": 30.9,
+      "protein": 2.99,
+      "carbs": 4.43,
+      "fat": 0.21
     },
-    "source": "Rótulo/composição ainda não informado",
-    "note": "Informe o rótulo por ml. Não converter gramas em ml sem densidade conhecida.",
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "TACO: leite de vaca desnatado UHT (por 100 g: 30 kcal; 2,9 g proteína; 4,3 g carboidrato; 0,2 g gordura), convertido para 100 ml com densidade 1,03 g/ml.",
     "gramsPerUnit": null,
-    "certainty": "desconhecido"
+    "certainty": "estimado"
   },
   "skimPowder": {
     "name": "Leite em pó desnatado",
@@ -255,19 +255,19 @@
     "certainty": "estimado"
   },
   "vegetables": {
-    "name": "Legumes preparados",
+    "name": "Legumes cozidos (mix de referência)",
     "quantity": 100,
     "unit": "g",
     "nutrients": {
-      "kcal": null,
-      "protein": null,
-      "carbs": null,
-      "fat": null
+      "kcal": 23.33,
+      "protein": 1.33,
+      "carbs": 4.7,
+      "fat": 0.3
     },
-    "source": "Rótulo/composição ainda não informado",
-    "note": "Informe a composição, proporções e preparo. Não existe valor único para legumes.",
+    "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
+    "note": "Média TACO de partes iguais de cenoura cozida, brócolis cozido e abobrinha italiana cozida; peso pronto. Ajuste a referência se a composição real for diferente.",
     "gramsPerUnit": null,
-    "certainty": "desconhecido"
+    "certainty": "estimado"
   },
   "oliveOil": {
     "name": "Azeite de oliva",
@@ -275,12 +275,12 @@
     "unit": "g",
     "nutrients": {
       "kcal": 884,
-      "protein": null,
-      "carbs": null,
+      "protein": 0,
+      "carbs": 0,
       "fat": 100
     },
     "source": "TACO, 4ª edição, NEPA/UNICAMP · https://www.nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf",
-    "note": "TACO alimento 260. Proteínas e carboidratos marcados NA pela tabela; informe rótulo para quantificar, inclusive zeros explícitos.",
+    "note": "TACO alimento 260. Proteínas e carboidratos indicados como NA (não aplicável) pela tabela: lipídio puro, contabilizados como 0.",
     "gramsPerUnit": null,
     "certainty": "estimado"
   }

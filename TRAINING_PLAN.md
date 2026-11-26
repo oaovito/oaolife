@@ -47,3 +47,12 @@ Semana 1: **02–08/11/2026 (75%)**; semana 2: **09–15/11 (85%)**; semana 3: *
 Na terça-feira da semana 1, B1 tem 20 séries: puxada 3, remada máquina 3, remada Smith 2, posterior na polia 4, rosca W 3, alternada 3 e encolhimento 2. Duas séries podem ser corretas nessa semana. O volume completo semanal continua sendo o listado acima.
 
 A migração registra o marco uma única vez. Ciclos anteriores sobrepostos terminam em 01/11; seus registros são preservados. Sessões desde 02/11 são vinculadas ao ciclo corrigido. Treinos encerrados ou de dias passados mantêm suas séries, metas e execução. Treinos abertos de hoje em diante ajustam a semana, RIR planejado e séries pendentes; nenhuma série com carga, execução, observação ou outro detalhe é apagada. Por isso, uma sessão parcialmente registrada pode conservar séries além do novo planejamento. Outros blocos não são alterados.
+
+## Séries por exercício · 1.4.0 (26/11/2026)
+
+Cada exercício exibe **exatamente as séries prescritas** em `ORIGINAL_PLAN`, em todas as semanas
+nas semanas comuns e 55% nas semanas 4 e 8 (`settings.setPolicy='full-deload'`, padrão escolhido pelo proprietário). A periodização das 12 semanas continua definindo o RIR.
+As exibições de duas séries vinham do fator de volume (75% na semana 1; 55% nas semanas 4 e 8).
+Em Plano → Séries por exercício é possível escolher `full` (integrais em todas as semanas) ou
+`periodized` (percentuais originais). Sessões encerradas nunca mudam; sessões abertas de hoje em
+diante são ajustadas sem apagar séries preenchidas. Teste: `src/test/v9-regression.test.ts`.

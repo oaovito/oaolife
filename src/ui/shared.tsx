@@ -24,3 +24,8 @@ export function formNumber(form:FormData,key:string){const value=String(form.get
 export function Metric({label,value,unit,emphasis=false}:{label:string;value:ReactNode;unit?:string;emphasis?:boolean}) {
  return <div className={`metric ${emphasis?'metric-emphasis':''}`}><span className="metric-label">{label}</span><div className="metric-value"><strong>{value}</strong>{unit&&<span>{unit}</span>}</div></div>;
 }
+// Barra segmentada: leitura rápida de progresso em módulos táticos.
+export function Segments({value,max,label,count=10}:{value:number;max:number;label:string;count?:number}) {
+ const pct=max>0?Math.max(0,Math.min(100,value/max*100)):0,filled=Math.round(pct/100*count);
+ return <span className="segments" role="progressbar" aria-label={label} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>{Array.from({length:count},(_,i)=><i key={i} className={i<filled?'on':''}/>)}</span>;
+}

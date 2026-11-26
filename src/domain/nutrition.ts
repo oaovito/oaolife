@@ -144,7 +144,7 @@ export function createNutrition(data:NutritionData):import('./nutritionSchema').
  [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',30]],
  [['beef',180],['plainRice',200],['vegetables',150],['oliveOil',5]],
  ];
- return {version:'four-meals-1',calorieGoal:data.settings?.calorieGoal??2525,proteinGoal:data.settings?.proteinGoal??190,protein:'beef',plan:keys.map((foods,i)=>({title:MEALS[i].title,foods:foods.map(([key,quantity],j)=>serving(data,key,quantity,MEALS[i].foods[j]))})),consumed:Array(4).fill(null)};
+ return {version:'four-meals-1',calorieGoal:data.settings?.calorieGoal??2000,proteinGoal:data.settings?.proteinGoal??190,protein:'beef',plan:keys.map((foods,i)=>({title:MEALS[i].title,foods:foods.map(([key,quantity],j)=>serving(data,key,quantity,MEALS[i].foods[j]))})),consumed:Array(4).fill(null)};
 }
 export function knownNutrients(meals:MealSnapshot[]):Nutrients {
  return Object.fromEntries(NUTRIENT_KEYS.map(k=>[k,meals.flatMap(m=>m.foods).reduce((sum,f)=>sum+(mealNutrients({title:'',foods:[f]})[k]??0),0)])) as Nutrients;

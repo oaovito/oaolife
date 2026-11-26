@@ -189,3 +189,11 @@ A migração antiga de 02/11 continua coberta para compatibilidade de backups.
 Validação local da versão 1.3.2: 151 testes unitários, build TypeScript/Vite,
 18 testes de atualização e calendário nos três navegadores e 38 testes de
 regressão de interface aprovados. Auditoria de produção sem vulnerabilidades.
+
+## 1.4.0 · 26/11/2026
+
+- Vitest: 164 testes (13 novos em `src/test/v9-regression.test.ts`: séries por semana, cálculos por
+  refeição, migração 9 idempotente, cardio semanal, rollback local).
+- Playwright: 87 cenários aprovados (projetos `iPhone` e `desktop`, Chromium). WebKit roda na CI.
+- Sem o Chromium da versão do Playwright instalado: `PW_CHROMIUM=/caminho/do/chrome npm run test:e2e`.
+- Auditoria axe WCAG 2 A/AA sem violações (tema escuro e claro, nove páginas).

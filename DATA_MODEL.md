@@ -50,3 +50,14 @@ Backup contém o agregado, auditoria e outbox. Auditoria guarda antes/depois das
 ## Migração alimentar v5
 
 `DailyLog.nutrition` guarda plano, proteína escolhida e uma cópia dos alimentos/referências de cada refeição consumida. Cada posição de consumo é única; marcar é idempotente e desfazer remove a posição. `previousNutrition` arquiva o checklist, horários e declaração do plano anterior quando o dia corrente é ativado no novo plano. Dias anteriores sem `nutrition` continuam usando `LEGACY_MEALS`, sem inferir nutrientes. `nutritionOverrides` permite ajustar referências sem alterar consumos históricos. A validação de integridade compara plano, checklist e horários de consumo. O backup v5 preserva esses campos e continua importando v2–v4.
+
+# Atualização 1.4.0 — schema 9
+
+`settings.setPolicy` (`full` | `full-deload` | `periodized`, padrão `full`). Migração 9
+(`src/domain/migrations.ts`, marcador `migration-9-2026-11-26`): meta calórica padrão 2525 → 2000
+apenas se for o padrão antigo (dias passados mantêm a meta registrada); referências nutricionais
+desconhecidas do plano de quatro refeições completadas, inclusive em consumos já registrados, sem
+mudar quantidades; sessões abertas de hoje em diante recebem as séries do plano vigente sem apagar
+séries com dados. IndexedDB v9 adiciona a tabela `snapshots`; `initialize` grava `pre-v9` antes de
+migrar e `restoreSnapshot` restaura com auditoria (a migração não é reaplicada após restaurar).
+Backup `oaolife-backup-9` importa formatos 2–9.

@@ -22,7 +22,7 @@ export function MobilityTimer({exercise,session,date,run}:{exercise:MobilityExer
   <Progress value={p.elapsed} max={p.total} label="Progresso da sequência"/>
   <p>{formatSeconds(p.elapsed)} / {formatSeconds(p.total)} · {Math.floor(p.elapsed/p.total*100)}%</p>
   <div className="button-row">{!p.complete&&<button className={running?"pause-button":"primary"} onClick={()=>void change(running?'pause':'start')}>{running?<Pause size={20} aria-hidden="true"/>:<Play size={20} aria-hidden="true"/>}{running?'Pausar sequência':p.elapsed?'Continuar sequência':'Iniciar sequência'}</button>}
-   <button className="danger" onClick={()=>setConfirmReset(true)}><RotateCcw size={20} aria-hidden="true"/>Reiniciar sequência</button></div>
+   {p.elapsed>0&&!confirmReset&&<button className="danger" onClick={()=>setConfirmReset(true)}><RotateCcw size={20} aria-hidden="true"/>Reiniciar sequência</button>}</div>
   {confirmReset&&<div role="group" aria-label="Confirmar reinício"><p>Reiniciar apaga o progresso desta sequência neste dia. Confirmar?</p><div className="button-row"><button className="secondary" onClick={()=>setConfirmReset(false)}><X size={20} aria-hidden="true"/>Cancelar</button><button className="danger" onClick={()=>void change('reset').then(ok=>{if(ok)setConfirmReset(false);})}><RotateCcw size={20} aria-hidden="true"/>Confirmar reinício</button></div></div>}
  </section>;
 }

@@ -3,7 +3,7 @@ import { emptyData, makeDay } from '../domain/daily';
 import { anchorTrainingCycle, cycleForDate, makeWorkout, now, schedule } from '../domain/training';
 import { assertIntegrity, initialize, OaoDatabase, reconcileTimers } from '../storage/db';
 
-function fixture(){const data=emptyData();anchorTrainingCycle(data,'2026-11-22');return data;}
+function fixture(){const data=emptyData();data.settings.setPolicy='periodized';anchorTrainingCycle(data,'2026-11-22');return data;}
 describe('semana 1 a partir de 23/11/2026',()=>{
  it('reinicia a contagem com 75%, 22 séries na segunda, sem mudar as semanas anteriores',()=>{
   const data=fixture();expect(makeWorkout(data,'2026-11-23')!.exercises.flatMap(e=>e.sets)).toHaveLength(16);
