@@ -6,6 +6,10 @@
 - Plano alimentar de 21/11/2026 com nutrientes completos (TBCA/TACO); divergência
   plano × meta exibida; meta padrão 2.525 → 2.000 kcal (só quando era o padrão antigo).
 - Cardio rígido: seg, ter, qui, sex, dom × 60 min = 300 min/semana (quarta e sábado sem); velocidade mínima só na esteira.
+- Plano alimentar de 26/11/2026 (sem azeite/legumes; aveia 30 g nas líquidas): 2.355 kcal / 230 g P.
+- Relatório semanal (Evolução → Relatórios), visão Situação, pesagem de domingo em Hoje.
+- Registro hormonal seg/qui pré-preenchido, exceções em Ajustes; Hoje oculta blocos fora do programa.
+- Alongamento para hipercifose diário (todos os dias); tutorial de instalação no iPhone removido de Ajustes.
 - Regra suprema no topo do CLAUDE.md: planejamento militar, regras rígidas.
 - Novo ícone (chevrons + cantoneiras) em `public/icon.svg` e PNGs; o iPhone só troca o ícone ao readicionar à Tela de Início.
 - Migração 9 (`src/domain/migrations.ts`), Dexie v9 com tabela `snapshots`, cópia

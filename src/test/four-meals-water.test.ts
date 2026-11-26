@@ -7,17 +7,17 @@ import { assertIntegrity,initialize,OaoDatabase } from '../storage/db';
 import { today } from '../domain/training';
 it('quatro refeições com pesos oficiais e totais TACO/TBCA completos',()=>{
  const data=emptyData(),day=makeDay(data,today());data.days.push(day);
- expect(day.nutrition!.plan.map(m=>m.foods.map(f=>f.quantity))).toEqual([[200,300,40,50],[200,250,150,10],[200,300,40,30],[180,200,150,5]]);
+ expect(day.nutrition!.plan.map(m=>m.foods.map(f=>f.quantity))).toEqual([[200,300,40,30],[200,250],[200,300,40,30],[180,200]]);
  expect(day.nutrition!.plan.filter(m=>m.title.includes('líquida'))).toHaveLength(2);
  for(const key of ['banana','yogurt','milk','whey','beans','strawberry','skyr'])expect(day.nutrition!.plan.flatMap(m=>m.foods.map(f=>f.key))).not.toContain(key);
- const known=knownNutrients(day.nutrition!.plan);expect(known.kcal).toBeCloseTo(2636.59,1);
- expect(nutritionTotals(day)!.planned.kcal).toBeCloseTo(2636.59,1);expect(nutritionTotals(day)!.consumed.kcal).toBe(0);assertIntegrity(data);
+ const known=knownNutrients(day.nutrition!.plan);expect(known.kcal).toBeCloseTo(2355.2,1);
+ expect(nutritionTotals(day)!.planned.kcal).toBeCloseTo(2355.2,1);expect(nutritionTotals(day)!.consumed.kcal).toBe(0);assertIntegrity(data);
 });
 it('consumo só conta refeição inteira e rótulos futuros não reescrevem consumo',()=>{
  const data=emptyData(),day=makeDay(data,today());const n=day.nutrition!;
- for(const key of ['greekNatural','skimMilk','vegetables','oliveOil'] as const){const f=n.plan.flatMap(m=>m.foods).find(f=>f.key===key)!;data.nutritionOverrides[key]={...f.reference,nutrients:{kcal:100,protein:10,carbs:10,fat:1},source:'SINTÉTICO — teste',certainty:'confirmado'};}
+ for(const key of ['greekNatural','skimMilk'] as const){const f=n.plan.flatMap(m=>m.foods).find(f=>f.key===key)!;data.nutritionOverrides[key]={...f.reference,nutrients:{kcal:100,protein:10,carbs:10,fat:1},source:'SINTÉTICO — teste',certainty:'confirmado'};}
  refreshNutritionPlan(day,data);toggleFood(day,0,0);expect(nutritionTotals(day)!.consumed.kcal).toBe(0);
- setMealConsumed(day,0,true);expect(nutritionTotals(day)!.consumed.kcal).toBeCloseTo(841.8);const saved=structuredClone(n.consumed[0]);
+ setMealConsumed(day,0,true);expect(nutritionTotals(day)!.consumed.kcal).toBeCloseTo(763.0);const saved=structuredClone(n.consumed[0]);
  data.nutritionOverrides.greekNatural!.nutrients.kcal=500;refreshNutritionPlan(day,data);expect(n.consumed[0]).toEqual(saved);expect(waterConsumed(day)).toBe(0);
  setMealConsumed(day,0,false);expect(nutritionTotals(day)!.consumed.kcal).toBe(0);
 });

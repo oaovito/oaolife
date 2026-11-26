@@ -32,6 +32,7 @@ const original:WorkoutTemplate[]=[
  {id:'C2',title:'Quadríceps, glúteos e posteriores',exercises:[panturrilha,{...leg,reps:[8,12]},extensora,{...flexora,reps:[10,15]},{...pelvica,sets:3,reps:[10,15]},abdutora,sentado]}
 ];
 function freeze<T>(value:T):T { if (value && typeof value==='object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
+// DADO PESSOAL: plano de treino individual. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const ORIGINAL_PLAN = freeze(original);
 export const EXERCISES = [...new Map(ORIGINAL_PLAN.flatMap(t=>t.exercises).map(e=>[e.id,e])).values()];
 export const WEEKS:TrainingWeek[] = [
@@ -39,6 +40,7 @@ export const WEEKS:TrainingWeek[] = [
  [0.85,2,3,'Retomada'],[1,1,2,'Sobrecarga'],[1,1,2,'Consolidação'],[0.55,4,5,'Recuperação'],
  [0.9,2,3,'Bloco final'],[1,1,2,'Progressão'],[1,1,2,'Consolidação final'],[0.75,2,3,'Avaliação']
 ].map((r,i)=>({week:i+1,volume:r[0] as number,rir:[r[1],r[2]] as [number,number],goal:r[3] as string}));
+// DADO PESSOAL: plano alimentar antigo. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const LEGACY_MEALS:Meal[]=[
  {id:'m1',title:'Refeição 1',foods:['500 ml de leite integral','2 fatias de pão de forma']},
  {id:'m2',title:'Refeição 2',foods:['300 g de molho vermelho com carne moída','150 g de arroz branco cozido']},
@@ -59,9 +61,10 @@ export const MOBILITY_DAYS=['A1','B1','A2'];
 export const LOAD_LABEL={total:'kg total',lado:'kg por lado',halter:'kg por halter'};
 
 
+// DADO PESSOAL: plano alimentar individual. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const MEALS:Meal[]=[
- {id:'m1',title:'Café da manhã · líquida',foods:['200 g de iogurte grego natural','300 ml de leite desnatado','40 g de leite em pó desnatado','50 g de aveia']},
- {id:'m2',title:'Almoço · sólida',foods:['200 g de peito de frango grelhado','250 g de arroz branco cozido','150 g de legumes','10 g de azeite de oliva']},
+ {id:'m1',title:'Café da manhã · líquida',foods:['200 g de iogurte grego natural','300 ml de leite desnatado','40 g de leite em pó desnatado','30 g de aveia']},
+ {id:'m2',title:'Almoço · sólida',foods:['200 g de peito de frango grelhado','250 g de arroz branco cozido']},
  {id:'m3',title:'Lanche · líquida',foods:['200 g de iogurte grego natural','300 ml de leite desnatado','40 g de leite em pó desnatado','30 g de aveia']},
- {id:'m4',title:'Jantar · sólida',foods:['180 g de patinho magro grelhado','200 g de arroz branco cozido','150 g de legumes','5 g de azeite de oliva']},
+ {id:'m4',title:'Jantar · sólida',foods:['180 g de patinho magro grelhado','200 g de arroz branco cozido']},
 ];

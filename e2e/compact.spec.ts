@@ -7,7 +7,7 @@ test('dias fixos de cardio (60 min; quarta e sábado sem) e sessões somadas no 
  await page.getByLabel('Registro manual realizado (min)').fill('20');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();
  await page.getByLabel('Modo do registro manual').selectOption('add');await page.getByLabel('Registro manual realizado (min)').fill('40');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true})).toBeVisible();
  await expect(page.locator('.weekly-cardio')).toContainText('20% ·');await page.reload();expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
- await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Treino:/})).toContainText('Não programado');await page.getByRole('button',{name:/^Treino:/}).click();await expect(page.getByRole('button',{name:'Iniciar treino',exact:true})).toHaveCount(0);
+ await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Treino:/})).toHaveCount(0);
 });
 test('hipercifose alterna, pausa, reabre offline e conclui junto com cardio',async({page,context})=>{
  await open(page,'/cardio');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await page.getByRole('button',{name:'Iniciar',exact:true}).click();
@@ -80,15 +80,15 @@ test('dia anterior conclui por declaração e mantém valores desconhecidos',asy
  await open(page,'/?date=2026-10-16');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toHaveCount(0);await expect(page.getByText('Resumo e fechamento do dia',{exact:true})).toHaveCount(0);await nav(page,'Ajustes');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toBeVisible();await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Concluir dia sem detalhar'}).click();await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Cardio:/})).not.toContainText('Concluído');await page.reload();await expect(page.getByRole('button',{name:/^Cardio:/})).not.toContainText('Concluído');const data=await savedData(page);expect(data.sessions).toHaveLength(0);expect(data.days[0].water).toEqual([0,0,0,0,0,0]);expect(data.days[0].recorded).toEqual([]);expect(data.days[0].cardio.speed).toBeNull();
  await nav(page,'Ajustes');await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Desfazer confirmação do dia'}).click();await nav(page,'Hoje');await expect(page.getByRole('heading',{name:'Feito por hoje.'})).toHaveCount(0);
 });
-test('registro hormonal é um bloco com plano informado e administrações reais separadas',async({page})=>{
+test('registro hormonal: plano informado pré-preenchido, um toque registra e só aparece seg/qui',async({page})=>{
  await open(page);await page.getByRole('button',{name:/^Registro hormonal:/}).click();
- await expect(page).toHaveURL(/\/hormonal$/);await expect(page.getByText('Nenhuma administração registrada.',{exact:true})).toBeVisible();
- await page.getByText('Ver plano informado e totais semanais',{exact:true}).click();
- await expect(page.getByText(/Segunda administração semanal · dia não informado/).first()).toBeVisible();
- for(const total of [500,400,100,350])await expect(page.getByText(`${total} mg/semana`,{exact:true})).toBeVisible();
- await page.getByLabel('Semana do registro consultada').selectOption('9');await expect(page.getByText('350 mg/semana',{exact:true})).toHaveCount(0);expect((await savedData(page)).hormonalLogs).toEqual([]);
- await page.getByLabel('Substância registrada').selectOption('testosterona-segunda');await page.getByLabel('Quantidade realmente administrada (mg)').fill('8');await page.getByRole('button',{name:'Salvar administração realizada'}).click();await expect(page.getByText('8 mg · semana 9',{exact:false})).toBeVisible();await page.reload();await expect(page.getByText('8 mg · semana 9',{exact:false})).toBeVisible();
- await page.getByRole('button',{name:'Concluir registro do dia',exact:true}).click();await page.getByRole('button',{name:'Hoje',exact:true}).first().click();await expect(page.locator('.module-grid')).not.toContainText('Registro hormonal');await page.getByText('Concluídos (1) · ver e corrigir',{exact:true}).click();await page.getByRole('button',{name:/^Registro hormonal:/}).click();await page.getByRole('button',{name:'Reabrir registro do dia',exact:true}).click();await page.getByRole('button',{name:'Desfazer registro',exact:true}).click();await expect(page.getByText('Nenhuma administração registrada.',{exact:true})).toBeVisible();expect((await savedData(page)).hormonalLogs).toEqual([]);
+ await expect(page).toHaveURL(/\/hormonal$/);const quick=page.locator('.hormonal-quick');
+ for(const dose of ['Testosterona','Decanoato de nandrolona','Enantato de trembolona'])await expect(quick).toContainText(dose);
+ await quick.getByRole('button',{name:'Registrar aplicação',exact:true}).click();
+ await expect.poll(async()=>(await savedData(page)).hormonalLogs.length).toBe(3);
+ await page.reload();expect((await savedData(page)).hormonalLogs.map((l:any)=>l.doseMg).sort((a:number,b:number)=>a-b)).toEqual([50,200,500]);
+ await nav(page,'Hoje');await expect(page.locator('.module-grid')).not.toContainText('Registro hormonal');
+ await page.getByLabel('Consultar data',{exact:true}).fill('2026-10-18');await expect(page.getByRole('button',{name:/^Registro hormonal:/})).toHaveCount(0);
 });
 
 

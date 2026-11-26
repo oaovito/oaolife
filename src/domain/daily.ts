@@ -2,15 +2,18 @@ import { waterConsumed, waterGoal } from './hydration';
 import { createNutrition, mealsForDay, setMealConsumed, syncMealRecord } from './nutrition';
 import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
-import { MEALS, MOBILITY_DAYS } from './plan';
+import { MEALS } from './plan';
 import { cycleForDate, now, schedule } from './training';
 import { cardioTarget, speedRuleMet } from './cardio';
 import { currentMobilityProtocol } from './mobility';
+export const HORMONAL_WEEKDAYS=[1,4]; // segunda e quinta
+// DADO PESSOAL: perfil (idade, altura, peso) e metas individuais. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export function emptyData():AppData { return {schemaVersion:9,nutritionOverrides:{},hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',haptics:true,theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,hydrationTarget:4000,bottleVolume:500,calorieGoal:2000,proteinGoal:190,setPolicy:'full-deload',mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
  const cycle=cycleForDate(data,date),p=schedule(cycle,date);
  const configured=currentMobilityProtocol(data.mobility);
- const protocol=p.template&&configured.days.includes(p.template)?structuredClone(configured):null;
+ // Alongamento para hipercifose: todos os dias, inclusive domingo (ordem do proprietário, 26/11/2026).
+ const protocol=structuredClone(configured);
  return {hydration:{version:'liquids-1',target:data.settings.hydrationTarget,bottle:data.settings.bottleVolume,entries:[]},archivedNutrition:[],nutrition:createNutrition(data),previousNutrition:null,declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planVersion:'weekly-360',planned:cardioTarget(date),elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:5,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{},sequences:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
 }
 export function nextMeal(day:DailyLog) { const i=day.meals.findIndex(m=>!m.every(Boolean));return i<0?null:i; }
@@ -35,12 +38,15 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Sem cardio programado':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}${day.cardio.minimumSpeed===null?'':` · ${day.cardio.speed??'—'} / ${day.cardio.minimumSpeed} km/h`}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
  if(cardioScheduled&&day.cardio.planned===null)cardio.status='Pendente de revisão';else if(cardioScheduled&&['running','paused'].includes(day.cardio.status))cardio.status='Em andamento';
  // Cardio rígido: o dia só conclui com a própria meta (sem compensação semanal).
- const mobilityScheduled=!!plan.template&&((data.mobility?data.mobility.days.includes(plan.template):MOBILITY_DAYS.includes(plan.template))||!!day.mobility.protocol?.days.includes(plan.template));
+ const mobilityScheduled=true; // diário
  const protocol=day.mobility.protocol;const mTotal=protocol?.exercises.reduce((a,e)=>a+e.sets,0)||0;const validIds=protocol?.exercises.flatMap(e=>Array.from({length:e.sets},(_,i)=>`${e.id}:${i}`))||[];const mDone=validIds.filter(id=>day.mobility.sets[id]?.done).length;
- const mobility=mobilityScheduled?(mTotal?summary(mDone,mTotal,`${mDone}/${mTotal} séries do protocolo`):{status:'Pendente de revisão' as const,done:0,total:4,subtitle:'Protocolo pendente de configuração'}):summary(0,0,plan.template?'Não especificado no plano inicial':'Não programado');
+ const mobility=mobilityScheduled?(mTotal?summary(mDone,mTotal,`${mDone}/${mTotal} séries do protocolo`):{status:'Pendente de revisão' as const,done:0,total:4,subtitle:'Protocolo pendente de configuração'}):summary(0,0,'Não programado');
  const logs=data.hormonalLogs.filter(log=>log.date===date);
- const hormonal=summary(0,1,logs.length?`${logs.length} administração(ões) registrada(s)`:`Plano informado · ${(data.hormonalProtocol??INFORMED_HORMONAL_PLAN).weeks} semanas`);
- if(logs.length)hormonal.status='Em andamento';
+ // Registro hormonal: programado às segundas e quintas. Em outros dias só aparece quando há
+ // exceção registrada (administração ou conclusão declarada), aberta por Ajustes.
+ const hormonalDay=HORMONAL_WEEKDAYS.includes(new Date(date+'T12:00:00Z').getUTCDay())||logs.length>0||!!day.declarations.hormonal;
+ const hormonal=hormonalDay?summary(0,1,logs.length?`${logs.length} administração(ões) registrada(s)`:`Plano informado · ${(data.hormonalProtocol??INFORMED_HORMONAL_PLAN).weeks} semanas`):summary(0,0,'Não programado');
+ if(hormonalDay&&logs.length)hormonal.status='Em andamento';
  const blocks={workout,meals,water,cardio,mobility,hormonal};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
   if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};

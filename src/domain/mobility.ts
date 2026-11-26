@@ -1,6 +1,7 @@
-import type { MobilityExercise, MobilityProtocol, MobilitySequence, MobilitySession } from './model';
+import type { AppData, MobilityExercise, MobilityProtocol, MobilitySequence, MobilitySession } from './model';
 
 export const HIPER_KYPHOSIS_ID='hipercifose-parede';
+// DADO PESSOAL: condição postural (hipercifose) e protocolo. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const INFORMED_MOBILITY:MobilityProtocol={id:'hipercifose-60-60-v1',name:'Alongamento para hipercifose',days:['A1','B1','A2'],updatedAt:'2026-10-18T00:00:00.000Z',exercises:[{id:HIPER_KYPHOSIS_ID,name:'Alongamento para hipercifose',description:'Em pé, com os cotovelos na parede.',sets:4,reps:null,duration:60,rest:60,resistance:'',instructions:'4 séries de 60 segundos, com 60 segundos de descanso entre séries. Sem descanso após a quarta série.',image:''}]};
 export function currentMobilityProtocol(saved:MobilityProtocol|null):MobilityProtocol {
  if(!saved)return structuredClone(INFORMED_MOBILITY);
@@ -50,4 +51,12 @@ export function sequenceNeedsSync(session:MobilitySession,ex:MobilityExercise,cl
  const s=session.sequences[ex.id];if(!s||s.runningSince===null)return false;
  const p=sequenceProgress(ex,s,clock);
  return p.complete||p.seconds.some((seconds,i)=>seconds>=(ex.duration??Infinity)&&!session.sets[`${ex.id}:${i}`]?.done);
+}
+
+// Alongamento diário: dias de hoje em diante sem protocolo (criados quando ele era só A1/B1/A2)
+// recebem o protocolo vigente. Idempotente; dias passados e séries registradas não mudam.
+export function activateMobility(data:AppData,date:string):boolean {
+ let changed=false;
+ for(const day of data.days)if(day.id>=date&&!day.mobility.protocol){day.mobility.protocol=currentMobilityProtocol(data.mobility);changed=true;}
+ return changed;
 }

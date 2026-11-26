@@ -6,10 +6,10 @@ snapshots em `domain/nutrition.ts`:
 
 | Refeição | Ingredientes |
 | --- | --- |
-| Café | Grego natural 200 g, leite desnatado 300 ml, leite em pó desnatado 40 g, aveia 50 g |
-| Almoço | Frango grelhado 200 g, arroz branco cozido 250 g, legumes 150 g, azeite 10 g |
+| Café | Grego natural 200 g, leite desnatado 300 ml, leite em pó desnatado 40 g, aveia 30 g |
+| Almoço | Frango grelhado 200 g, arroz branco cozido 250 g |
 | Lanche | Grego natural 200 g, leite desnatado 300 ml, leite em pó desnatado 40 g, aveia 30 g |
-| Jantar | Patinho grelhado 180 g, arroz branco cozido 200 g, legumes 150 g, azeite 5 g |
+| Jantar | Patinho grelhado 180 g, arroz branco cozido 200 g |
 
 Carnes/arroz/legumes são pesados preparados; aveia e pó são secos. As vitaminas
 são batidas, com opcionais descritos na interface. Não há whey, feijão, banana,
@@ -64,7 +64,10 @@ migração entra na auditoria/fila local. Os planos five-meals-1/2 continuam sup
 | Patinho grelhado | 211 · 36 · 0 · 7,5 | TBCA BRC0045F |
 | Azeite de oliva | 884 · 0 · 0 · 100 | TACO (P e C "NA": lipídio puro) |
 
-Totais do plano: R1 628 kcal / 47,8 g P; R2 743 / 72,4; R3 550 / 45,0; R4 715 / 71,8;
-**dia 2.637 kcal / 237,1 g P / 278,7 g C / 64,0 g G**. Meta solicitada ~2.000 kcal: a
-divergência (+637 kcal) é exibida em Alimentação; as quantidades não são alteradas.
+Totais do plano vigente (26/11/2026, sem azeite e legumes; aveia 30 g nas líquidas):
+R1 549,7 kcal / 45,0 g P; R2 620,0 / 70,5; R3 549,7 / 45,0; R4 635,8 / 69,8;
+**dia 2.355,2 kcal / 230,3 g P / 251,3 g C / 46,4 g G**. Plano de 21/11 (2.637 kcal) fica
+nos registros dos dias em que valeu; `activateMealPlan` troca só dias de hoje em diante,
+preservando refeições já consumidas. Meta solicitada ~2.000 kcal: a
+divergência (+355 kcal) é exibida em Alimentação; as quantidades não são alteradas.
 Rótulos confirmados cadastrados pelo usuário continuam com prioridade.

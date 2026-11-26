@@ -137,13 +137,39 @@ export function activateNutrition(data:AppData,date:string) {
  day.nutrition=createNutrition(data);day.meals=MEALS.map(m=>m.foods.map(()=>false));day.mealTimes=Array(4).fill(null);delete day.declarations.meals;
 }
 
-export function createNutrition(data:NutritionData):import('./nutritionSchema').FourMealNutritionDay {
- const keys:[keyof typeof DEFAULT_REFERENCES,number][][]=[
+// Plano alimentar vigente (26/11/2026): sem azeite e legumes no almoço e no jantar; aveia 30 g
+// nas duas refeições líquidas. O plano de 21/11/2026 fica nos registros dos dias em que valeu.
+// DADO PESSOAL: plano alimentar individual. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
+export const FOUR_MEAL_PLAN:[keyof typeof DEFAULT_REFERENCES,number][][]=[
+ [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',30]],
+ [['chicken',200],['plainRice',250]],
+ [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',30]],
+ [['beef',180],['plainRice',200]],
+];
+// DADO PESSOAL: plano alimentar individual (21/11). Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
+export const FOUR_MEAL_PLAN_2111:[keyof typeof DEFAULT_REFERENCES,number][][]=[
  [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',50]],
  [['chicken',200],['plainRice',250],['vegetables',150],['oliveOil',10]],
  [['greekNatural',200],['skimMilk',300],['skimPowder',40],['oats',30]],
  [['beef',180],['plainRice',200],['vegetables',150],['oliveOil',5]],
- ];
+];
+const layout=(plan:{foods:{key:string;quantity:number|null}[]}[])=>JSON.stringify(plan.map(m=>m.foods.map(f=>[f.key,f.quantity])));
+export const isPlanLayout=(plan:{foods:{key:string;quantity:number|null}[]}[],ref:typeof FOUR_MEAL_PLAN)=>layout(plan)===JSON.stringify(ref);
+// Troca o plano de 21/11 pelo vigente nos dias de hoje em diante. Refeições já consumidas
+// mantêm o registro (snapshot) do que foi comido; as demais passam ao plano novo. Idempotente.
+export function activateMealPlan(data:AppData,date:string):boolean {
+ let changed=false;
+ for(const day of data.days){
+  const n=day.nutrition;if(day.id<date||n?.version!=='four-meals-1'||!isPlanLayout(n.plan,FOUR_MEAL_PLAN_2111))continue;
+  const next=createNutrition(data).plan;
+  n.plan=next;
+  next.forEach((m,i)=>{if(!n.consumed[i])day.meals[i]=m.foods.map(()=>false);});
+  changed=true;
+ }
+ return changed;
+}
+export function createNutrition(data:NutritionData):import('./nutritionSchema').FourMealNutritionDay {
+ const keys=FOUR_MEAL_PLAN;
  return {version:'four-meals-1',calorieGoal:data.settings?.calorieGoal??2000,proteinGoal:data.settings?.proteinGoal??190,protein:'beef',plan:keys.map((foods,i)=>({title:MEALS[i].title,foods:foods.map(([key,quantity],j)=>serving(data,key,quantity,MEALS[i].foods[j]))})),consumed:Array(4).fill(null)};
 }
 export function knownNutrients(meals:MealSnapshot[]):Nutrients {

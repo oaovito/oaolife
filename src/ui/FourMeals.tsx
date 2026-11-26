@@ -5,7 +5,7 @@ import { editDay } from '../storage/db';
 import { FoodDetails, Macros, nutrientText } from './NutritionDetails';
 import { CheckButton, Metric, PageTitle, Panel, Progress, type PageProps } from './shared';
 const fmt=(v:number|null,digits=0)=>v===null?'—':v.toLocaleString('pt-BR',{maximumFractionDigits:digits});
-const preparation=['Bata no liquidificador. Água ou gelo são opcionais.','Pese frango, arroz e legumes após preparo; contabilize o azeite separadamente.','Bata no liquidificador. Canela ou essência de baunilha sem açúcar são opcionais.','Pese patinho, arroz e legumes após preparo; contabilize o azeite separadamente.'];
+const preparation=['Bata no liquidificador. Água ou gelo são opcionais.','Pese frango e arroz após preparo. Sem azeite e sem legumes.','Bata no liquidificador. Canela ou essência de baunilha sem açúcar são opcionais.','Pese patinho e arroz após preparo. Sem azeite e sem legumes.'];
 export function FourMeals({data,date,run,go}:PageProps){
  const day=data.days.find(d=>d.id===date)??makeDay(data,date),n=day.nutrition!,t=nutritionTotals(day)!,known=knownNutrients(n.plan),goals=day.nutrition?.version==='four-meals-1'?day.nutrition:data.settings;
  const completed=n.consumed.filter(Boolean).length;

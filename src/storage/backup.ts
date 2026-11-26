@@ -1,5 +1,7 @@
 import { activateHydration } from '../domain/hydration';
-import { activateNutrition } from '../domain/nutrition';
+import { activateMobility } from '../domain/mobility';
+import { activateHormonalPlan } from '../domain/hormonal';
+import { activateMealPlan, activateNutrition } from '../domain/nutrition';
 import { z } from 'zod';
 import { appDataSchema } from '../domain/model';
 import { db, assertIntegrity, mutate } from './db';
@@ -27,11 +29,16 @@ export async function decryptBackup(content:string,password:string) {
 export async function exportBackup(password:string) {
  const snapshot=await db.transaction('r',db.state,db.audit,db.outbox,async()=>({data:(await db.state.get('main'))!.data,audit:await db.audit.toArray(),outbox:await db.outbox.toArray()}));
  const content=await encryptBackup({format:'oaolife-backup-9',exportedAt:now(),...snapshot},password);
- const blob=new Blob([content],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`oaolife-${now().slice(0,10)}.oaolife`;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ const name=`oaolife-${now().slice(0,10)}.oaolife`,blob=new Blob([content],{type:'application/json'});
+ // No iPhone, a folha de compartilhamento permite "Salvar em Arquivos" (iCloud Drive), fora do app.
+ const file=typeof File==='function'?new File([blob],name,{type:'application/json'}):null;
+ let shared=false;
+ if(file&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Backup oaolife'});shared=true;}catch(e){if((e as Error).name==='AbortError')throw Error('Backup cancelado: nenhum arquivo foi salvo.');}}
+ if(!shared){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
  await mutate('Backup exportado','Arquivo criptografado gerado; confirme o armazenamento externo.',d=>{d.settings.lastBackup=now();});
 }
 export async function restoreBackup(value:z.infer<typeof payload>,expectedRevision:number) {
- const valid=payload.parse(value);activateNutrition(valid.data,today());activateHydration(valid.data,today());anchorTrainingCycle(valid.data,today());migrateV9(valid.data,today());assertIntegrity(valid.data);
+ const valid=payload.parse(value);activateNutrition(valid.data,today());activateHydration(valid.data,today());activateMobility(valid.data,today());activateMealPlan(valid.data,today());activateHormonalPlan(valid.data);anchorTrainingCycle(valid.data,today());migrateV9(valid.data,today());assertIntegrity(valid.data);
  await db.transaction('rw',db.state,db.audit,db.outbox,async()=>{
  const current=await db.state.get('main');if(!current||current.revision!==expectedRevision)throw Error('Os dados mudaram desde a revisão do backup. Revise novamente antes de restaurar.');
  const revision=valid.outbox.reduce((n,o)=>Math.max(n,o.revision),valid.audit.reduce((n,a)=>Math.max(n,a.revision),current.revision))+1;await db.state.put({id:'main',revision,data:valid.data});await db.audit.clear();await db.outbox.clear();
@@ -41,3 +48,5 @@ export async function restoreBackup(value:z.infer<typeof payload>,expectedRevisi
  });
 }
 
+
+export function decodeBackupPayload(value:unknown){const result=payload.parse(value);assertIntegrity(result.data);return result;}
