@@ -46,8 +46,10 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   Totais TACO/TBCA: ~2.637 kcal / ~237 g proteína. Meta solicitada ~2.000 kcal.
   A divergência é exibida; **nunca** alterar quantidades para "fechar" a meta.
 - **Séries**: cada exercício exibe exatamente as séries do `ORIGINAL_PLAN`
-  (`settings.setPolicy='full'`, padrão). Periodização define o RIR. Políticas
-  alternativas (`full-deload`, `periodized`) só por escolha explícita em Plano.
+  nas semanas comuns e 55% nas semanas 4 e 8 de recuperação
+  (`settings.setPolicy='full-deload'`, padrão escolhido pelo proprietário em
+  26/11/2026). Periodização define o RIR. Alternativas (`full`, `periodized`)
+  só por escolha explícita em Plano.
   A causa do antigo "2 séries" era o fator de volume da semana 1 (75%).
 - **Cardio**: meta **semanal flexível** de 360 min; todos os minutos contam em
   qualquer dia. Valores diários são sugestão. Velocidade mínima só na esteira.

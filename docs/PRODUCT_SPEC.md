@@ -32,7 +32,7 @@ Não apresentar redução localizada de gordura como mecanismo possível.
 - Plano `original-1` em `src/domain/plan.ts` (exercícios, séries, faixas, cargas, FST-7
   em crucifixo A1 e lateral média A2).
 - Ciclo de 12 semanas iniciado em 23/11/2026 (semana 1). Periodização define RIR.
-- **Séries exibidas = séries prescritas do plano** em todas as semanas (`setPolicy='full'`).
+- **Séries exibidas = séries prescritas do plano** nas semanas comuns; 55% nas semanas 4 e 8 de recuperação (`setPolicy='full-deload'`, escolha do proprietário).
   Volume semanal direto: peito 20, costas 20, deltoide lateral 16, bíceps 16, tríceps 16,
   panturrilhas 16, glúteos 13, posteriores 11, quadríceps 12.
 - Registro por série (carga, repetições, RIR, técnica, amplitude), carga total/por lado/por halter,

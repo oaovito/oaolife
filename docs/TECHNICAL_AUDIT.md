@@ -11,7 +11,7 @@
 
 | # | Problema | Gravidade | Impacto | Risco de regressão | Situação |
 |---|---|---|---|---|---|
-| 1 | Exercícios com 2 séries: o fator de volume da semana (75% na semana 1, 55% nas 4/8) reduzia 3 → 2 séries; o usuário entendia como defeito e as 18–20 séries semanais não eram cumpridas | Alta | Treino abaixo do prescrito | Médio (migração de sessões abertas) | Corrigido: `setPolicy='full'` padrão, migração 9, testes |
+| 1 | Exercícios com 2 séries: o fator de volume da semana (75% na semana 1, 55% nas 4/8) reduzia 3 → 2 séries; o usuário entendia como defeito e as 18–20 séries semanais não eram cumpridas | Alta | Treino abaixo do prescrito | Médio (migração de sessões abertas) | Corrigido: `setPolicy='full-deload'` padrão (escolha do proprietário), migração 9, testes |
 | 2 | Iogurte grego natural, leite desnatado e legumes sem valores: totais do dia ficavam "não informados" | Alta | Sem calorias/proteína reais | Baixo | Corrigido com TBCA/TACO; registros consumidos completados |
 | 3 | Azeite com proteína/carboidrato nulos anulava os totais de macros | Média | Totais nulos | Baixo | Corrigido (0 g, lipídio puro, TACO NA) |
 | 4 | Meta calórica padrão 2.525 kcal (herdada do plano de cinco refeições) em vez de ~2.000 solicitada | Média | Restante incorreto | Baixo | Migração altera só o padrão antigo; metas personalizadas e dias passados preservados |

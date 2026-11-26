@@ -1,7 +1,7 @@
 # Handoff — 26/11/2026
 
 ## Concluído
-- Séries integrais do plano em todas as semanas (`setPolicy='full'`), com seletor em Plano
+- Séries integrais do plano, exceto 55% nas semanas 4 e 8 (`setPolicy='full-deload'`), com seletor em Plano
   (full / full-deload / periodized). Migração ajusta sessões abertas de hoje em diante.
 - Plano alimentar de 21/11/2026 com nutrientes completos (TBCA/TACO); divergência
   plano × meta exibida; meta padrão 2.525 → 2.000 kcal (só quando era o padrão antigo).
@@ -14,16 +14,14 @@
 
 ## Decisões tomadas
 - A "falha das 2 séries" era o fator de volume semanal, não um dado corrompido.
-  Escolha padrão: séries integrais; RIR continua periodizado. Pergunta enviada ao
+  Padrão escolhido pelo proprietário (26/11/2026): integrais, exceto recuperação; RIR periodizado. Pergunta respondida pelo
   proprietário com as três opções; a escolha pode ser trocada em Plano sem perda de dados.
 - Alerta de divergência calórica fica na página de Alimentação (permanente), não em Hoje.
 - Hoje mantém o requisito anterior de caber sem rolagem no iPhone 16; em telas menores rola.
 
 ## Pendente / próxima ação obrigatória
-1. Confirmar a resposta do proprietário sobre a política de séries (se escolher outra,
-   alterar o padrão em `emptyData`/`model.ts` ou só a configuração dele em Plano).
-2. Validar em iPhone físico (Safari e PWA instalada): arraste lateral, áreas seguras, fontes.
-3. Acompanhar a CI (WebKit) e o deploy Vercel após cada merge.
+1. Validar em iPhone físico (Safari e PWA instalada): arraste lateral, áreas seguras, fontes.
+2. Acompanhar a CI (WebKit) e o deploy Vercel após cada merge.
 
 ## Arquivos principais alterados
 `src/domain/{training,migrations,cardio,daily,model,nutrition}.ts`,

@@ -51,8 +51,8 @@ A migração registra o marco uma única vez. Ciclos anteriores sobrepostos term
 ## Séries por exercício · 1.4.0 (26/11/2026)
 
 Cada exercício exibe **exatamente as séries prescritas** em `ORIGINAL_PLAN`, em todas as semanas
-(`settings.setPolicy='full'`, padrão). A periodização das 12 semanas continua definindo o RIR.
+nas semanas comuns e 55% nas semanas 4 e 8 (`settings.setPolicy='full-deload'`, padrão escolhido pelo proprietário). A periodização das 12 semanas continua definindo o RIR.
 As exibições de duas séries vinham do fator de volume (75% na semana 1; 55% nas semanas 4 e 8).
-Em Plano → Séries por exercício é possível escolher `full-deload` (55% só nas semanas 4 e 8) ou
+Em Plano → Séries por exercício é possível escolher `full` (integrais em todas as semanas) ou
 `periodized` (percentuais originais). Sessões encerradas nunca mudam; sessões abertas de hoje em
 diante são ajustadas sem apagar séries preenchidas. Teste: `src/test/v9-regression.test.ts`.

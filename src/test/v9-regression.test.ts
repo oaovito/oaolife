@@ -35,8 +35,10 @@ describe('séries exibidas = séries do plano vigente (bug das 2 séries)',()=>{
   expect(weeklyVolume(1,'full')).toEqual(weeklyVolume(3,'full'));
   expect(weeklyVolume(1,'full')['Peito']).toBe(20);expect(weeklyVolume(1,'full')['Costas']).toBe(20);
  });
- it('políticas alternativas continuam explícitas e não são o padrão',()=>{
-  expect(emptyData().settings.setPolicy).toBe('full');
+ it('padrão escolhido pelo proprietário: integrais, exceto semanas 4 e 8 de recuperação',()=>{
+  expect(emptyData().settings.setPolicy).toBe('full-deload');
+  const standard=cycleData(emptyData().settings.setPolicy);
+  for(let week=1;week<=12;week++){const session=makeWorkout(standard,addDays('2026-11-23',(week-1)*7))!;const template=ORIGINAL_PLAN.find(t=>t.id===session.template)!;const full=session.exercises.every((e,i)=>e.sets.length===template.exercises[i].sets);expect(full).toBe(![4,8].includes(week));}
   expect(setFactor('full',4)).toBe(1);expect(setFactor('full-deload',4)).toBe(.55);expect(setFactor('full-deload',1)).toBe(1);expect(setFactor('periodized',1)).toBe(.75);
   const deload=cycleData('full-deload');expect(makeWorkout(deload,'2026-12-14')!.exercises.reduce((n,e)=>n+e.sets.length,0)).toBeLessThan(makeWorkout(deload,'2026-12-07')!.exercises.reduce((n,e)=>n+e.sets.length,0));
  });
