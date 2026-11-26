@@ -8,8 +8,10 @@ export function cardioTarget(date:string) { return CARDIO_MINUTES[new Date(date+
 export function cardioSeconds(c:CardioSession,clock=Date.now()) {
  return Math.max(0,Math.floor(c.elapsed+(c.runningSince===null?0:Math.max(0,clock-c.runningSince)/1000)));
 }
+// A velocidade mínima só se aplica à esteira; outras modalidades não ficam bloqueadas.
+export function speedRuleMet(c:CardioSession) { return c.minimumSpeed===null||c.mode!=='Esteira'||(c.speed!==null&&c.speed>=c.minimumSpeed); }
 export function cardioGoalReached(c:CardioSession,clock=Date.now()) {
- return c.planned!==null&&cardioSeconds(c,clock)>=c.planned*60&&(c.minimumSpeed===null||(c.mode==='Esteira'&&c.speed!==null&&c.speed>=c.minimumSpeed));
+ return c.planned!==null&&cardioSeconds(c,clock)>=c.planned*60&&speedRuleMet(c);
 }
 export function applyCardioPlan(c:CardioSession,date:string) {
  c.planned=cardioTarget(date);c.minimumSpeed=5;c.mode='Esteira';c.planVersion='weekly-360';
@@ -22,5 +24,7 @@ export function weeklyCardio(data:AppData,date:string,clock=Date.now()) {
   const actual=day?cardioSeconds(day.cardio,clock)/60:0;
   return {date:id,planned,actual,credited:Math.min(planned,actual),complete:!!day&&cardioGoalReached(day.cardio,clock)};
  });
- return {start,end:addDays(start,6),planned:CARDIO_WEEKLY_MINUTES,actual:days.reduce((n,d)=>n+d.actual,0),credited:days.reduce((n,d)=>n+d.credited,0),days};
+ // Meta semanal flexível: todos os minutos realizados contam, em qualquer distribuição.
+ const actual=days.reduce((n,d)=>n+d.actual,0);
+ return {start,end:addDays(start,6),planned:CARDIO_WEEKLY_MINUTES,actual,credited:Math.min(CARDIO_WEEKLY_MINUTES,actual),remaining:Math.max(0,CARDIO_WEEKLY_MINUTES-actual),reached:actual>=CARDIO_WEEKLY_MINUTES,days};
 }

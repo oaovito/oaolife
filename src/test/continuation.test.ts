@@ -29,7 +29,7 @@ describe('conclusão simples e relatórios reais',()=>{
    await mutate('Desfazer confirmação','',d=>{d.days[0].declarations={};});expect(dayComplete(summaries((await db.state.get('main'))!.data,'2026-10-16'))).toBe(false);
   }finally{await db.delete();}
  });
- it.each([[59,5,'Esteira','partial'],[60,null,'Esteira','partial'],[60,4.9,'Esteira','partial'],[60,5,'Bicicleta','partial'],[60,5,'Esteira','complete'],[61,5.5,'Esteira','complete']] as const)('cardio %s min a %s km/h em %s resulta %s',(minutes,speed,mode,status)=>{
+ it.each([[59,5,'Esteira','partial'],[60,null,'Esteira','partial'],[60,4.9,'Esteira','partial'],[60,null,'Bicicleta','complete'],[60,5,'Esteira','complete'],[61,5.5,'Esteira','complete']] as const)('cardio %s min a %s km/h em %s resulta %s',(minutes,speed,mode,status)=>{
   const cardio=makeDay(emptyData(),'2026-10-19').cardio;Object.assign(cardio,{elapsed:minutes*60,speed,mode});finishCardio(cardio);expect(cardio.status).toBe(status);
  });
 });
@@ -42,7 +42,7 @@ describe('migração protege dados de abas antigas',()=>{
   await old.table('state').add({id:'main',revision:8,data:original});old.close();
   const current=new OaoDatabase(name);try{
    await initialize(current);const migrated=(await current.state.get('main'))!;
-   expect(migrated.revision).toBe(8);expect(migrated.data.schemaVersion).toBe(8);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
+   expect(migrated.revision).toBe(9);expect(migrated.data.schemaVersion).toBe(9);expect(migrated.data.days[0].cardio).toMatchObject({planned:20,elapsed:1200,status:'complete',speed:null,minimumSpeed:null});expect(migrated.data.days[0].water[0]).toBe(275);
    await mutate('Novo cardio','',d=>{const newDay=makeDay(d,'2026-10-19');newDay.cardio.speed=5;d.days.push(newDay);},current);
    await old.open();
    // The v2 app validates its full snapshot, including literal schemaVersion:2, before writing.

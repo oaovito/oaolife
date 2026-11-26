@@ -9,6 +9,8 @@ import { LEGACY_MEALS } from '../domain/plan';
 import { cardioGoalReached } from '../domain/cardio';
 import { pauseSequence, sequenceNeedsSync, syncSequence } from '../domain/mobility';
 import { finishCardio } from '../domain/daily';
+import { migrateV9, migrationPending } from '../domain/migrations';
+export interface SnapshotRecord { id:string; at:string; revision:number; reason:string; data:unknown }
 export interface StateRecord { id:'main'; revision:number; data:AppData }
 export interface AuditChange { path:string; before:unknown; after:unknown }
 export interface AuditRecord { id:string; at:string; revision:number; kind:string; detail:string; changes?:AuditChange[] }
@@ -19,8 +21,8 @@ export function diffAudit(before:unknown,after:unknown,path=''):AuditChange[] {
  return [{path,before:auditValue(before),after:auditValue(after)}];
 }
 export class OaoDatabase extends Dexie {
- state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>;
- constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(6).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(7).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){await tx.table('state').put({...state,data:appDataSchema.parse(state.data)});}});this.version(8).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});}
+ state!:Table<StateRecord,string>; audit!:Table<AuditRecord,string>; outbox!:Table<SyncOperation,string>; snapshots!:Table<SnapshotRecord,string>;
+ constructor(name='oaolife'){super(name);this.version(1).stores({state:'id',audit:'id,at,revision',outbox:'id,at,state'});this.version(2).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(4).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(5).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(6).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){const data=appDataSchema.parse(state.data);assertIntegrity(data);await tx.table('state').put({...state,data});}});this.version(7).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'}).upgrade(async tx=>{const state=await tx.table('state').get('main');if(state){await tx.table('state').put({...state,data:appDataSchema.parse(state.data)});}});this.version(8).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});this.version(9).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision',snapshots:'id,at'});}
 }
 export const db=new OaoDatabase();
 export function assertIntegrity(data:AppData) {
@@ -54,7 +56,7 @@ export function assertIntegrity(data:AppData) {
  for(const r of data.recipes)for(const i of r.ingredients)if(!data.foods.some(f=>f.id===i.foodId))throw Error('Receita referencia alimento ausente.');
 }
 export async function initialize(database=db) {
- await database.transaction('rw',database.state,database.audit,database.outbox,async()=>{const saved=await database.state.get('main');if(!saved){const data=emptyData();anchorTrainingCycle(data,today());await database.state.add({id:'main',revision:0,data});return;}const parsed=appDataSchema.parse(saved.data);activateNutrition(parsed,today());activateHydration(parsed,today());anchorTrainingCycle(parsed,today());assertIntegrity(parsed);if(diffAudit(saved.data,parsed).length>0){const revision=saved.revision+1;await database.state.put({...saved,revision,data:parsed});{const id=uid(),at=now(),kind='Atualizar dados compatíveis e rotina';await database.audit.add({id,at,revision,kind,detail:'Periodização preservada',changes:diffAudit(saved.data,parsed)});await database.outbox.add({id,at,revision,state:'local-only',kind});}}});
+ await database.transaction('rw',[database.state,database.audit,database.outbox,database.snapshots],async()=>{const saved=await database.state.get('main');if(!saved){const data=emptyData();anchorTrainingCycle(data,today());migrateV9(data,today());await database.state.add({id:'main',revision:0,data});return;}const migrating=migrationPending(appDataSchema.parse(saved.data));const parsed=appDataSchema.parse(saved.data);activateNutrition(parsed,today());activateHydration(parsed,today());anchorTrainingCycle(parsed,today());migrateV9(parsed,today());assertIntegrity(parsed);if(diffAudit(saved.data,parsed).length>0){const revision=saved.revision+1;if(migrating&&!(await database.snapshots.get('pre-v9')))await database.snapshots.put({id:'pre-v9',at:now(),revision:saved.revision,reason:'Cópia local automática antes da atualização 9',data:saved.data});await database.state.put({...saved,revision,data:parsed});{const id=uid(),at=now(),kind='Atualizar dados compatíveis e rotina';await database.audit.add({id,at,revision,kind,detail:'Periodização preservada',changes:diffAudit(saved.data,parsed)});await database.outbox.add({id,at,revision,state:'local-only',kind});}}});
 }
 export async function mutate(kind:string,detail:string,fn:(data:AppData)=>void,database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
@@ -102,6 +104,7 @@ export async function reconcileTimers(clock=Date.now(),database=db) {
  return database.transaction('rw',database.state,database.audit,database.outbox,async()=>{
   const snapshot=await database.state.get('main');if(!snapshot)return;
   if(trainingAnchorPending(snapshot.data,today()))await mutate('Aplicar início configurado da periodização','Periodização preservada',data=>{anchorTrainingCycle(data,today());},database);
+  if(migrationPending(snapshot.data))await mutate('Atualização 9','Metas e referências alimentares; séries do plano vigente',data=>{migrateV9(data,today());},database);
   const needs=(day:AppData['days'][number])=>day.cardio.runningSince!==null&&cardioGoalReached(day.cardio,clock)||(day.mobility.protocol?.exercises??[]).some(ex=>sequenceNeedsSync(day.mobility,ex,clock));
   if(!snapshot.data.days.some(needs))return;
   await mutate('Atualizar cronômetros','Etapas concluídas pelo tempo decorrido',data=>{
@@ -110,5 +113,20 @@ export async function reconcileTimers(clock=Date.now(),database=db) {
     for(const ex of day.mobility.protocol?.exercises??[])if(sequenceNeedsSync(day.mobility,ex,clock))syncSequence(day.mobility,ex,clock);
    }
   },database);
+ });
+}
+
+// Rollback local: restaura a cópia salva antes de uma migração, registrando auditoria.
+// A cópia de segurança continua guardada; o estado substituído também é preservado.
+export async function restoreSnapshot(id:string,database=db) {
+ return database.transaction('rw',[database.state,database.audit,database.outbox,database.snapshots],async()=>{
+  const snapshot=await database.snapshots.get(id);if(!snapshot)throw Error('Cópia não encontrada.');
+  const current=await database.state.get('main');if(!current)throw Error('Banco não inicializado.');
+  const data=appDataSchema.parse(snapshot.data);if(migrationPending(data))data.adjustments.push({id:'migration-9-2026-11-26',at:now(),kind:'Atualização 9 revertida',detail:`Cópia ${id} restaurada; a atualização não é reaplicada automaticamente.`});assertIntegrity(data);
+  await database.snapshots.put({id:`before-restore-${now()}`,at:now(),revision:current.revision,reason:`Estado substituído ao restaurar ${id}`,data:current.data});
+  const revision=current.revision+1,auditId=uid(),at=now();
+  await database.state.put({id:'main',revision,data});
+  await database.audit.add({id:auditId,at,revision,kind:'Restaurar cópia local',detail:id,changes:diffAudit(current.data,data)});
+  await database.outbox.add({id:auditId,at,revision,state:'local-only',kind:'Restaurar cópia local'});
  });
 }

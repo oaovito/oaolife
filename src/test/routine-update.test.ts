@@ -20,7 +20,7 @@ describe('cardio semanal fixo',()=>{
   const data=emptyData(),day=makeDay(data,'2026-10-21');data.days.push(day);day.cardio.speed=5;
   startCardio(day.cardio,1000);pauseCardio(day.cardio,601000);finishCardio(day.cardio,601000);expect(day.cardio.status).toBe('partial');
   startCardio(day.cardio,1000000);finishCardio(day.cardio,2200000);expect(day.cardio.elapsed).toBe(1800);expect(day.cardio.status).toBe('complete');
-  day.cardio.elapsed=36000;const week=weeklyCardio(data,day.id);expect(week.actual).toBe(600);expect(week.credited).toBe(30);expect(week.days.filter(d=>d.complete)).toHaveLength(1);
+  day.cardio.elapsed=36000;const week=weeklyCardio(data,day.id);expect(week.actual).toBe(600);expect(week.credited).toBe(360);expect(week.remaining).toBe(0);expect(week.reached).toBe(true);expect(week.days.filter(d=>d.complete)).toHaveLength(1);
  });
  it('semana começa na segunda, inclusive atravessando ano; aplicar plano preserva medidas',()=>{
   const data=emptyData();expect(weeklyCardio(data,'2027-01-03').start).toBe('2026-12-28');
@@ -69,6 +69,6 @@ describe('persistência e migração compatível',()=>{
   const name='migration-'+crypto.randomUUID(),old=new Dexie(name);old.version(3).stores({state:'id',audit:'id,at,revision,kind',outbox:'id,at,state,revision'});
   const data=JSON.parse(JSON.stringify(emptyData()));data.schemaVersion=3;const day=JSON.parse(JSON.stringify(makeDay(emptyData(),'2026-10-17')));delete day.cardio.planVersion;delete day.mobility.sequences;day.cardio.planned=null;day.water[2]=600;day.mobility.protocol=null;data.days.push(day);
   await old.table('state').add({id:'main',revision:9,data});await old.table('outbox').add({id:'old',revision:9,state:'local-only',kind:'Água',at:new Date().toISOString()});old.close();
-  const database=new OaoDatabase(name);try{await initialize(database);const saved=(await database.state.get('main'))!;expect(saved.revision).toBe(9);expect(saved.data.schemaVersion).toBe(8);expect(saved.data.days[0]).toMatchObject({water:[0,0,600,0,0,0],cardio:{planned:null,planVersion:'legacy'},mobility:{protocol:null,sequences:{}}});expect(await database.outbox.count()).toBe(1);expect(appDataSchema.parse(saved.data)).toEqual(saved.data);}finally{await database.delete();}
+  const database=new OaoDatabase(name);try{await initialize(database);const saved=(await database.state.get('main'))!;expect(saved.revision).toBe(10);expect(saved.data.schemaVersion).toBe(9);expect(saved.data.days[0]).toMatchObject({water:[0,0,600,0,0,0],cardio:{planned:null,planVersion:'legacy'},mobility:{protocol:null,sequences:{}}});expect(await database.outbox.count()).toBe(2);expect(appDataSchema.parse(saved.data)).toEqual(saved.data);}finally{await database.delete();}
  });
 });

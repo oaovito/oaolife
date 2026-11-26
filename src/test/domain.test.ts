@@ -6,7 +6,7 @@ import { addDays, allocateSets, cycleForDate, makeWorkout, schedule, weeklyTempl
 import { evaluateProgression, progressionFor } from '../domain/progression';
 import { metricPoints, cycleReport } from '../domain/analytics';
 import { appDataSchema, type AppData, type PlannedExercise, type RecoveryLog } from '../domain/model';
-export function fixture():AppData {const data=emptyData();data.cycles.push({id:'cycle-1',start:'2026-09-28',originalVersion:'original-1',createdAt:now(),overrides:{}});return data;}
+export function fixture():AppData {const data=emptyData();data.settings.setPolicy='periodized';data.cycles.push({id:'cycle-1',start:'2026-09-28',originalVersion:'original-1',createdAt:now(),overrides:{}});return data;}
 const goodRecovery:RecoveryLog={sleep:8,fatigue:2,soreness:2,pain:0,jointPain:false,symptoms:false,notes:''};
 function completedExercise():PlannedExercise {const s=makeWorkout(fixture(),'2026-10-12')!;const ex=s.exercises[0];ex.sets.forEach(v=>Object.assign(v,{done:true,load:50,reps:10,rir:2,technique:true,range:true}));return ex;}
 describe('calendário semanal independente da periodização',()=>{
