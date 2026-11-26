@@ -428,3 +428,4 @@ html,body{overscroll-behavior-x:none}
 .page-title h1{font-weight:800;letter-spacing:.01em}
 .panel>h2{font-weight:800;letter-spacing:.02em}
 .rank-warning{position:absolute;top:6px;right:6px;min-height:44px;padding:0 10px;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.08em;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-sm)}
+.start-action{width:100%;margin:0 0 14px}

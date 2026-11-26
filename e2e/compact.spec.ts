@@ -112,3 +112,13 @@ test('PWA instalada recupera altura omitida pelo WebKit e reposiciona menu após
  const last=await page.locator('.module').last().boundingBox(),menu=await page.locator('.sidebar').boundingBox();expect(last!.y+last!.height).toBeLessThanOrEqual(menu!.y);
  await page.evaluate(()=>window.scrollTo(0,500));expect(await page.evaluate(()=>scrollY)).toBe(0);
 });
+
+test('ação principal de cada bloco aparece sem rolagem no iPhone 16',async({page},info)=>{
+ test.skip(info.project.name==='desktop');
+ await page.clock.install({time:new Date('2026-11-30T12:00:00-03:00')});
+ for(const [path,name] of [['/treino','Iniciar treino'],['/cardio','Iniciar'],['/mobilidade','Iniciar sequência'],['/alimentacao','Marcar como consumida'],['/hormonal','Registrar aplicação'],['/hidratacao','Adicionar 500 ml']] as const){
+  await page.goto(path);const button=page.getByRole('button',{name,exact:true}).first();await expect(button).toBeVisible();
+  const box=await button.boundingBox(),nav=await page.getByRole('navigation').boundingBox();
+  expect(box!.y+box!.height,`${path}: ${name}`).toBeLessThanOrEqual(nav!.y);expect(await page.evaluate(()=>document.querySelector('.main-shell')?.scrollTop??scrollY)).toBe(0);
+ }
+});
