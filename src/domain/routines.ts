@@ -4,7 +4,9 @@ import type { DailyLog } from './model';
 // Valem a partir de ROUTINES_SINCE; dias anteriores não mudam. Novos itens entram aqui, com a data
 // em que passam a valer (`since`), sem alterar dias já registrados.
 export const ROUTINES_SINCE='2026-11-26';
-export type RoutineBlock='mancare'|'casa';
+export type RoutineBlock='despertar'|'mancare'|'casa';
+// Despertar (26/11/2026, proprietário): horário fixo de acordar, 06:00, todos os dias, a partir de 27/11/2026.
+export const WAKE_TIME='06:00';
 export interface RoutineStep {key:string;label:string}
 // `steps`: item com etapas em ordem fixa; só conclui com todas. Sem `steps`, o item é uma etapa única.
 export interface RoutineItem {id:string;name:string;weekdays:number[];since:string;steps?:RoutineStep[]}
@@ -15,6 +17,7 @@ export const LAUNDRY_LOADS=2;
 export const LAUNDRY_STEPS=[['lavar','Lavar'],['estender','Estender'],['recolher','Recolher'],['dobrar','Dobrar'],['guardar','Guardar']] as const;
 const laundrySteps:RoutineStep[]=Array.from({length:LAUNDRY_LOADS},(_,m)=>LAUNDRY_STEPS.map(([k,l])=>({key:`roupa.${m+1}.${k}`,label:`Máquina ${m+1} · ${l}`}))).flat();
 export const ROUTINE_BLOCKS:Record<RoutineBlock,{title:string;items:RoutineItem[]}>={
+ despertar:{title:'Despertar',items:[{id:'despertar',name:`Despertar ${WAKE_TIME}`,weekdays:EVERY_DAY,since:'2026-11-27'}]},
  mancare:{title:'ManCare',items:[{id:'barba',name:'Barba',weekdays:[0],since:ROUTINES_SINCE}]},
  casa:{title:'Cuidado Casa',items:[
   {id:'louca',name:'Louça',weekdays:EVERY_DAY,since:ROUTINES_SINCE},

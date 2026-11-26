@@ -25,7 +25,7 @@ test('botão visível atualiza com treino e cronômetros salvos, sem perder dado
  await page.setViewportSize({width:320,height:700});
  await page.goto('/hidratacao');await page.getByRole('button',{name:'Adicionar 500 ml',exact:true}).click();await expect(page.getByRole('heading',{name:'500 ml registrados'})).toBeVisible();
  await page.goto('/treino');await page.getByRole('button',{name:'Iniciar treino',exact:true}).click();await page.getByRole('button',{name:/Concluir série 1 de/}).first().click();
- await page.goto('/cardio');await page.getByRole('button',{name:'Iniciar',exact:true}).click();await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();
+ await page.goto('/cardio');await page.getByLabel('Minutos realizados').fill('25');await page.getByRole('button',{name:'Registrar minutos',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();
  await page.goto('/mobilidade');await page.getByRole('button',{name:'Série 1',exact:true}).first().click();await expect(page.getByRole('button',{name:'Série 1',exact:true}).first()).toHaveAttribute('aria-pressed','true');
  await nav(page,'Hoje');await page.clock.fastForward(5000);
  await withUpdate(page,async()=>{
@@ -38,12 +38,12 @@ test('botão visível atualiza com treino e cronômetros salvos, sem perder dado
   await Promise.all([page.waitForEvent('load'),button.click()]);await expect(page.locator('.main-shell')).toBeVisible();await expect(page.locator('.update-banner')).toHaveCount(0);
   const after=await stored(page);expect(after.sessions).toEqual(before.sessions);expect(after.profile.height).toBe(179);
   const previous=before.days.find((d:any)=>d.id==='2026-11-02'),current=after.days.find((d:any)=>d.id==='2026-11-02');
-  expect(current.hydration).toEqual(previous.hydration);expect(current.cardio.runningSince).toBe(previous.cardio.runningSince);expect(current.cardio.runningSince).not.toBeNull();
+  expect(current.hydration).toEqual(previous.hydration);expect(current.cardio).toEqual(previous.cardio);expect(current.cardio.elapsed).toBe(1500);
   expect(current.mobility.sets).toEqual(previous.mobility.sets);expect(Object.values(current.mobility.sets).some((s:any)=>s.done)).toBe(true);
   await context.setOffline(true);await page.reload();await expect(page.locator('.offline-banner')).toBeVisible();
   await page.goto('/hidratacao');await expect(page.getByRole('heading',{name:'500 ml registrados'})).toBeVisible();
   await page.goto('/treino');await expect(page.getByText('Sessão em andamento',{exact:true})).toBeVisible();
-  await page.goto('/cardio');await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();await context.setOffline(false);
+  await page.goto('/cardio');await expect(page.getByLabel('Minutos realizados')).toHaveValue('25');await context.setOffline(false);
  });
 });
 

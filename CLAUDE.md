@@ -69,6 +69,11 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   (5 × 60 = **300 min/semana**); quarta e sábado sem cardio. Cada sessão só
   conclui com a meta do próprio dia; minutos extras não compensam outro dia.
   Velocidade mínima 5,0 km/h só na esteira (`src/domain/cardio.ts`).
+  **Sem cronômetro (26/11/2026)**: registro por check da meta do dia (`toggleCardioTarget`; na esteira o
+  check confirma 5,0 km/h) ou por minutos informados (`recordCardioMinutes`, substitui o total do dia).
+  Cronômetros antigos em andamento são encerrados preservando o tempo (`stopCardioTimer`).
+- **Despertar 06:00 (desde 27/11/2026)**: item diário do bloco `despertar` (`routines.ts`); em Hoje é a
+  próxima ação enquanto pendente (um toque confirma), sem card extra. Conta no dia cumprido.
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
   domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série

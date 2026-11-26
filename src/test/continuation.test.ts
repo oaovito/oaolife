@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import Dexie from 'dexie';
 import { z } from 'zod';
-import { emptyData, makeDay, finishCardio, summaries, dayComplete } from '../domain/daily';
+import { emptyData, makeDay, settleCardio, summaries, dayComplete } from '../domain/daily';
 import { appDataSchema, hormonalImportSchema } from '../domain/model';
 import { dayReport, metricPoints } from '../domain/analytics';
 import { now, makeWorkout } from '../domain/training';
@@ -30,7 +30,7 @@ describe('conclusão simples e relatórios reais',()=>{
   }finally{await db.delete();}
  });
  it.each([[59,5,'Esteira','partial'],[60,null,'Esteira','partial'],[60,4.9,'Esteira','partial'],[60,null,'Bicicleta','complete'],[60,5,'Esteira','complete'],[61,5.5,'Esteira','complete']] as const)('cardio %s min a %s km/h em %s resulta %s',(minutes,speed,mode,status)=>{
-  const cardio=makeDay(emptyData(),'2026-10-19').cardio;Object.assign(cardio,{elapsed:minutes*60,speed,mode});finishCardio(cardio);expect(cardio.status).toBe(status);
+  const cardio=makeDay(emptyData(),'2026-10-19').cardio;Object.assign(cardio,{elapsed:minutes*60,speed,mode});settleCardio(cardio);expect(cardio.status).toBe(status);
  });
 });
 

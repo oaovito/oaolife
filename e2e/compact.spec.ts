@@ -1,16 +1,18 @@
 import { test, expect, type Page } from '@playwright/test';
-test('dias fixos de cardio (60 min; quarta e sábado sem) e sessões somadas no domingo',async({page})=>{
+test('dias fixos de cardio (60 min; quarta e sábado sem); minutos informados e check da meta, sem cronômetro',async({page})=>{
  await open(page,'/cardio?date=2026-10-18');
  for(const [date,minutes] of [['2026-10-12','60'],['2026-10-13','60'],['2026-10-14',''],['2026-10-15','60'],['2026-10-16','60'],['2026-10-17',''],['2026-10-18','60']]){
   await page.getByLabel('Consultar data',{exact:true}).fill(date);if(minutes)await expect(page.getByLabel('Planejado neste dia (min)')).toHaveValue(minutes);else await expect(page.getByRole('heading',{name:'Sem cardio neste dia',level:1})).toBeVisible();
  }
- await page.getByLabel('Registro manual realizado (min)').fill('20');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();
- await page.getByLabel('Modo do registro manual').selectOption('add');await page.getByLabel('Registro manual realizado (min)').fill('40');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true})).toBeVisible();
+ await expect(page.getByRole('timer')).toHaveCount(0);await expect(page.getByRole('button',{name:/^(Iniciar|Pausar|Retomar)$/})).toHaveCount(0);
+ await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar detalhes',exact:true}).click();
+ await page.getByLabel('Minutos realizados').fill('20');await page.getByRole('button',{name:'Registrar minutos',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();await expect(page.getByText('Faltam 40 min para a meta de hoje.')).toBeVisible();
+ await page.getByRole('button',{name:'Concluir 60 min',exact:true}).click();await expect(page.getByText('CARDIO CONCLUÍDO',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'60 min concluídos',exact:true})).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('.weekly-cardio')).toContainText('20% ·');await page.reload();expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
  await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Treino:/})).toHaveCount(0);
 });
 test('postura sem cronômetro: marca cada série, persiste offline e conclui junto com cardio',async({page,context})=>{
- await open(page,'/cardio');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await page.getByRole('button',{name:'Iniciar',exact:true}).click();
+ await open(page,'/cardio');await page.getByLabel('Minutos realizados').fill('30');await page.getByRole('button',{name:'Registrar minutos',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();
  await nav(page,'Hoje');await page.getByRole('button',{name:/^Postura:/}).click();
  await expect(page.getByRole('timer')).toHaveCount(0);await expect(page.getByRole('button',{name:/sequência/})).toHaveCount(0);
  await page.getByRole('button',{name:'Série 1',exact:true}).click();await expect(page.getByRole('button',{name:'Série 1',exact:true})).toHaveAttribute('aria-pressed','true');
@@ -19,7 +21,7 @@ test('postura sem cronômetro: marca cada série, persiste offline e conclui jun
  await expect(page.getByRole('button',{name:'Série 2',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.getByRole('button',{name:'Série 3',exact:true}).click();await page.getByRole('button',{name:'Série 4',exact:true}).click();
  await expect(page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true})).toBeVisible();
- const data=await savedData(page),day=data.days[0];expect(Object.values(day.mobility.sets).map((s:any)=>s.done)).toEqual([true,true,true,true]);expect(day.cardio.runningSince).not.toBeNull();expect(day.water).toEqual([0,0,0,0,0,0]);expect(day.meals.flat().some(Boolean)).toBe(false);
+ const data=await savedData(page),day=data.days[0];expect(Object.values(day.mobility.sets).map((s:any)=>s.done)).toEqual([true,true,true,true]);expect(day.cardio).toMatchObject({runningSince:null,elapsed:1800,status:'partial'});expect(day.water).toEqual([0,0,0,0,0,0]);expect(day.meals.flat().some(Boolean)).toBe(false);
  await nav(page,'Hoje');await page.getByText('Concluídos (1) · ver e corrigir',{exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await expect(page.getByRole('button',{name:/^Postura:/})).toContainText('Concluído');await expect(page.getByRole('button',{name:/^Treino:/})).not.toContainText('Concluído');
  await page.getByRole('button',{name:/^Postura:/}).click();await page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true}).click();
  await page.getByRole('button',{name:'Série 4',exact:true}).click();await expect(page.getByRole('button',{name:'Série 4',exact:true})).toHaveAttribute('aria-pressed','false');
@@ -74,8 +76,8 @@ test('conclui sem detalhes, pula séries e destaca as instruções',async({page}
  await page.getByRole('button',{name:'Corrigir registros'}).click();await page.getByText('Exercícios registrados (1) · Ver e corrigir',{exact:true}).click();await page.locator('.completed-items .exercise-disclosure>summary').first().click();await page.getByText(/Séries registradas \(\d+\) · Ver e corrigir/).first().click();await page.getByRole('button',{name:'Não realizar série 2 de Supino vertical',exact:true}).click();await expect(page.getByRole('button',{name:'Concluir série 2 de Supino vertical',exact:true})).toBeVisible();
 });
 test('cardio exige 60 minutos, esteira e velocidade informada de pelo menos 5',async({page})=>{
- await open(page,'/cardio');await expect(page.getByLabel('Planejado neste dia (min)')).toHaveValue('60');for(const [minutes,speed] of [['59','5'],['60',''],['60','4.9']]){await page.getByLabel('Registro manual realizado (min)').fill(minutes);await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill(speed);await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();}
- await page.getByLabel('Registro manual realizado (min)').fill('60');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true})).toBeVisible();await page.reload();await page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true}).click();await expect(page.getByLabel('Velocidade realizada (km/h)',{exact:true})).toHaveValue('5');expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
+ await open(page,'/cardio');await expect(page.getByLabel('Planejado neste dia (min)')).toHaveValue('60');for(const [minutes,speed] of [['59','5'],['60',''],['60','4.9']]){await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill(speed);await page.getByRole('button',{name:'Salvar detalhes',exact:true}).click();await page.getByLabel('Minutos realizados').fill(minutes);await page.getByRole('button',{name:'Registrar minutos',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();}
+ await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar detalhes',exact:true}).click();await expect(page.getByText('CARDIO CONCLUÍDO',{exact:true})).toBeVisible();await page.reload();await expect(page.getByLabel('Velocidade realizada (km/h)',{exact:true})).toHaveValue('5');expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
 });
 test('dia anterior conclui por declaração e mantém valores desconhecidos',async({page})=>{
  await open(page,'/?date=2026-10-16');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toHaveCount(0);await expect(page.getByText('Resumo e fechamento do dia',{exact:true})).toHaveCount(0);await nav(page,'Ajustes');await expect(page.getByText('Ciclo e acompanhamento',{exact:true})).toBeVisible();await page.getByText('Resumo e fechamento do dia',{exact:true}).click();await page.getByRole('button',{name:'Concluir dia sem detalhar'}).click();await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Cardio:/})).not.toContainText('Concluído');await page.reload();await expect(page.getByRole('button',{name:/^Cardio:/})).not.toContainText('Concluído');const data=await savedData(page);expect(data.sessions).toHaveLength(0);expect(data.days[0].water).toEqual([0,0,0,0,0,0]);expect(data.days[0].recorded).toEqual([]);expect(data.days[0].cardio.speed).toBeNull();
@@ -117,7 +119,7 @@ test('PWA instalada recupera altura omitida pelo WebKit e reposiciona menu após
 test('ação principal de cada bloco aparece sem rolagem no iPhone 16',async({page},info)=>{
  test.skip(info.project.name==='desktop');
  await page.clock.install({time:new Date('2026-11-30T12:00:00-03:00')});
- for(const [path,name] of [['/treino','Iniciar treino'],['/cardio','Iniciar'],['/mobilidade','Série 1'],['/alimentacao','Marcar como consumida'],['/hormonal','Registrar aplicação'],['/hidratacao','Adicionar 500 ml']] as const){
+ for(const [path,name] of [['/treino','Iniciar treino'],['/cardio','Concluir 60 min'],['/mobilidade','Série 1'],['/alimentacao','Marcar como consumida'],['/hormonal','Registrar aplicação'],['/hidratacao','Adicionar 500 ml']] as const){
   await page.goto(path);const button=page.getByRole('button',{name,exact:true}).first();await expect(button).toBeVisible();
   const box=await button.boundingBox(),nav=await page.getByRole('navigation').boundingBox();
   expect(box!.y+box!.height,`${path}: ${name}`).toBeLessThanOrEqual(nav!.y);expect(await page.evaluate(()=>document.querySelector('.main-shell')?.scrollTop??scrollY)).toBe(0);
@@ -149,4 +151,12 @@ test('Aspirador às terças e quintas: Cuidado Casa com três itens cabe acima d
  if(info.project.name!=='desktop'){const box=await casa.boundingBox(),nav=await page.getByRole('navigation').boundingBox();expect(box!.y+box!.height).toBeLessThanOrEqual(nav!.y);}
  await casa.getByRole('button',{name:'Aspirador',exact:true}).click();await expect(casa.getByRole('button',{name:'Aspirador',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.reload();await expect(page.getByRole('region',{name:/^Cuidado Casa/}).getByRole('button',{name:'Aspirador',exact:true})).toHaveAttribute('aria-pressed','true');
+});
+
+test('despertar 06:00: próxima ação confirma com um toque, sem card extra; vale desde 27/11',async({page})=>{
+ await page.clock.install({time:new Date('2026-11-30T06:05:00-03:00')});await page.goto('/');
+ const next=page.locator('.next-action');await expect(next).toContainText('Despertar 06:00');await expect(page.locator('#module-despertar')).toHaveCount(0);
+ await next.click();await expect(next).not.toContainText('Despertar');await expect(page.locator('.mission-count')).toContainText('1');
+ await page.reload();await page.getByText(/^Concluídos \(1\)/).click();await expect(page.getByRole('region',{name:/^Despertar 06:00: Concluído/})).toBeVisible();
+ await page.goto('/?date=2026-11-26');await expect(page.locator('.next-action')).not.toContainText('Despertar');
 });

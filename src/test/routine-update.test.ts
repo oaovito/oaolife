@@ -1,7 +1,7 @@
 import type { AppData } from '../domain/model';
 import { describe, it, expect } from 'vitest';
 import Dexie from 'dexie';
-import { emptyData, makeDay, startCardio, pauseCardio, finishCardio, summaries } from '../domain/daily';
+import { emptyData, makeDay, recordCardioMinutes, summaries } from '../domain/daily';
 import { cardioTarget, weeklyCardio, applyCardioPlan } from '../domain/cardio';
 import { activateMobility, currentMobilityProtocol, stopMobilityTimers, toggleMobilitySet } from '../domain/mobility';
 import { addDays } from '../domain/training';
@@ -20,8 +20,8 @@ describe('cardio semanal fixo',()=>{
  });
  it('acumula sessões menores e só conclui a meta do próprio dia',()=>{
   const data=emptyData(),day=makeDay(data,'2026-10-22');data.days.push(day);day.cardio.speed=5;
-  startCardio(day.cardio,1000);pauseCardio(day.cardio,601000);finishCardio(day.cardio,601000);expect(day.cardio.status).toBe('partial');
-  startCardio(day.cardio,1000000);finishCardio(day.cardio,4000000);expect(day.cardio.elapsed).toBe(3600);expect(day.cardio.status).toBe('complete');
+  recordCardioMinutes(day.cardio,10);expect(day.cardio.status).toBe('partial');
+  recordCardioMinutes(day.cardio,60);expect(day.cardio.elapsed).toBe(3600);expect(day.cardio.status).toBe('complete');
   // Prescrição rígida: 600 min num só dia contam 60 para a semana; os outros dias continuam devidos.
   day.cardio.elapsed=36000;const week=weeklyCardio(data,day.id);expect(week.actual).toBe(600);expect(week.credited).toBe(60);expect(week.remaining).toBe(240);expect(week.reached).toBe(false);expect(week.sessions).toEqual({done:1,total:5});expect(week.days.filter(d=>d.complete)).toHaveLength(1);
  });
@@ -64,11 +64,11 @@ describe('persistência e migração compatível',()=>{
  it('reabre offline, reconcilia duas abas sem duplicação e mantém cardio independente',async()=>{
   const name='timers-'+crypto.randomUUID();let database=new OaoDatabase(name);await initialize(database);
   try{
-   await mutate('Iniciar','',data=>{const day=makeDay(data,'2026-10-19'),ex=day.mobility.protocol!.exercises[0];day.mobility.sequences[ex.id]={elapsed:0,runningSince:1000,completedAt:null};startCardio(day.cardio,1000);day.cardio.speed=5;day.water[0]=275;data.days.push(day);},database);
+   await mutate('Iniciar','',data=>{const day=makeDay(data,'2026-10-19'),ex=day.mobility.protocol!.exercises[0];day.mobility.sequences[ex.id]={elapsed:0,runningSince:1000,completedAt:null};day.cardio.runningSince=1000;day.cardio.status='running';day.cardio.speed=5;day.water[0]=275;data.days.push(day);},database);
    database.close();database=new OaoDatabase(name);await initialize(database);
    await Promise.all([reconcileTimers(421000,database),reconcileTimers(421000,database)]);
-   let saved=(await database.state.get('main'))!;expect(saved.revision).toBe(2);expect(summaries(saved.data,'2026-10-19',421000).mobility.status).toBe('Concluído');expect(saved.data.days[0].cardio.runningSince).toBe(1000);expect(saved.data.days[0].water[0]).toBe(275);
-   await reconcileTimers(3601000,database);saved=(await database.state.get('main'))!;expect(saved.data.days[0].cardio).toMatchObject({status:'complete',elapsed:3600,runningSince:null});
+   let saved=(await database.state.get('main'))!;expect(saved.revision).toBe(2);expect(summaries(saved.data,'2026-10-19',421000).mobility.status).toBe('Concluído');expect(saved.data.days[0].cardio).toMatchObject({runningSince:null,elapsed:420,status:'partial'});expect(saved.data.days[0].water[0]).toBe(275);
+   await reconcileTimers(3601000,database);saved=(await database.state.get('main'))!;expect(saved.revision).toBe(2);expect(saved.data.days[0].cardio).toMatchObject({status:'partial',elapsed:420,runningSince:null});
    const backup=await encryptBackup({format:'oaolife-backup-4',exportedAt:new Date().toISOString(),data:saved.data,audit:[],outbox:[]},'senha sintética de teste');expect((await decryptBackup(backup,'senha sintética de teste')).data).toEqual(saved.data);
   }finally{await database.delete();}
  });

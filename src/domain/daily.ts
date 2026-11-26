@@ -21,9 +21,28 @@ export function nextMeal(day:DailyLog) { const i=day.meals.findIndex(m=>!m.every
 export function toggleFood(day:DailyLog,meal:number,food:number,at=now()) { if(day.nutrition?.version==='five-meals-2'&&meal===3)throw Error('Use os registros de frutas.'); if(day.nutrition?.consumed[meal]){day.nutrition.plan[meal]=structuredClone(day.nutrition.consumed[meal]!.meal);if(day.nutrition.version==='five-meals-1'&&meal===4)day.nutrition.protein=day.nutrition.plan[4].foods[1].key as typeof day.nutrition.protein;if(day.nutrition.version==='five-meals-2'&&(meal===1||meal===4)){const p=day.nutrition.plan[meal].foods[0].key as typeof day.nutrition.protein;if(meal===1)day.nutrition.lunchProtein=p;else day.nutrition.protein=p;}}day.meals[meal][food]=!day.meals[meal][food];day.mealTimes[meal]=day.meals[meal].every(Boolean)?at:null;syncMealRecord(day,meal,at); }
 export function completeMeal(day:DailyLog,meal:number,at=now()) {setMealConsumed(day,meal,!day.meals[meal].every(Boolean),at);}
 export function timerSeconds(timer:{elapsed:number;runningSince:number|null},clock=Date.now()) { return Math.max(0,Math.floor(timer.elapsed+(timer.runningSince===null?0:Math.max(0,clock-timer.runningSince)/1000))); }
-export function pauseCardio(c:CardioSession,clock=Date.now()) { c.elapsed=timerSeconds(c,clock);c.runningSince=null;c.status='paused'; }
-export function startCardio(c:CardioSession,clock=Date.now()) { if(c.runningSince===null){c.runningSince=clock;c.status='running';} }
-export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada.');c.status=c.elapsed>=c.planned*60&&speedRuleMet(c)?'complete':'partial'; }
+// Cardio sem cronômetro (26/11/2026, proprietário): um toque registra a meta do dia ou o usuário
+// informa os minutos realizados. A conclusão exige a meta do próprio dia (e, na esteira, 5,0 km/h).
+export function settleCardio(c:CardioSession) {
+ c.runningSince=null;c.status=c.planned!==null&&c.elapsed>=c.planned*60&&speedRuleMet(c)?'complete':c.elapsed>0?'partial':'idle';
+}
+export function recordCardioMinutes(c:CardioSession,minutes:number) {
+ if(!Number.isFinite(minutes)||minutes<0||minutes>1440)throw Error('Informe os minutos realizados (0 a 1.440).');
+ c.elapsed=Math.round(minutes*60);settleCardio(c);
+}
+// Check da meta: registra os minutos programados do dia. Na esteira, o toque confirma a velocidade
+// mínima prescrita quando nenhuma foi informada; velocidade informada abaixo dela continua valendo.
+export function toggleCardioTarget(c:CardioSession) {
+ if(c.planned===null)throw Error('Sem cardio programado neste dia.');
+ if(c.status==='complete'){c.elapsed=0;settleCardio(c);return;}
+ if(c.mode==='Esteira'&&c.minimumSpeed!==null&&c.speed===null)c.speed=c.minimumSpeed;
+ c.elapsed=c.planned*60;settleCardio(c);
+ if((c.status as string)!=='complete')throw Error(`Velocidade registrada abaixo de ${c.minimumSpeed?.toLocaleString('pt-BR',{minimumFractionDigits:1})} km/h na esteira. Corrija a velocidade para concluir.`);
+}
+// Cronômetros antigos em andamento: encerra preservando o tempo já decorrido.
+export function stopCardioTimer(c:CardioSession,clock=Date.now()) {
+ if(c.runningSince===null)return false;c.elapsed=timerSeconds(c,clock);settleCardio(c);return true;
+}
 export function timedCompletionRequired(day:DailyLog,key:string) { return key==='cardio'&&day.cardio.planVersion==='weekly-360'||key==='mobility'&&!!day.mobility.protocol?.exercises.some(ex=>/hipercifose/i.test(ex.name)&&ex.sets===4&&ex.duration===60&&ex.rest===60); }
 function summary(done:number,total:number,subtitle:string,partial=false):BlockSummary { return {done,total,subtitle,status:total===0?'Não programado':done>=total?'Concluído':partial?'Parcial':done?'Em andamento':'Não iniciado'}; }
 export function summaries(data:AppData,date:string,clock=Date.now()):Record<BlockKey,BlockSummary> {
@@ -50,7 +69,7 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<Bloc
  if(hormonalDay&&logs.length)hormonal.status='Em andamento';
  // ManCare e Cuidado Casa: itens do dia, marcados um a um.
  const routine=(block:RoutineBlock)=>{const items=routineItems(block,date);if(!items.length)return summary(0,0,'Não programado');const done=items.filter(i=>routineDone(day,i));return summary(done.length,items.length,items.map(i=>{const p=routineProgress(day,i);return `${i.name}${p.done===p.total?' ✓':p.total>1?` ${p.done}/${p.total}`:''}`;}).join(' · '));};
- const blocks={workout,meals,water,cardio,mobility,hormonal,mancare:routine('mancare'),casa:routine('casa')};
+ const blocks={workout,meals,water,cardio,mobility,hormonal,despertar:routine('despertar'),mancare:routine('mancare'),casa:routine('casa')};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
   if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
  }
