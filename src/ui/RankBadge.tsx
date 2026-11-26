@@ -16,9 +16,11 @@ export function Insignia({rank}:{rank:Rank}){
  </svg>;
 }
 
-export function RankCounter({rank,total,streak,best}:{rank:Rank;total:number;streak:number;best:number}){
+// Aviso da cópia na nuvem fica dentro do contador (sem ocupar altura extra em Hoje).
+export function RankCounter({rank,total,streak,best,warning,onWarning}:{rank:Rank;total:number;streak:number;best:number;warning?:string|null;onWarning?:()=>void}){
  return <section className="rank-counter" data-class={rank.klass} aria-label={`Dias cumpridos integralmente: ${total}. Patente: ${rank.name}. Sequência atual: ${streak}.`}>
   <Insignia rank={rank}/>
+  {warning&&<button type="button" className="rank-warning" onClick={onWarning} aria-label={warning}>NUVEM PENDENTE</button>}
   <div className="rank-main">
    <span className="ops-tag">DIAS CUMPRIDOS</span>
    <strong className="rank-total">{total}</strong>

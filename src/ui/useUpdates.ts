@@ -3,8 +3,11 @@ export function useUpdates() {
  const [available,setAvailable]=useState(false),[ready,setReady]=useState(false),[error,setError]=useState<string|null>(null);
  const [checking,setChecking]=useState(false),[applying,setApplying]=useState(false),[checkMessage,setCheckMessage]=useState<string|null>(null);
  const registration=useRef<ServiceWorkerRegistration|null>(null),activationRequested=useRef(false),activatedElsewhere=useRef(false),checkingRef=useRef(false),activationTimeout=useRef<ReturnType<typeof setTimeout>|null>(null);
- const check=useCallback(async()=>{
+ // Verificações automáticas (rede, foco, visibilidade) são silenciosas: antes de o registro do
+ // Service Worker ficar pronto, não geram erro. Só a verificação manual informa o motivo.
+ const check=useCallback(async(manual=true)=>{
   if(checkingRef.current||activationRequested.current)return;
+  if(!manual&&(!navigator.onLine||!registration.current))return;
   setError(null);setCheckMessage(null);
   if(!navigator.onLine){setError('Sem internet para verificar atualizações. Registros disponíveis offline.');return;}
   const r=registration.current;
@@ -18,7 +21,7 @@ export function useUpdates() {
   if(!('serviceWorker' in navigator))return;
   let disposed=false,hadController=!!navigator.serviceWorker.controller;const watched=new Set<ServiceWorker>();
   const watch=(worker:ServiceWorker|null)=>{if(!worker||watched.has(worker))return;watched.add(worker);worker.addEventListener('statechange',()=>{if(disposed)return;if(worker.state==='installed'){if(navigator.serviceWorker.controller){setAvailable(true);setCheckMessage('Uma nova versão está pronta.');}else setReady(true);}});};
-  const autoCheck=()=>{if(navigator.onLine)void check();};
+  const autoCheck=()=>{if(navigator.onLine)void check(false);};
   const controllerChange=()=>{if(activationRequested.current){if(activationTimeout.current)clearTimeout(activationTimeout.current);window.location.reload();}else if(hadController){activatedElsewhere.current=true;setAvailable(true);}hadController=true;};
   navigator.serviceWorker.addEventListener('controllerchange',controllerChange);
   void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`,{scope:import.meta.env.BASE_URL,updateViaCache:'none'}).then(r=>{

@@ -68,7 +68,7 @@ export function Home({data,date,go,run}:PageProps){
   return {value:b.status==='Em andamento'||b.status==='Concluído'?'OK':'—',unit:'',detail:b.subtitle,remaining:b.status==='Concluído'?'Registrado':'Registro pendente',progress:b.status==='Concluído'?1:0,max:1};
  };
 
- const alerts:string[]=[],sync=useSyncState(),syncWarning=syncAlert(sync);if(syncWarning)alerts.push(syncWarning);
+ const alerts:string[]=[],sync=useSyncState(),syncWarning=syncAlert(sync);
  const perfect=useMemo(()=>perfectDays(data,date),[data,date]);
  if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
  if(Object.values(day.mobility.sequences).some(s=>s.runningSince!==null))alerts.push('Sequência de postura em andamento.');
@@ -85,7 +85,7 @@ export function Home({data,date,go,run}:PageProps){
  const open=showDone===date;
  return <div className="home-page command">
   <header className="ops-header"><span className="ops-tag">{new Intl.DateTimeFormat('pt-BR',{weekday:'short',day:'2-digit',month:'short'}).format(new Date(date+'T12:00:00')).replace(/\./g,'')}{plan.template&&plan.week?` · Semana ${plan.week} · ${WEEKS[plan.week-1].goal} · RIR ${WEEKS[plan.week-1].rir.join('–')}`:plan.template?' · Configure a semana no Plano':''}</span><h1>{plan.template?<><span className="ops-code">{plan.template}</span> {template?.title}</>:'Descanso da musculação'}</h1></header>
-  <RankCounter rank={rankFor(perfect.total)} {...perfect}/>
+  <RankCounter rank={rankFor(perfect.total)} {...perfect} warning={syncWarning} onWarning={()=>go('settings')}/>
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
