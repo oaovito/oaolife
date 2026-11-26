@@ -1,4 +1,4 @@
-import { ORIGINAL_PLAN, WEEKS } from './plan';
+import { ORIGINAL_PLAN, WEEKS, TRAINING_PLAN_VERSION } from './plan';
 import type { AppData, Exercise, SessionName, TrainingCycle, WorkoutSession, PlannedExercise } from './model';
 export const uid = () => crypto.randomUUID();
 export const now = () => new Date().toISOString();
@@ -132,4 +132,33 @@ export function reshapeOpenSession(data:AppData,session:WorkoutSession):boolean 
   while(exercise.sets.length<next.sets.length){let index=exercise.sets.length;while(exercise.sets.some(v=>v.id===`${exercise.id}:${index}`))index++;exercise.sets.push({...next.sets[exercise.sets.length],id:`${exercise.id}:${index}`});}
  }
  return JSON.stringify(session)!==before;
+}
+
+// Mudança no plano de treino vale "no coração": sessões abertas a partir de `today` passam a seguir
+// o plano vigente. Séries feitas ou puladas nunca são removidas; só séries vazias são ajustadas.
+// Sessões concluídas/parciais e datas anteriores permanecem como foram executadas. Idempotente.
+const emptySet=(v:WorkoutSession['exercises'][number]['sets'][number])=>!v.done&&!v.skipped&&v.load===null&&v.reps===null&&v.rir===null&&v.technique===null&&v.range===null&&!v.notes;
+export function reconcileOpenSessions(data:AppData,today:string):boolean{
+ let changed=false;
+ for(const s of data.sessions){
+  if(s.status!=='open'||s.date<today)continue;
+  const fresh=makeWorkout(data,s.date);if(!fresh||fresh.template!==s.template)continue;
+  const next:PlannedExercise[]=[];
+  for(const f of fresh.exercises){
+   const cur=s.exercises.find(e=>e.id===f.id);
+   if(!cur){next.push(f);changed=true;continue;}
+   const sets=[...cur.sets];
+   while(sets.length>f.sets.length){let i=sets.length-1;while(i>=0&&!emptySet(sets[i]))i--;if(i<0)break;sets.splice(i,1);changed=true;}
+   for(let j=sets.length;j<f.sets.length;j++){let id=`${f.id}:${j}`;let k=j;while(sets.some(v=>v.id===id))id=`${f.id}:${++k}`;sets.push({...f.sets[j],id});changed=true;}
+   if(cur.name!==f.name||cur.reps.join()!==f.reps.join())changed=true;
+   next.push({...cur,name:f.name,reps:[...f.reps],sets});
+  }
+  // Exercício que saiu do plano só permanece se já tiver séries registradas.
+  for(const cur of s.exercises)if(!fresh.exercises.some(f=>f.id===cur.id)){if(cur.sets.some(v=>!emptySet(v)))next.push(cur);else changed=true;}
+  if(next.map(e=>e.id).join()!==s.exercises.map(e=>e.id).join())changed=true;
+  s.exercises=next;
+ }
+ const marker=`training-plan-${TRAINING_PLAN_VERSION}`;
+ if(changed&&!data.adjustments.some(a=>a.id===marker))data.adjustments.push({id:marker,at:now(),kind:'Plano de treino atualizado',detail:`Plano ${TRAINING_PLAN_VERSION} aplicado às sessões abertas a partir de ${today}; séries registradas preservadas.`});
+ return changed;
 }

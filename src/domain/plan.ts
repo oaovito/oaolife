@@ -6,8 +6,10 @@ const crucifixo=e('crucifixo','Crucifixo máquina','Peito',4,[10,15],65);
 const desenvolvimento=e('desenvolvimento','Desenvolvimento máquina','Deltoide anterior',3,[8,12],25,{mode:'lado',compound:true});
 const lateralBaixa=e('lateral-baixa','Elevação lateral polia baixa','Deltoide lateral',4,[12,15],6,{smallStep:true});
 const lateralMedia=e('lateral-media','Elevação lateral polia média','Deltoide lateral',4,[12,20],5,{smallStep:true});
-const triceps=e('triceps','Tríceps polia','Tríceps',4,[8,12],31);
-const frances=e('frances','Tríceps francês polia','Tríceps',4,[10,15],26);
+// Tríceps (26/11/2026, proprietário): 3 polia + 3 francês polia + 3 seated dips, em A1 e A2.
+const triceps=e('triceps','Tríceps polia','Tríceps',3,[8,12],31);
+const frances=e('frances','Tríceps francês polia','Tríceps',3,[10,15],26);
+const dips=e('triceps-seated-dips','Tríceps seated dips','Tríceps',3,[8,12],null,{compound:true});
 const puxada=e('puxada','Puxada alta','Costas',4,[8,12],70,{compound:true});
 const remada=e('remada','Remada máquina','Costas',3,[8,12],55,{mode:'lado',compound:true});
 const smith=e('remada-smith','Remada Smith','Costas',3,[10,12],30,{mode:'lado',compound:true});
@@ -24,16 +26,19 @@ const panturrilha=e('panturrilha','Panturrilha máquina, joelho estendido','Pant
 const sentado=e('panturrilha-sentado','Panturrilha sentado','Panturrilhas',4,[12,20],null,{priority:true,notes:'Amplitude completa; evitar impulso.'});
 const extensora=e('extensora','Cadeira extensora','Quadríceps',4,[10,15],85,{smallStep:true});
 const original:WorkoutTemplate[]=[
- {id:'A1',title:'Peito, ombros e tríceps',exercises:[vertical,articulado,{...crucifixo,fst:true},desenvolvimento,lateralBaixa,lateralMedia,triceps,frances]},
+ {id:'A1',title:'Peito, ombros e tríceps',exercises:[vertical,articulado,{...crucifixo,fst:true},desenvolvimento,lateralBaixa,lateralMedia,triceps,frances,dips]},
  {id:'B1',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[puxada,remada,smith,posterior,rosca,alternada,encolhimento]},
  {id:'C1',title:'Glúteos e posteriores',exercises:[pelvica,abdutora,flexora,romeno,leg,panturrilha,sentado]},
- {id:'A2',title:'Peito, ombros e tríceps',exercises:[articulado,{...vertical,reps:[8,12]},crucifixo,desenvolvimento,lateralBaixa,{...lateralMedia,fst:true},triceps,frances]},
+ {id:'A2',title:'Peito, ombros e tríceps',exercises:[articulado,{...vertical,reps:[8,12]},crucifixo,desenvolvimento,lateralBaixa,{...lateralMedia,fst:true},triceps,frances,dips]},
  {id:'B2',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[{...puxada,sets:3},{...remada,sets:4},smith,posterior,rosca,alternada,encolhimento]},
  {id:'C2',title:'Quadríceps, glúteos e posteriores',exercises:[panturrilha,{...leg,reps:[8,12]},extensora,{...flexora,reps:[10,15]},{...pelvica,sets:3,reps:[10,15]},abdutora,sentado]}
 ];
 function freeze<T>(value:T):T { if (value && typeof value==='object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
 // DADO PESSOAL: plano de treino individual. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const ORIGINAL_PLAN = freeze(original);
+// Versão do plano de treino. Ao mudar o plano, incremente: sessões abertas de hoje em diante
+// são reconciliadas (reconcileOpenSessions), sem perder séries registradas.
+export const TRAINING_PLAN_VERSION='2026-11-26-triceps';
 export const EXERCISES = [...new Map(ORIGINAL_PLAN.flatMap(t=>t.exercises).map(e=>[e.id,e])).values()];
 export const WEEKS:TrainingWeek[] = [
  [0.75,3,4,'Calibração'],[0.85,2,3,'Adaptação'],[1,1,2,'Volume completo'],[0.55,4,5,'Recuperação'],

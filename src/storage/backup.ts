@@ -5,7 +5,7 @@ import { activateMealPlan, activateNutrition } from '../domain/nutrition';
 import { z } from 'zod';
 import { appDataSchema } from '../domain/model';
 import { db, assertIntegrity, mutate } from './db';
-import { anchorTrainingCycle, now, uid, today } from '../domain/training';
+import { anchorTrainingCycle, reconcileOpenSessions, now, uid, today } from '../domain/training';
 import { migrateV9 } from '../domain/migrations';
 const toBase64=(arr:Uint8Array)=>{let s='';for(let i=0;i<arr.length;i+=8192)s+=String.fromCharCode(...arr.subarray(i,i+8192));return btoa(s);};
 const fromBase64=(s:string)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -38,7 +38,7 @@ export async function exportBackup(password:string) {
  await mutate('Backup exportado','Arquivo criptografado gerado; confirme o armazenamento externo.',d=>{d.settings.lastBackup=now();});
 }
 export async function restoreBackup(value:z.infer<typeof payload>,expectedRevision:number) {
- const valid=payload.parse(value);activateNutrition(valid.data,today());activateHydration(valid.data,today());activateMobility(valid.data,today());activateMealPlan(valid.data,today());activateHormonalPlan(valid.data);anchorTrainingCycle(valid.data,today());migrateV9(valid.data,today());assertIntegrity(valid.data);
+ const valid=payload.parse(value);activateNutrition(valid.data,today());activateHydration(valid.data,today());activateMobility(valid.data,today());activateMealPlan(valid.data,today());activateHormonalPlan(valid.data);anchorTrainingCycle(valid.data,today());reconcileOpenSessions(valid.data,today());migrateV9(valid.data,today());assertIntegrity(valid.data);
  await db.transaction('rw',db.state,db.audit,db.outbox,async()=>{
  const current=await db.state.get('main');if(!current||current.revision!==expectedRevision)throw Error('Os dados mudaram desde a revisão do backup. Revise novamente antes de restaurar.');
  const revision=valid.outbox.reduce((n,o)=>Math.max(n,o.revision),valid.audit.reduce((n,a)=>Math.max(n,a.revision),current.revision))+1;await db.state.put({id:'main',revision,data:valid.data});await db.audit.clear();await db.outbox.clear();
