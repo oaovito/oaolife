@@ -72,7 +72,6 @@ export function Home({data,date,go,run}:PageProps){
  const perfect=useMemo(()=>perfectDays(data,date),[data,date]),rank=useMemo(()=>rankFor(perfect.total),[perfect.total]);
  const {promotion,close:closePromotion}=usePromotion(rank,date===today());
  if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
- if(Object.values(day.mobility.sequences).some(s=>s.runningSince!==null))alerts.push('Sequência de postura em andamento.');
 
  const card=(m:Module)=>{const b=blocks[m.key],f=figure(m.key),Icon=m.icon,s=state(b);
   return <button key={m.key} className={`module module-${m.key}`} data-state={s} onClick={()=>go(m.key as Page)} aria-label={`${m.title}: ${b.status}. ${f.value} ${f.unit}. ${f.remaining}`}>

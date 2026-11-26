@@ -30,27 +30,22 @@ export function syncSequence(session:MobilitySession,ex:MobilityExercise,clock=D
  }
  if(p.complete&&!s.completedAt){s.completedAt=new Date(s.runningSince===null?clock:s.runningSince+(p.total-s.elapsed)*1000).toISOString();s.elapsed=p.total;s.runningSince=null;}
 }
-export function startSequence(session:MobilitySession,ex:MobilityExercise,clock=Date.now()) {
- if(!ex.duration)throw Error('Defina a duração antes de iniciar a sequência.');
- if(Object.entries(session.sequences).some(([id,s])=>id!==ex.id&&s.runningSince!==null)||Object.values(session.sets).some(s=>s.runningSince!==null))throw Error('Pause o outro cronômetro de alongamento antes de iniciar.');
- const s=session.sequences[ex.id]??{elapsed:0,runningSince:null,completedAt:null};
- session.sequences[ex.id]=s;
- if(!s.completedAt&&s.runningSince===null)s.runningSince=clock;
- syncSequence(session,ex,clock);
+// Postura (26/11/2026, proprietário): sem cronômetro. Cada série é marcada pelo usuário.
+// Cronômetros antigos ainda em andamento são encerrados preservando o tempo já registrado.
+export function stopMobilityTimers(session:MobilitySession,clock=Date.now()):boolean {
+ let changed=false;
+ for(const ex of session.protocol?.exercises??[])if(session.sequences[ex.id]?.runningSince!=null){const s=session.sequences[ex.id],elapsed=sequenceProgress(ex,s,clock).elapsed;syncSequence(session,ex,clock);s.elapsed=elapsed;s.runningSince=null;changed=true;}
+ for(const set of Object.values(session.sets))if(set.runningSince!==null){set.seconds+=Math.max(0,(clock-set.runningSince)/1000);set.runningSince=null;changed=true;}
+ return changed;
 }
-export function pauseSequence(session:MobilitySession,ex:MobilityExercise,clock=Date.now()) {
- const s=session.sequences[ex.id];if(!s)return;
- const elapsed=sequenceProgress(ex,s,clock).elapsed;
- syncSequence(session,ex,clock);s.elapsed=elapsed;s.runningSince=null;
-}
-export function resetSequence(session:MobilitySession,ex:MobilityExercise) {
- session.sequences[ex.id]={elapsed:0,runningSince:null,completedAt:null};
- for(let i=0;i<ex.sets;i++)delete session.sets[`${ex.id}:${i}`];
-}
-export function sequenceNeedsSync(session:MobilitySession,ex:MobilityExercise,clock=Date.now()) {
- const s=session.sequences[ex.id];if(!s||s.runningSince===null)return false;
- const p=sequenceProgress(ex,s,clock);
- return p.complete||p.seconds.some((seconds,i)=>seconds>=(ex.duration??Infinity)&&!session.sets[`${ex.id}:${i}`]?.done);
+export const mobilityTimersRunning=(session:MobilitySession)=>Object.values(session.sequences).some(s=>s.runningSince!=null)||Object.values(session.sets).some(s=>s.runningSince!==null);
+// Marca ou desmarca uma série. Dados opcionais (dor, desconforto, observações) são preservados.
+export function toggleMobilitySet(session:MobilitySession,ex:MobilityExercise,index:number,clock=Date.now()) {
+ if(!session.protocol?.exercises.some(e=>e.id===ex.id))throw Error('Aplique o protocolo a este dia.');
+ if(index<0||index>=ex.sets)throw Error('Série fora do protocolo.');
+ stopMobilityTimers(session,clock);
+ const key=`${ex.id}:${index}`,set=session.sets[key]??{done:false,seconds:0,runningSince:null,discomfort:null,pain:null,notes:''};
+ set.done=!set.done;session.sets[key]=set;
 }
 
 // Alongamento diário: dias de hoje em diante sem protocolo (criados quando ele era só A1/B1/A2)

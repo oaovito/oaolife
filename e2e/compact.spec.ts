@@ -9,20 +9,21 @@ test('dias fixos de cardio (60 min; quarta e sábado sem) e sessões somadas no 
  await expect(page.locator('.weekly-cardio')).toContainText('20% ·');await page.reload();expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
  await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Treino:/})).toHaveCount(0);
 });
-test('hipercifose alterna, pausa, reabre offline e conclui junto com cardio',async({page,context})=>{
+test('postura sem cronômetro: marca cada série, persiste offline e conclui junto com cardio',async({page,context})=>{
  await open(page,'/cardio');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await page.getByRole('button',{name:'Iniciar',exact:true}).click();
  await nav(page,'Hoje');await page.getByRole('button',{name:/^Postura:/}).click();
- await page.getByRole('button',{name:'Iniciar sequência',exact:true}).click();await expect(page.getByRole('button',{name:'Pausar sequência',exact:true})).toBeVisible();await page.clock.fastForward(60000);await expect(page.getByText('Descansando',{exact:true})).toBeVisible();await expect(page.getByRole('timer',{name:'Tempo restante da etapa'})).toHaveText('01:00');
- await page.getByRole('button',{name:'Pausar sequência',exact:true}).click();await expect(page.getByRole('button',{name:'Continuar sequência',exact:true})).toBeVisible();await page.clock.fastForward(120000);await expect(page.getByRole('timer')).toHaveText('01:00');
- await page.getByRole('button',{name:'Continuar sequência',exact:true}).click();await expect(page.getByRole('button',{name:'Pausar sequência',exact:true})).toBeVisible();await page.clock.fastForward(60000);await expect(page.getByRole('heading',{name:'Série 2/4',exact:true})).toBeVisible();await expect(page.getByText('Alongando',{exact:true})).toBeVisible();
- await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();await expect(page.getByRole('heading',{name:'Série 2/4',exact:true})).toBeVisible();
- const clock=await page.evaluate(()=>Date.now());await page.clock.setSystemTime(clock+300000);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ await expect(page.getByRole('timer')).toHaveCount(0);await expect(page.getByRole('button',{name:/sequência/})).toHaveCount(0);
+ await page.getByRole('button',{name:'Série 1',exact:true}).click();await expect(page.getByRole('button',{name:'Série 1',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'Série 2',exact:true}).click();await expect(page.getByText('2/4',{exact:true})).toBeVisible();
+ await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();
+ await expect(page.getByRole('button',{name:'Série 2',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'Série 3',exact:true}).click();await page.getByRole('button',{name:'Série 4',exact:true}).click();
  await expect(page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true})).toBeVisible();
- const data=await savedData(page),day=data.days[0];expect(Object.values(day.mobility.sets).map((s:any)=>s.seconds)).toEqual([60,60,60,60]);expect(Object.values(day.mobility.sequences)[0]).toMatchObject({elapsed:420,runningSince:null});expect(day.cardio.runningSince).not.toBeNull();expect(day.water).toEqual([0,0,0,0,0,0]);expect(day.meals.flat().some(Boolean)).toBe(false);
+ const data=await savedData(page),day=data.days[0];expect(Object.values(day.mobility.sets).map((s:any)=>s.done)).toEqual([true,true,true,true]);expect(day.cardio.runningSince).not.toBeNull();expect(day.water).toEqual([0,0,0,0,0,0]);expect(day.meals.flat().some(Boolean)).toBe(false);
  await nav(page,'Hoje');await page.getByText('Concluídos (1) · ver e corrigir',{exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);await expect(page.getByRole('button',{name:/^Postura:/})).toContainText('Concluído');await expect(page.getByRole('button',{name:/^Treino:/})).not.toContainText('Concluído');
- await page.getByRole('button',{name:/^Postura:/}).click();await page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true}).click();await expect(page.getByRole('timer')).toHaveText('00:00');
- await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();await page.getByRole('button',{name:'Cancelar',exact:true}).click();expect(Object.values((await savedData(page)).days[0].mobility.sequences)[0]).toMatchObject({elapsed:420});
- await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();await page.getByRole('button',{name:'Confirmar reinício',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sequência',exact:true})).toBeVisible();expect((await savedData(page)).days[0].mobility.sets).toEqual({});
+ await page.getByRole('button',{name:/^Postura:/}).click();await page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true}).click();
+ await page.getByRole('button',{name:'Série 4',exact:true}).click();await expect(page.getByRole('button',{name:'Série 4',exact:true})).toHaveAttribute('aria-pressed','false');
+ expect(Object.values((await savedData(page)).days[0].mobility.sets).map((s:any)=>s.done)).toEqual([true,true,true,false]);
  await context.setOffline(false);
 });
 async function open(page:Page,path='/'){await page.clock.install({time:new Date('2026-10-19T12:00:00-03:00')});await page.goto(path);}
@@ -116,7 +117,7 @@ test('PWA instalada recupera altura omitida pelo WebKit e reposiciona menu após
 test('ação principal de cada bloco aparece sem rolagem no iPhone 16',async({page},info)=>{
  test.skip(info.project.name==='desktop');
  await page.clock.install({time:new Date('2026-11-30T12:00:00-03:00')});
- for(const [path,name] of [['/treino','Iniciar treino'],['/cardio','Iniciar'],['/mobilidade','Iniciar sequência'],['/alimentacao','Marcar como consumida'],['/hormonal','Registrar aplicação'],['/hidratacao','Adicionar 500 ml']] as const){
+ for(const [path,name] of [['/treino','Iniciar treino'],['/cardio','Iniciar'],['/mobilidade','Série 1'],['/alimentacao','Marcar como consumida'],['/hormonal','Registrar aplicação'],['/hidratacao','Adicionar 500 ml']] as const){
   await page.goto(path);const button=page.getByRole('button',{name,exact:true}).first();await expect(button).toBeVisible();
   const box=await button.boundingBox(),nav=await page.getByRole('navigation').boundingBox();
   expect(box!.y+box!.height,`${path}: ${name}`).toBeLessThanOrEqual(nav!.y);expect(await page.evaluate(()=>document.querySelector('.main-shell')?.scrollTop??scrollY)).toBe(0);

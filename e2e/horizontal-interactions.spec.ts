@@ -79,7 +79,7 @@ test('campos e conclusão de séries funcionam sem ampliar a página em retrato 
  await expect(reps).toHaveValue('12');
 });
 
-test('cronômetros, confirmação de reinício e tema claro mantêm controles visíveis',async({page})=>{
+test('cronômetro de cardio, séries de postura e tema claro mantêm controles visíveis',async({page})=>{
  await page.goto('/cardio');
  await page.getByRole('button',{name:'Iniciar',exact:true}).click();
  await expect(page.getByRole('button',{name:'Pausar',exact:true})).toBeVisible();
@@ -88,18 +88,11 @@ test('cronômetros, confirmação de reinício e tema claro mantêm controles vi
  await expect(page.getByRole('timer',{name:'Tempo realizado de cardio'})).toHaveText('00:02');
  await stableWidth(page);
  await page.goto('/mobilidade');
- await page.getByRole('button',{name:'Iniciar sequência',exact:true}).click();
- await expect(page.getByRole('button',{name:'Pausar sequência',exact:true})).toBeVisible();
- await page.clock.fastForward(2000);
- await page.getByRole('button',{name:'Pausar sequência',exact:true}).click();
- await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();
- await expect(page.getByRole('group',{name:'Confirmar reinício'})).toBeVisible();
+ for(const n of [1,2,3,4])await page.getByRole('button',{name:`Série ${n}`,exact:true}).click();
+ await expect(page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true})).toBeVisible();
+ await page.getByText('Alongamento para hipercifose · Concluído · Corrigir',{exact:true}).click();
+ await page.getByText('Dor, desconforto e observações (opcional)',{exact:true}).click();
  await stableWidth(page);
- await page.getByRole('button',{name:'Cancelar',exact:true}).click();
- await expect(page.getByRole('button',{name:'Continuar sequência',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'Reiniciar sequência',exact:true}).click();
- await page.getByRole('button',{name:'Confirmar reinício',exact:true}).click();
- await expect(page.getByRole('button',{name:'Iniciar sequência',exact:true})).toBeVisible();
  await page.getByRole('navigation').getByRole('button',{name:'Ajustes',exact:true}).click();
  await page.getByRole('combobox',{name:/Tema/}).selectOption('light');
  await page.getByRole('button',{name:'Salvar preferências',exact:true}).click();

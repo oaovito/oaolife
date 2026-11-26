@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import Dexie from 'dexie';
 import { emptyData, makeDay, startCardio, pauseCardio, finishCardio, summaries } from '../domain/daily';
 import { cardioTarget, weeklyCardio, applyCardioPlan } from '../domain/cardio';
-import { activateMobility, currentMobilityProtocol, sequenceProgress, sequenceTotal, startSequence, pauseSequence, syncSequence, resetSequence } from '../domain/mobility';
+import { activateMobility, currentMobilityProtocol, stopMobilityTimers, toggleMobilitySet } from '../domain/mobility';
 import { addDays } from '../domain/training';
 import { OaoDatabase, initialize, mutate, reconcileTimers } from '../storage/db';
 import { appDataSchema } from '../domain/model';
@@ -32,21 +32,22 @@ describe('cardio semanal fixo',()=>{
  });
 });
 
-describe('sequência automática de hipercifose',()=>{
+describe('postura: séries marcadas, sem cronômetro',()=>{
  const setup=()=>{const day=makeDay(emptyData(),'2026-10-19');return {session:day.mobility,ex:day.mobility.protocol!.exercises[0]};};
- it('tem quatro séries, três descansos e termina em 420 s com 240 s ativos',()=>{
-  const {session,ex}=setup();expect(ex).toMatchObject({sets:4,duration:60,rest:60});expect(sequenceTotal(ex)).toBe(420);startSequence(session,ex,1000);
-  for(const [seconds,index,resting,done] of [[0,0,false,0],[60,0,true,1],[120,1,false,1],[180,1,true,2],[240,2,false,2],[300,2,true,3],[360,3,false,3],[420,3,false,4]] as const){
-   expect(sequenceProgress(ex,session.sequences[ex.id],1000+seconds*1000)).toMatchObject({index,resting,done});
-  }
-  syncSequence(session,ex,421000);expect(sequenceProgress(ex,session.sequences[ex.id],999999)).toMatchObject({complete:true,active:240,elapsed:420,remaining:0});
-  expect(Object.values(session.sets).map(s=>s.seconds)).toEqual([60,60,60,60]);expect(session.sequences[ex.id].completedAt).toBe(new Date(421000).toISOString());
+ it('sem cronômetro: cada série é marcada e desmarcada, e o bloco conclui com as quatro',()=>{
+  const data=emptyData(),day=makeDay(data,'2026-10-19');data.days.push(day);const ex=day.mobility.protocol!.exercises[0];
+  expect(ex).toMatchObject({sets:4,duration:60,rest:60});
+  toggleMobilitySet(day.mobility,ex,0);toggleMobilitySet(day.mobility,ex,1);expect(summaries(data,day.id).mobility).toMatchObject({status:'Em andamento',done:2,total:4});
+  toggleMobilitySet(day.mobility,ex,1);expect(summaries(data,day.id).mobility.done).toBe(1);
+  day.mobility.sets[`${ex.id}:0`].pain=2;for(const i of [1,2,3])toggleMobilitySet(day.mobility,ex,i);
+  expect(summaries(data,day.id).mobility.status).toBe('Concluído');expect(day.mobility.sets[`${ex.id}:0`]).toMatchObject({done:true,pain:2});
+  expect(()=>toggleMobilitySet(day.mobility,ex,4)).toThrow('fora do protocolo');
  });
- it('pausa não avança; retomada e início repetido não duplicam tempo',()=>{
-  const {session,ex}=setup();startSequence(session,ex,1000);startSequence(session,ex,20000);pauseSequence(session,ex,31000);
-  expect(sequenceProgress(ex,session.sequences[ex.id],100000)).toMatchObject({elapsed:30,active:30,remaining:30});
-  startSequence(session,ex,100000);syncSequence(session,ex,490000);expect(sequenceProgress(ex,session.sequences[ex.id])).toMatchObject({complete:true,active:240});
-  resetSequence(session,ex);expect(sequenceProgress(ex,session.sequences[ex.id])).toMatchObject({elapsed:0,done:0,complete:false});expect(session.sets).toEqual({});
+ it('cronômetro antigo em andamento é encerrado preservando o tempo registrado',()=>{
+  const day=makeDay(emptyData(),'2026-10-19'),ex=day.mobility.protocol!.exercises[0];
+  day.mobility.sequences[ex.id]={elapsed:0,runningSince:1000,completedAt:null};
+  expect(stopMobilityTimers(day.mobility,181000)).toBe(true);expect(day.mobility.sequences[ex.id]).toMatchObject({elapsed:180,runningSince:null});
+  expect(Object.values(day.mobility.sets).map(v=>v.done)).toEqual([true,true,false,false]);expect(stopMobilityTimers(day.mobility,999999)).toBe(false);
  });
  it('declaração genérica não conclui a sequência nem o cardio do novo plano',()=>{const data=emptyData(),day=makeDay(data,'2026-10-19');data.days.push(day);day.declarations.cardio={at:new Date().toISOString(),note:'Sem detalhes'};day.declarations.mobility={at:new Date().toISOString(),note:'Sem detalhes'};const blocks=summaries(data,day.id);expect(blocks.cardio.status).not.toBe('Concluído');expect(blocks.mobility.status).not.toBe('Concluído');});
  it('alongamento é diário (ignora dias antigos do protocolo) e não altera snapshots históricos',()=>{
@@ -63,7 +64,7 @@ describe('persistência e migração compatível',()=>{
  it('reabre offline, reconcilia duas abas sem duplicação e mantém cardio independente',async()=>{
   const name='timers-'+crypto.randomUUID();let database=new OaoDatabase(name);await initialize(database);
   try{
-   await mutate('Iniciar','',data=>{const day=makeDay(data,'2026-10-19'),ex=day.mobility.protocol!.exercises[0];startSequence(day.mobility,ex,1000);startCardio(day.cardio,1000);day.cardio.speed=5;day.water[0]=275;data.days.push(day);},database);
+   await mutate('Iniciar','',data=>{const day=makeDay(data,'2026-10-19'),ex=day.mobility.protocol!.exercises[0];day.mobility.sequences[ex.id]={elapsed:0,runningSince:1000,completedAt:null};startCardio(day.cardio,1000);day.cardio.speed=5;day.water[0]=275;data.days.push(day);},database);
    database.close();database=new OaoDatabase(name);await initialize(database);
    await Promise.all([reconcileTimers(421000,database),reconcileTimers(421000,database)]);
    let saved=(await database.state.get('main'))!;expect(saved.revision).toBe(2);expect(summaries(saved.data,'2026-10-19',421000).mobility.status).toBe('Concluído');expect(saved.data.days[0].cardio.runningSince).toBe(1000);expect(saved.data.days[0].water[0]).toBe(275);

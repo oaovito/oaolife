@@ -71,7 +71,8 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   Velocidade mínima 5,0 km/h só na esteira (`src/domain/cardio.ts`).
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
-  domingo; sem configuração de dias), cronômetro por timestamp.
+  domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série
+  (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.
 - **Ajustes** não exibe tutorial de instalação no iPhone (removido a pedido).
 - **Hoje** mostra só os blocos do programa do dia (blocos "Não programado" ficam ocultos).
 - **Registro hormonal**: só segunda e quinta, com o plano informado pré-preenchido

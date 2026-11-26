@@ -531,3 +531,7 @@ html,body{overscroll-behavior-x:none}
 .rank-card[data-state=current] small{color:var(--text)}
 .rank-card[data-state=locked] .insignia{opacity:.72;filter:saturate(.7)}
 .rank-card:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Postura sem cronômetro: séries marcadas com um toque. */
+.mobility-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;margin:4px 0 10px}
+.mobility-details{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+.mobility-details summary{font-size:.8rem;color:var(--muted)}
