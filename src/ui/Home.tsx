@@ -13,7 +13,7 @@ import { rankFor } from '../domain/rank';
 import { Promotion, RankCounter, usePromotion } from './RankBadge';
 import { uid, today } from '../domain/training';
 import { editDay, mutate } from '../storage/db';
-import { TRAINING_TIME } from '../domain/dailySchedule';
+import { TRAINING_TIME, cardioTime } from '../domain/dailySchedule';
 import { ROUTINE_BLOCKS, routineDone, routineItems, routineProgress, toggleRoutine, undoRoutineStep, type RoutineBlock, type RoutineItem } from '../domain/routines';
 import { Segments, type PageProps, type Page } from './shared';
 
@@ -69,7 +69,7 @@ export function Home({data,date,go,run}:PageProps){
   if(key==='water')return {value:liters(consumed),unit:`/ ${liters(target)} L`,detail:`${int(consumed)} ml registrados`,remaining:consumed>=target?'Meta do dia atingida':`Faltam ${int(target-consumed)} ml`,progress:consumed,max:target};
   if(key==='cardio'){const todayMin=day.cardio.elapsed/60+(day.cardio.runningSince?((Date.now()-day.cardio.runningSince)/60000):0),planned=day.cardio.planned;
    if(planned===null)return {value:'—',unit:'',detail:`Sem cardio hoje · semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min`,remaining:`${week.sessions.done}/${week.sessions.total} sessões`,progress:week.credited,max:CARDIO_WEEKLY_MINUTES};
-   return {value:int(todayMin),unit:`/ ${planned} min`,detail:`Semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min · ${week.sessions.done}/${week.sessions.total} sessões`,remaining:b.status==='Concluído'?'Sessão de hoje cumprida':`Faltam ${int(Math.max(0,planned-todayMin))} min hoje`,progress:Math.min(todayMin,planned),max:planned};}
+   return {value:int(todayMin),unit:`/ ${planned} min`,detail:`${cardioTime(date)} · semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min · ${week.sessions.done}/${week.sessions.total} sessões`,remaining:b.status==='Concluído'?'Sessão de hoje cumprida':`Faltam ${int(Math.max(0,planned-todayMin))} min hoje`,progress:Math.min(todayMin,planned),max:planned};}
   if(key==='mobility')return b.status==='Não programado'?{value:'—',unit:'',detail:'Não programado hoje',remaining:'Sem pendências',progress:0,max:0}:{value:`${b.done}`,unit:`/ ${b.total} séries`,detail:'Hipercifose · 60 s por série',remaining:b.done>=b.total?'Protocolo concluído':`Restam ${b.total-b.done} séries`,progress:b.done,max:b.total};
   return {value:b.status==='Em andamento'||b.status==='Concluído'?'OK':'—',unit:'',detail:b.subtitle,remaining:b.status==='Concluído'?'Registrado':'Registro pendente',progress:b.status==='Concluído'?1:0,max:1};
  };
