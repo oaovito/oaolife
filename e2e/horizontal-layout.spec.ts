@@ -52,14 +52,14 @@ test('gestos horizontais e diagonais não deslocam a página; gesto vertical rol
 
 test('fontes alternativas preservam títulos, status e cabeçalho offline em telas pequenas',async({page,context})=>{
  await page.clock.install({time:new Date('2026-11-02T12:00:00-03:00')});
- await page.goto('/');await expect(page.locator('.routine-card')).toHaveCount(6);
+ await page.goto('/');await expect(page.locator('.module')).toHaveCount(6);
  // DejaVu Sans reproduces the wider fallback metrics used by Linux WebKit CI.
  await page.addStyleTag({content:':root{font-family:"DejaVu Sans",sans-serif}'});
  for(const [width,height] of [[320,568],[375,667],[390,700],[430,932]]){
   await page.setViewportSize({width,height});await assertFits(page);
-  expect(await page.locator('.routine-card').evaluateAll(cards=>cards.flatMap(card=>{
+  expect(await page.locator('.module').evaluateAll(cards=>cards.flatMap(card=>{
    const bounds=card.getBoundingClientRect();
-   return [...card.querySelectorAll('h3,.status,.routine-value')].filter(el=>{
+   return [...card.querySelectorAll('.module-title,.module-figure strong,.module-foot')].filter(el=>{
     const r=el.getBoundingClientRect();return r.left<bounds.left||r.right>bounds.right||r.top<bounds.top||r.bottom>bounds.bottom;
    }).map(el=>el.textContent);
   }))).toEqual([]);

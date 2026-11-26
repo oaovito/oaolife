@@ -4,7 +4,6 @@
    botões e hierarquia. Documentação: docs/DESIGN_SYSTEM.md
    ========================================================================== */
 
-@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:500;font-display:swap;src:url('./assets/fonts/barlow-condensed-latin-500-normal.woff2') format('woff2')}
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url('./assets/fonts/barlow-condensed-latin-600-normal.woff2') format('woff2')}
 @font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url('./assets/fonts/barlow-condensed-latin-700-normal.woff2') format('woff2')}
 @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('./assets/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2')}
@@ -296,3 +295,35 @@ html,body{overscroll-behavior-x:none}
 .load-summary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .load-summary strong{font-size:1.15rem!important;line-height:1.15}
 .load-summary>span:nth-child(2) strong{color:var(--signal)}
+.exercise-meta.prominent{grid-template-columns:minmax(0,1.25fr) minmax(0,.8fr) minmax(0,1fr)}
+.exercise-meta.prominent strong{font-size:clamp(1.05rem,5.4vw,1.7rem)!important;overflow-wrap:anywhere}
+.exercise-meta.prominent>span{padding:6px!important}
+/* Hoje no iPhone 16 (393×852, inclusive PWA com áreas seguras): cabe acima do menu. */
+@media(max-width:760px){
+ .home-page.command{gap:8px}
+ .ops-header .ops-tag{font-size:.6rem;letter-spacing:.06em;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .ops-header h1{font-size:1.3rem;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mission{padding:10px 12px;gap:8px 12px}
+ .mission-count{font-size:2rem}
+ .mission-count span{font-size:1.1rem}
+ .mission-label{font-size:.56rem}
+ .mission-track{margin-bottom:4px}
+ .next-action{min-height:48px}
+ .alerts li{padding:4px 8px;font-size:.7rem}
+ .module{gap:4px;padding:8px 9px 6px}
+ .module-head{gap:5px}
+ .module-title{font-size:.88rem}
+ .module-figure strong{font-size:1.7rem}
+ .module-figure span{font-size:.58rem}
+ .module-detail{font-size:.68rem;-webkit-line-clamp:1;min-height:0}
+ .module-foot{font-size:.58rem}
+ .segments i{height:5px}
+ .completed-toggle{min-height:44px}
+}
+@media(max-width:400px){
+ .topbar{gap:4px}
+ .icon-button{width:34px;min-width:34px}
+ .date-picker{padding:0 6px;min-width:0;letter-spacing:.02em}
+ .today-button{padding:0 6px;font-size:.62rem;letter-spacing:.04em}
+ .mobile-brand{font-size:1.25rem!important;letter-spacing:.03em}
+}
