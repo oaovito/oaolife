@@ -1,8 +1,9 @@
+import type { AppData } from '../domain/model';
 import { describe, it, expect } from 'vitest';
 import Dexie from 'dexie';
 import { emptyData, makeDay, startCardio, pauseCardio, finishCardio, summaries } from '../domain/daily';
 import { cardioTarget, weeklyCardio, applyCardioPlan } from '../domain/cardio';
-import { currentMobilityProtocol, sequenceProgress, sequenceTotal, startSequence, pauseSequence, syncSequence, resetSequence } from '../domain/mobility';
+import { activateMobility, currentMobilityProtocol, sequenceProgress, sequenceTotal, startSequence, pauseSequence, syncSequence, resetSequence } from '../domain/mobility';
 import { addDays } from '../domain/training';
 import { OaoDatabase, initialize, mutate, reconcileTimers } from '../storage/db';
 import { appDataSchema } from '../domain/model';
@@ -48,10 +49,13 @@ describe('sequência automática de hipercifose',()=>{
   resetSequence(session,ex);expect(sequenceProgress(ex,session.sequences[ex.id])).toMatchObject({elapsed:0,done:0,complete:false});expect(session.sets).toEqual({});
  });
  it('declaração genérica não conclui a sequência nem o cardio do novo plano',()=>{const data=emptyData(),day=makeDay(data,'2026-10-19');data.days.push(day);day.declarations.cardio={at:new Date().toISOString(),note:'Sem detalhes'};day.declarations.mobility={at:new Date().toISOString(),note:'Sem detalhes'};const blocks=summaries(data,day.id);expect(blocks.cardio.status).not.toBe('Concluído');expect(blocks.mobility.status).not.toBe('Concluído');});
- it('mantém dias explicitamente personalizados e não altera snapshots históricos',()=>{
+ it('alongamento é diário (ignora dias antigos do protocolo) e não altera snapshots históricos',()=>{
   const saved=currentMobilityProtocol(null);saved.days=['C1'];saved.exercises[0].duration=20;
   const old=structuredClone(saved),updated=currentMobilityProtocol(saved);expect(saved).toEqual(old);expect(updated.days).toEqual(['C1']);expect(updated.exercises[0].duration).toBe(60);
-  const data=emptyData();data.mobility=saved;expect(makeDay(data,'2026-10-19').mobility.protocol).toBeNull();expect(makeDay(data,'2026-10-21').mobility.protocol?.exercises[0].duration).toBe(60);
+  const data=emptyData();data.mobility=saved;for(const date of ['2026-10-19','2026-10-21','2026-10-24','2026-10-25'])expect(makeDay(data,date).mobility.protocol?.exercises[0].duration).toBe(60);
+  expect(summaries(data,'2026-10-25').mobility.status).toBe('Não iniciado');
+  const past=makeDay(data,'2026-10-20'),future=makeDay(data,'2026-10-26');past.mobility.protocol=null;future.mobility.protocol=null;data.days.push(past,future);
+  expect(activateMobility(data,'2026-10-25')).toBe(true);expect(past.mobility.protocol).toBeNull();expect((future.mobility.protocol as AppData['days'][number]['mobility']['protocol'])?.exercises).toHaveLength(1);expect(activateMobility(data,'2026-10-25')).toBe(false);
  });
 });
 

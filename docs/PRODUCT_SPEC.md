@@ -67,7 +67,7 @@ quarta e sábado sem cardio. Cada sessão se cumpre no próprio dia, sem compens
 
 ### Postura (hipercifose)
 Alongamento em pé, cotovelos na parede: 4 séries × 60 s, 60 s de descanso (sem descanso
-após a 4ª). Dias A1, B1, A2 (configurável). Cronômetro por timestamp: sobrevive a
+após a 4ª). Todos os dias, inclusive domingo (fixo). Cronômetro por timestamp: sobrevive a
 troca de aba, bloqueio de tela e reabertura.
 
 ### Registro hormonal

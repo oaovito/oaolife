@@ -61,7 +61,9 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   conclui com a meta do próprio dia; minutos extras não compensam outro dia.
   Velocidade mínima 5,0 km/h só na esteira (`src/domain/cardio.ts`).
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
-- **Postura**: hipercifose 4 × 60 s, 60 s de descanso, cronômetro por timestamp.
+- **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
+  domingo; sem configuração de dias), cronômetro por timestamp.
+- **Ajustes** não exibe tutorial de instalação no iPhone (removido a pedido).
 - **Refeições concluídas** saem da lista principal e ficam corrigíveis no histórico.
 - **Fuso**: data civil do dispositivo (referência America/Sao_Paulo). Reset
   diário renova tarefas; nunca apaga histórico.
