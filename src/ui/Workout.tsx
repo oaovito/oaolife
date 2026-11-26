@@ -6,6 +6,7 @@ import { ORIGINAL_PLAN, LOAD_LABEL, WEEKS, EXERCISES } from '../domain/plan';
 import { progressionFor } from '../domain/progression';
 import { mutate, openWorkout, finishWorkout, reopenWorkout } from '../storage/db';
 import { workoutComplete } from '../domain/daily';
+import { TRAINING_TIME } from '../domain/dailySchedule';
 import { PageTitle, Panel, Metric, Empty, Field, Progress, CompletedItems, type PageProps } from './shared';
 
 function SetRow({value,exercise,session,previous,run,index,expanded}:{value:CompletedSet;exercise:PlannedExercise;session:WorkoutSession;previous:CompletedSet|undefined;run:PageProps['run'];index:number;expanded:boolean}) {
@@ -64,7 +65,7 @@ export function Workout({data,date,run,go}:PageProps) {
    </details>
   </details></Panel>;
  };
- return <><PageTitle eyebrow="TREINAMENTO" title={plan.template?`${plan.template} · ${template?.title}`:'Descanso'} back={()=>go('home')}><p>{plan.week?`Semana ${plan.week} · ${WEEKS[plan.week-1].goal}`:'Configure a semana da periodização para iniciar séries.'}</p></PageTitle>
+ return <><PageTitle eyebrow={plan.template?`TREINAMENTO · ${TRAINING_TIME}`:"TREINAMENTO"} title={plan.template?`${plan.template} · ${template?.title}`:'Descanso'} back={()=>go('home')}><p>{plan.week?`Semana ${plan.week} · ${WEEKS[plan.week-1].goal}`:'Configure a semana da periodização para iniciar séries.'}</p></PageTitle>
   {session&&session.week!==plan.week&&<p className="notice">Registro preservado da semana {session.week} do ciclo anterior. O planejamento atual está na semana {plan.week}.</p>}
   {!plan.template?<Empty>Hoje é dia de descanso.</Empty>:<>
    {!plan.week&&<Panel><h3>Semana do ciclo</h3><button className="primary" onClick={()=>go('plan')}>Configurar periodização</button></Panel>}

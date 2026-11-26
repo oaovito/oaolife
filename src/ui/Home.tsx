@@ -13,6 +13,7 @@ import { rankFor } from '../domain/rank';
 import { Promotion, RankCounter, usePromotion } from './RankBadge';
 import { uid, today } from '../domain/training';
 import { editDay, mutate } from '../storage/db';
+import { TRAINING_TIME } from '../domain/dailySchedule';
 import { ROUTINE_BLOCKS, routineDone, routineItems, routineProgress, toggleRoutine, undoRoutineStep, type RoutineBlock, type RoutineItem } from '../domain/routines';
 import { Segments, type PageProps, type Page } from './shared';
 
@@ -59,7 +60,7 @@ export function Home({data,date,go,run}:PageProps){
    if(!plan.template)return {value:'—',unit:'Descanso',detail:'Recuperação da musculação',remaining:'Sem séries hoje',progress:0,max:0};
    const sets=session?session.exercises.flatMap(e=>e.sets):[],total=session?sets.length:preview?preview.exercises.reduce((n,e)=>n+e.sets.length,0):template!.exercises.reduce((n,e)=>n+e.sets,0),made=sets.filter(s=>s.done).length,left=sets.length?sets.filter(s=>!s.done&&!s.skipped).length:total;
    const current=session?.exercises.find(e=>e.sets.some(s=>!s.done&&!s.skipped));
-   return {value:`${made}`,unit:`/ ${total} séries`,detail:`${plan.template} · ${current?current.name:template!.title}`,remaining:b.status==='Concluído'?'Sessão encerrada':`Restam ${left} séries`,progress:made,max:total};
+   return {value:`${made}`,unit:`/ ${total} séries`,detail:`${TRAINING_TIME} · ${plan.template} · ${current?current.name:template!.title}`,remaining:b.status==='Concluído'?'Sessão encerrada':`Restam ${left} séries`,progress:made,max:total};
   }
   if(key==='meals'){
    const kcal=totals?.consumed.kcal??null,protein=totals?.consumed.protein??null,meals=day.meals.filter(m=>m.every(Boolean)).length;

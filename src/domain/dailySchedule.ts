@@ -7,6 +7,8 @@ import { setMealConsumed } from './nutrition';
 // (America/Sao_Paulo). Cada item tem horário, tipo (água/refeição), subtipo (líquida/sólida) e volume.
 // O status do dia vem dos próprios registros (água em `hydration.entries`, refeição em `meals`):
 // à meia-noite o novo dia começa pendente e os dias anteriores permanecem no histórico.
+// Treino (26/11/2026): às 08:00 nos dias com sessão de musculação programada.
+export const TRAINING_TIME='08:00';
 export const SCHEDULE_MEALS=4;
 export const SCHEDULE_WATER_ML=4000;
 // Refeições 1 e 3 são líquidas; 2 e 4, sólidas (plano alimentar de 26/11/2026, FOUR_MEAL_PLAN).

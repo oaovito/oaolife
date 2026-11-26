@@ -80,6 +80,7 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   líquida, 18:30 sólida). Status vem dos registros do dia (água em `hydration.entries` com id `rotina:<item>`,
   refeição em `meals`); a meia-noite recomeça sem apagar histórico. Editável em `settings.dailySchedule`
   (horário, volume, tipo; sempre 4 refeições). **Sem notificações** (decisão do proprietário).
+  **Treino às 08:00** (`TRAINING_TIME`) nos dias com musculação: aparece na rotina, em Treino e em Hoje.
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
   domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série
   (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.
