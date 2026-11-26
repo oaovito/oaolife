@@ -38,18 +38,21 @@ Não apresentar redução localizada de gordura como mecanismo possível.
 - Registro por série (carga, repetições, RIR, técnica, amplitude), carga total/por lado/por halter,
   sugestão a partir da última carga executada, progressão dupla conservadora com desfazer.
 
-### Alimentação — plano de 21/11/2026 (ativo)
+### Alimentação — plano de 26/11/2026 (ativo)
 | Refeição | Itens | kcal | P | C | G |
 |---|---|---:|---:|---:|---:|
-| 1 · líquida | 200 g iogurte grego natural · 300 ml leite desnatado · 40 g leite em pó · 50 g aveia | 628 | 47,8 | 75,8 | 15,2 |
-| 2 · sólida | 200 g frango · 250 g arroz · 150 g legumes · 10 g azeite | 743 | 72,4 | 77,3 | 15,9 |
-| 3 · líquida | 200 g iogurte grego natural · 300 ml leite desnatado · 40 g leite em pó · 30 g aveia | 550 | 45,0 | 62,4 | 13,5 |
-| 4 · sólida | 180 g patinho · 200 g arroz · 150 g legumes · 5 g azeite | 715 | 71,8 | 63,3 | 19,4 |
-| **Total** | | **2.637** | **237,1** | **278,7** | **64,0** |
+| 1 · líquida | 200 g iogurte grego natural · 300 ml leite desnatado · 40 g leite em pó · 30 g aveia | 549,7 | 45,0 | 62,4 | 13,5 |
+| 2 · sólida | 200 g frango · 250 g arroz | 620,0 | 70,5 | 70,3 | 5,4 |
+| 3 · líquida | 200 g iogurte grego natural · 300 ml leite desnatado · 40 g leite em pó · 30 g aveia | 549,7 | 45,0 | 62,4 | 13,5 |
+| 4 · sólida | 180 g patinho · 200 g arroz | 635,8 | 69,8 | 56,2 | 13,9 |
+| **Total** | | **2.355,2** | **230,3** | **251,3** | **46,4** |
+
+Plano anterior (21/11/2026, 2.637 kcal: aveia 50 g na refeição 1, legumes e azeite nas sólidas)
+permanece registrado nos dias em que valeu.
 
 - Pesos de alimentos preparados; aveia e leite em pó pesados secos.
-- Meta calórica solicitada: ~2.000 kcal (ajustável). O plano soma ~2.637 kcal:
-  a divergência (+637 kcal) é exibida, sem alterar quantidades.
+- Meta calórica solicitada: ~2.000 kcal (ajustável). O plano soma 2.355 kcal:
+  a divergência (+355 kcal) é exibida, sem alterar quantidades.
 - Meta proteica: 190 g (ajustável).
 - Restrições: sem whey, feijão, banana, morango.
 - Refeição concluída sai da lista de pendentes, conta no total e é corrigível no histórico.
@@ -79,3 +82,16 @@ Medidas, fotos locais, gráficos e relatórios de ciclo.
 ## Fora do escopo
 Backend, contas, sincronização remota, IA/APIs pagas, telemetria, métricas fisiológicas
 inventadas (prontidão, recuperação, escores de saúde).
+
+### Evolução · relatório semanal e situação atual
+- Domingo: pesagem em Hoje. Relatório da semana (seg–dom) liberado após o cardio de domingo
+  ou ao fim da semana; acessível sempre em Evolução → Relatórios.
+- Conteúdo: cumprimento do plano por módulo e por dia, gráficos diários (calorias, proteína,
+  água, cardio, séries), comparação com a semana anterior e com o histórico (média das semanas
+  liberadas; peso contra o primeiro registro). Ausência de registro nunca conta como zero.
+- Evolução → Situação: prescrição vigente e cumprimento atual de treino, alimentação, água,
+  cardio, alongamento e peso, com sequências.
+
+### Registro hormonal
+Segunda e quinta, plano informado pré-preenchido; registro com um toque e doses editáveis
+apenas como exceção. Outras datas: Ajustes → Registro hormonal fora do dia.

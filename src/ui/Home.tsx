@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AlertTriangle, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, Utensils, Wind } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, BarChart3, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, Scale, Utensils, Wind } from 'lucide-react';
 import { summaries, dayComplete, makeDay } from '../domain/daily';
 import { cycleForDate, schedule, makeWorkout } from '../domain/training';
 import { ORIGINAL_PLAN, WEEKS } from '../domain/plan';
@@ -7,7 +7,22 @@ import { nutritionTotals } from '../domain/nutrition';
 import { waterConsumed, waterGoal } from '../domain/hydration';
 import { weeklyCardio, CARDIO_WEEKLY_MINUTES } from '../domain/cardio';
 import type { BlockKey, BlockSummary } from '../domain/model';
+import { isSunday, perfectDays, recordWeight, reportReleased, weekStart } from '../domain/weeklyReport';
+import { syncAlert, useSyncState } from './CloudSync';
+import { rankFor } from '../domain/rank';
+import { RankCounter } from './RankBadge';
+import { uid } from '../domain/training';
+import { mutate } from '../storage/db';
 import { Segments, type PageProps, type Page } from './shared';
+
+export const PROGRESS_VIEW_KEY='oaolife:progress-view';
+export function openReports(go:(p:Page)=>void){try{sessionStorage.setItem(PROGRESS_VIEW_KEY,'reports');}catch{/* sem armazenamento: abre a visão padrão */}go('progress');}
+
+function WeighIn({data,date,run}:Pick<PageProps,'data'|'date'|'run'>){
+ const saved=data.measurements.find(m=>m.date===date&&m.weight!==null);const [edit,setEdit]=useState(false);
+ if(saved&&!edit)return <section className="weigh-in" aria-label="Pesagem de domingo"><Scale size={18} aria-hidden="true"/><span className="ops-tag">PESAGEM DE DOMINGO</span><strong className="weigh-value">{saved.weight!.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}<span> kg</span></strong><button className="text-button" onClick={()=>setEdit(true)}>Corrigir</button></section>;
+ return <form className="weigh-in" aria-label="Pesagem de domingo" onSubmit={e=>{e.preventDefault();const v=Number(String(new FormData(e.currentTarget).get('weight')).replace(',','.'));void run(()=>mutate('Pesagem de domingo',date,d=>{recordWeight(d,date,v,uid());}),'Peso registrado.').then(ok=>{if(ok)setEdit(false);});}}><Scale size={18} aria-hidden="true"/><label className="ops-tag" htmlFor="sunday-weight">PESAGEM DE DOMINGO</label><input id="sunday-weight" name="weight" type="text" inputMode="decimal" pattern="[0-9]{2,3}([,.][0-9])?" placeholder="kg" aria-label="Peso de domingo (kg)" defaultValue={saved?.weight?.toLocaleString('pt-BR')??''} required/><button className="primary">Registrar</button></form>;
+}
 
 type Module = { key:BlockKey; code:string; title:string; icon:typeof Dumbbell };
 const MODULES:Module[]=[
@@ -23,7 +38,7 @@ const liters=(ml:number)=>(ml/1000).toLocaleString('pt-BR',{minimumFractionDigit
 type Figure={value:string;unit:string;detail:string;remaining:string;progress:number;max:number};
 function state(b:BlockSummary){return b.status==='Concluído'?'done':b.status==='Não programado'?'idle':b.status==='Não iniciado'?'pending':b.status==='Pendente de revisão'?'review':'active';}
 
-export function Home({data,date,go}:PageProps){
+export function Home({data,date,go,run}:PageProps){
  const [showDone,setShowDone]=useState<string|null>(null);
  const blocks=summaries(data,date),day=data.days.find(d=>d.id===date)??makeDay(data,date);
  const cycle=cycleForDate(data,date),plan=schedule(cycle,date),template=ORIGINAL_PLAN.find(t=>t.id===plan.template);
@@ -53,10 +68,10 @@ export function Home({data,date,go}:PageProps){
   return {value:b.status==='Em andamento'||b.status==='Concluído'?'OK':'—',unit:'',detail:b.subtitle,remaining:b.status==='Concluído'?'Registrado':'Registro pendente',progress:b.status==='Concluído'?1:0,max:1};
  };
 
- const alerts:string[]=[];
+ const alerts:string[]=[],sync=useSyncState(),syncWarning=syncAlert(sync);if(syncWarning)alerts.push(syncWarning);
+ const perfect=useMemo(()=>perfectDays(data,date),[data,date]);
  if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
  if(Object.values(day.mobility.sequences).some(s=>s.runningSince!==null))alerts.push('Sequência de postura em andamento.');
- if(!data.settings.lastBackup||Date.now()-Date.parse(data.settings.lastBackup)>30*86400000)alerts.push(data.settings.lastBackup?'Último backup há mais de 30 dias.':'Nenhum backup exportado. Faça em Ajustes.');
 
  const card=(m:Module)=>{const b=blocks[m.key],f=figure(m.key),Icon=m.icon,s=state(b);
   return <button key={m.key} className={`module module-${m.key}`} data-state={s} onClick={()=>go(m.key as Page)} aria-label={`${m.title}: ${b.status}. ${f.value} ${f.unit}. ${f.remaining}`}>
@@ -70,13 +85,16 @@ export function Home({data,date,go}:PageProps){
  const open=showDone===date;
  return <div className="home-page command">
   <header className="ops-header"><span className="ops-tag">{new Intl.DateTimeFormat('pt-BR',{weekday:'short',day:'2-digit',month:'short'}).format(new Date(date+'T12:00:00')).replace(/\./g,'')}{plan.template&&plan.week?` · Semana ${plan.week} · ${WEEKS[plan.week-1].goal} · RIR ${WEEKS[plan.week-1].rir.join('–')}`:plan.template?' · Configure a semana no Plano':''}</span><h1>{plan.template?<><span className="ops-code">{plan.template}</span> {template?.title}</>:'Descanso da musculação'}</h1></header>
+  <RankCounter rank={rankFor(perfect.total)} {...perfect}/>
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
    {next?<button className="primary next-action" onClick={()=>go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Todos os módulos programados estão concluídos.</p>}
   </section>
+  {isSunday(date)&&<WeighIn data={data} date={date} run={run}/>}
+  {reportReleased(data,weekStart(date),date)&&isSunday(date)&&<button className="secondary report-ready" onClick={()=>openReports(go)}><BarChart3 size={18} aria-hidden="true"/>Relatório da semana disponível<ChevronRight size={18} aria-hidden="true"/></button>}
   {alerts.length>0&&<ul className="alerts" aria-label="Alertas">{alerts.map(a=><li key={a}><AlertTriangle size={15} aria-hidden="true"/><span>{a}</span></li>)}</ul>}
-  <div className="module-grid" id="daily-routine">{MODULES.filter(m=>open||blocks[m.key].status!=='Concluído').map(card)}</div>
+  <div className="module-grid" id="daily-routine">{MODULES.filter(m=>blocks[m.key].status!=='Não programado'&&(open||blocks[m.key].status!=='Concluído')).map(card)}</div>
   {done.length>0&&<button className="secondary completed-toggle" aria-expanded={open} aria-controls="daily-routine" onClick={()=>setShowDone(open?null:date)}><Check size={16} aria-hidden="true"/>{open?'Ocultar módulos concluídos':`Concluídos (${done.length}) · ver e corrigir`}</button>}
  </div>;
 }

@@ -3,9 +3,10 @@ import Dexie from 'dexie';
 import { finishCardio, emptyData, makeDay, summaries } from '../domain/daily';
 import { ORIGINAL_PLAN, WEEKS } from '../domain/plan';
 import { anchorTrainingCycle, makeWorkout, now, setFactor, weeklyVolume, cycleForDate, schedule, addDays } from '../domain/training';
-import { mealNutrients, nutritionTotals, setMealConsumed, nutritionReference } from '../domain/nutrition';
+import { mealNutrients, nutritionTotals, setMealConsumed, nutritionReference, activateMealPlan, FOUR_MEAL_PLAN_2111, serving } from '../domain/nutrition';
 import { migrateV9, MIGRATION_9 } from '../domain/migrations';
 import { weeklyCardio, cardioGoalReached } from '../domain/cardio';
+import { INFORMED_HORMONAL_PLAN, LEGACY_HORMONAL_PLAN, activateHormonalPlan, planForDay, registerHormonalDay } from '../domain/hormonal';
 import { assertIntegrity, initialize, OaoDatabase, restoreSnapshot } from '../storage/db';
 import type { AppData } from '../domain/model';
 
@@ -59,24 +60,25 @@ describe('séries exibidas = séries do plano vigente (bug das 2 séries)',()=>{
  });
 });
 
-describe('plano alimentar de 21/11/2026 · TACO/TBCA',()=>{
+describe('plano alimentar vigente (26/11/2026) · TACO/TBCA',()=>{
  it('calcula cada refeição sem forçar 2.000 kcal e mostra a divergência real',()=>{
   const data=emptyData(),day=makeDay(data,'2026-11-26'),plan=day.nutrition!.plan.map(mealNutrients);
-  const expected=[[628.5,47.8,75.8,15.2],[743.4,72.5,77.3,15.9],[549.7,45.0,62.5,13.5],[715.0,71.8,63.3,19.4]];
+  const expected=[[549.7,45.0,62.4,13.5],[620.0,70.5,70.3,5.4],[549.7,45.0,62.4,13.5],[635.8,69.8,56.2,13.9]];
   plan.forEach((m,i)=>{expect(m.kcal).toBeCloseTo(expected[i][0],0);expect(m.protein).toBeCloseTo(expected[i][1],0);expect(m.carbs).toBeCloseTo(expected[i][2],0);expect(m.fat).toBeCloseTo(expected[i][3],0);});
-  const totals=nutritionTotals(day)!;expect(totals.planned.kcal).toBeCloseTo(2636.6,0);expect(totals.planned.protein).toBeCloseTo(237.1,0);
+  const totals=nutritionTotals(day)!;expect(totals.planned.kcal).toBeCloseTo(2355.2,1);expect(totals.planned.protein).toBeCloseTo(230.3,1);expect(totals.planned.carbs).toBeCloseTo(251.3,1);expect(totals.planned.fat).toBeCloseTo(46.4,1);
   expect(day.nutrition?.version==='four-meals-1'&&day.nutrition.calorieGoal).toBe(2000);
   expect(Object.values(totals.planned).every(v=>v!==null)).toBe(true);
  });
  it('nenhum alimento restrito aparece e quantidades prescritas são preservadas',()=>{
   const day=makeDay(emptyData(),'2026-11-26'),labels=day.nutrition!.plan.flatMap(m=>m.foods.map(f=>f.label.toLowerCase())).join(' ');
   for(const word of ['whey','feijão','banana','morango'])expect(labels).not.toContain(word);
-  expect(day.nutrition!.plan.map(m=>m.foods.map(f=>f.quantity))).toEqual([[200,300,40,50],[200,250,150,10],[200,300,40,30],[180,200,150,5]]);
+  expect(day.nutrition!.plan.map(m=>m.foods.map(f=>f.quantity))).toEqual([[200,300,40,30],[200,250],[200,300,40,30],[180,200]]);
+  for(const word of ['azeite','legumes'])expect(day.nutrition!.plan[1].foods.concat(day.nutrition!.plan[3].foods).map(f=>f.label.toLowerCase()).join(' ')).not.toContain(word);
  });
  it('refeição concluída sai das pendentes, permanece no total e pode ser desfeita',()=>{
   const data=emptyData(),day=makeDay(data,'2026-11-26');data.days.push(day);
   setMealConsumed(day,0,true,'2026-11-26T10:00:00.000Z');
-  expect(day.nutrition!.consumed[0]).not.toBeNull();expect(nutritionTotals(day)!.consumed.kcal).toBeCloseTo(628.5,0);
+  expect(day.nutrition!.consumed[0]).not.toBeNull();expect(nutritionTotals(day)!.consumed.kcal).toBeCloseTo(549.7,1);
   expect(summaries(data,'2026-11-26').meals.done).toBe(1);
   setMealConsumed(day,0,false);expect(nutritionTotals(day)!.consumed.kcal).toBe(0);assertIntegrity(data);
  });
@@ -90,8 +92,8 @@ describe('plano alimentar de 21/11/2026 · TACO/TBCA',()=>{
   expect(data.settings.calorieGoal).toBe(2000);
   expect(past.nutrition?.version==='four-meals-1'&&past.nutrition.calorieGoal).toBe(2525);
   expect(today.nutrition?.version==='four-meals-1'&&today.nutrition.calorieGoal).toBe(2000);
-  expect(nutritionTotals(past)!.consumed.kcal).toBeCloseTo(628.5,0);
-  expect(past.nutrition!.consumed[0]!.meal.foods.map(f=>f.quantity)).toEqual([200,300,40,50]);
+  expect(nutritionTotals(past)!.consumed.kcal).toBeCloseTo(549.7,1);
+  expect(past.nutrition!.consumed[0]!.meal.foods.map(f=>f.quantity)).toEqual([200,300,40,30]);
   expect(data.adjustments.filter(a=>a.id===MIGRATION_9)).toHaveLength(1);assertIntegrity(data);
   const custom=emptyData();custom.settings.calorieGoal=2300;migrateV9(custom,'2026-11-26');expect(custom.settings.calorieGoal).toBe(2300);
  });
@@ -146,5 +148,58 @@ describe('rollback local da atualização 9',()=>{
    await initialize(database);expect((await database.state.get('main'))!.data.settings.calorieGoal).toBe(2525);
    expect(schedule(cycleForDate(restored.data,'2026-11-26'),'2026-11-26').week).toBe(1);
   }finally{await database.delete();}
+ });
+});
+
+describe('programa do dia: registro hormonal e alongamento',()=>{
+ it('registro hormonal só é programado às segundas e quintas; exceções registradas aparecem',()=>{
+  const data=emptyData();
+  const status=(d:string)=>summaries(data,d).hormonal.status;
+  expect(['2026-11-23','2026-11-26'].map(status)).toEqual(['Não iniciado','Não iniciado']);
+  expect(['2026-11-24','2026-11-25','2026-11-27','2026-11-28','2026-11-29'].every(d=>status(d)==='Não programado')).toBe(true);
+  const day=makeDay(data,'2026-11-25');day.declarations.hormonal={at:now(),note:'Exceção'};data.days.push(day);
+  expect(status('2026-11-25')).toBe('Concluído');
+ });
+ it('alongamento é programado todos os dias',()=>{
+  const data=emptyData();
+  for(let i=0;i<7;i++)expect(summaries(data,addDays('2026-11-23',i)).mobility.status).toBe('Não iniciado');
+ });
+});
+
+describe('registro hormonal com um toque',()=>{
+ it('plano informado: segunda (500/200/50) e quinta (500/200), sem seleção manual',()=>{
+  expect(planForDay(INFORMED_HORMONAL_PLAN,1,1).map(e=>[e.substance,e.doseMg])).toEqual([['Testosterona',500],['Decanoato de nandrolona',200],['Enantato de trembolona',50]]);
+  expect(planForDay(INFORMED_HORMONAL_PLAN,4,1).map(e=>[e.substance,e.doseMg])).toEqual([['Testosterona',500],['Decanoato de nandrolona',200]]);
+  expect(planForDay(INFORMED_HORMONAL_PLAN,3,1)).toEqual([]);
+ });
+ it('registra o dia inteiro, aceita dose ajustada e não duplica',()=>{
+  const data=emptyData();let n=0;const ids=()=>`h${++n}`;
+  const items=planForDay(data.hormonalProtocol!,1,1).map(e=>({entryId:e.id,doseMg:e.doseMg}));items[2].doseMg=40;
+  expect(registerHormonalDay(data,'2026-11-23',1,items,ids,now())).toBe(3);
+  expect(data.hormonalLogs.map(l=>l.doseMg)).toEqual([500,200,40]);
+  expect(registerHormonalDay(data,'2026-11-23',1,items,ids,now())).toBe(0);expect(data.hormonalLogs).toHaveLength(3);
+  expect(()=>registerHormonalDay(data,'2026-11-26',1,[{entryId:'testosterona-quinta',doseMg:0}],ids,now())).toThrow();
+ });
+ it('troca só o plano padrão anterior, uma vez, preservando registros e planos personalizados',()=>{
+  const data=emptyData();data.hormonalProtocol=structuredClone(LEGACY_HORMONAL_PLAN);data.hormonalLogs.push({id:'old',date:'2026-11-16',week:1,entryId:'oximetolona-oral',substance:'Oximetolona oral',doseMg:50,notes:'',at:now()});
+  expect(activateHormonalPlan(data)).toBe(true);expect(data.hormonalProtocol).toEqual(INFORMED_HORMONAL_PLAN);expect(data.hormonalLogs).toHaveLength(1);
+  expect(activateHormonalPlan(data)).toBe(false);
+  const custom=emptyData();custom.hormonalProtocol!.name='Meu plano';expect(activateHormonalPlan(custom)).toBe(false);expect(custom.hormonalProtocol!.name).toBe('Meu plano');
+ });
+});
+
+describe('troca do plano alimentar 21/11 → 26/11/2026',()=>{
+ const oldPlan=(data:AppData)=>FOUR_MEAL_PLAN_2111.map((m,i)=>({title:`Refeição ${i+1}`,foods:m.map(([k,q])=>serving(data,k,q))}));
+ it('dias de hoje em diante passam ao plano novo; refeição já consumida mantém o que foi comido; passado intacto',()=>{
+  const data=emptyData(),past=makeDay(data,'2026-11-25'),day=makeDay(data,'2026-11-26');
+  for(const d of [past,day]){d.nutrition!.plan=oldPlan(data);d.meals=d.nutrition!.plan.map(m=>m.foods.map(()=>false));}
+  setMealConsumed(day,1,true,'2026-11-26T12:00:00.000Z');setMealConsumed(past,0,true,'2026-11-25T08:00:00.000Z');data.days.push(past,day);
+  const before=structuredClone(past);
+  expect(activateMealPlan(data,'2026-11-26')).toBe(true);
+  expect(past).toEqual(before);
+  expect(day.nutrition!.plan.map(m=>m.foods.map(f=>f.quantity))).toEqual([[200,300,40,30],[200,250],[200,300,40,30],[180,200]]);
+  expect(day.nutrition!.consumed[1]!.meal.foods).toHaveLength(4);expect(day.meals.map(m=>m.length)).toEqual([4,4,4,2]);
+  const t=nutritionTotals(day)!;expect(t.consumed.kcal).toBeCloseTo(743.4,1);
+  assertIntegrity(data);expect(activateMealPlan(data,'2026-11-26')).toBe(false);
  });
 });

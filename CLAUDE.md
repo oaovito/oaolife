@@ -46,9 +46,12 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
 
 ## Decisões vigentes (não regredir)
 
-- **Plano alimentar de 21/11/2026**: 4 refeições (2 líquidas, 2 sólidas),
-  quantidades fixas em `createNutrition`. Sem whey, feijão, banana, morango.
-  Totais TACO/TBCA: ~2.637 kcal / ~237 g proteína. Meta solicitada ~2.000 kcal.
+- **Plano alimentar de 26/11/2026**: 4 refeições (2 líquidas, 2 sólidas),
+  quantidades fixas em `FOUR_MEAL_PLAN` (`nutrition.ts`). Líquidas: iogurte grego
+  200 g, leite desnatado 300 ml, leite em pó 40 g, **aveia 30 g**. Sólidas só
+  carne + arroz (**sem azeite e sem legumes**). Sem whey, feijão, banana, morango.
+  Totais TACO/TBCA: **2.355 kcal / 230 g proteína**. Meta solicitada ~2.000 kcal.
+  Plano de 21/11 (2.637 kcal) permanece nos dias em que valeu (`FOUR_MEAL_PLAN_2111`).
   A divergência é exibida; **nunca** alterar quantidades para "fechar" a meta.
 - **Séries**: cada exercício exibe exatamente as séries do `ORIGINAL_PLAN`
   nas semanas comuns e 55% nas semanas 4 e 8 de recuperação
@@ -64,6 +67,23 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
   domingo; sem configuração de dias), cronômetro por timestamp.
 - **Ajustes** não exibe tutorial de instalação no iPhone (removido a pedido).
+- **Hoje** mostra só os blocos do programa do dia (blocos "Não programado" ficam ocultos).
+- **Registro hormonal**: só segunda e quinta, com o plano informado pré-preenchido
+  (`INFORMED_HORMONAL_PLAN` em `src/domain/hormonal.ts`). Um toque registra o dia;
+  doses editáveis só em exceção. Exceções em outras datas: Ajustes → "Registro
+  hormonal fora do dia". O app só registra o informado; nunca sugere doses.
+- **Domingo**: bloco de pesagem em Hoje (`recordWeight`). O relatório semanal
+  (`src/domain/weeklyReport.ts`) é liberado após o cardio de domingo (ou ao fim da
+  semana) e fica em Evolução → Relatórios, comparando com a semana anterior e com
+  o histórico. Evolução → Situação mostra o estado atual de cada módulo.
+- **Registros duráveis (26/11/2026, permanente)**: tudo é salvo automaticamente fora do
+  aparelho, cifrado, no ramo `dados` (`api/sync.ts`, `src/storage/sync.ts`, SYNC.md). Retenção
+  ilimitada, sem expiração nem poda; envios só acrescentam/atualizam. Sem lembretes de backup manual.
+- **Contador de dias cumpridos**: elemento de maior destaque em Hoje. Conta dias com todo o
+  programa do dia concluído desde 26/11/2026, sem limite e independente do plano atual; patente
+  nova a cada 10 dias (`src/domain/rank.ts`, `perfectDays` em `weeklyReport.ts`).
+- **Dados pessoais** no repositório público estão marcados (`// DADO PESSOAL:`) e listados em
+  docs/PERSONAL_DATA_INVENTORY.md para migração futura a um repositório privado.
 - **Refeições concluídas** saem da lista principal e ficam corrigíveis no histórico.
 - **Fuso**: data civil do dispositivo (referência America/Sao_Paulo). Reset
   diário renova tarefas; nunca apaga histórico.
@@ -77,7 +97,8 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
 3. Antes de migrar, `initialize` guarda cópia local em `db.snapshots`
    (ex.: `pre-v9`); `restoreSnapshot` faz rollback auditado.
 4. Backups antigos continuam importáveis (formatos 2–9).
-5. Não enviar dados pessoais/saúde a terceiros; sem telemetria.
+5. Não enviar dados pessoais/saúde a terceiros em texto aberto; sem telemetria. A cópia na nuvem
+   (autorizada pelo proprietário) só recebe dados cifrados no aparelho.
 
 ## Direção visual
 

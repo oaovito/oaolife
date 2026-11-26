@@ -1,6 +1,34 @@
 # Atualização e sincronização
 
-São processos distintos. O aplicativo recebe arquivos novos por Service Worker/Workbox; dados pessoais ficam no IndexedDB. Não há backend remoto, autenticação ou envio de dados implementados. A UI não usa “Sincronizado”.
+## Cópia automática na nuvem (desde 26/11/2026)
+
+Requisito permanente: a partir de 26/11/2026 todos os registros ficam salvos de forma durável e
+automática, para acompanhamento de anos. Retenção ilimitada; nada expira nem é podado.
+
+- **Onde**: ramo órfão `dados` do próprio repositório (`GITHUB_DATA_REPO`/`GITHUB_DATA_BRANCH`
+  podem apontar para um repositório privado no futuro). A Vercel não publica a partir desse ramo
+  (`vercel.json → git.deploymentEnabled`) e a CI só roda em `main`/PRs.
+- **Como**: `src/storage/sync.ts` divide o estado em partes (`syncPartition.ts`): `core`, uma por
+  data civil (dia, treino, medidas, registros hormonais, progressões, auditoria) e uma por foto.
+  Só as partes alteradas são enviadas. Cada envio é um commit em `api/sync.ts` (função Vercel);
+  arquivos só são acrescentados ou atualizados, nunca apagados, e o histórico git guarda todas as
+  versões anteriores.
+- **Quando**: alguns segundos após cada gravação, ao abrir o app, ao voltar a conexão e ao sair
+  do app (visibilidade oculta). Sem rede, os registros continuam no aparelho e são enviados depois.
+- **Criptografia**: código de recuperação de 160 bits (32 caracteres) gerado no aparelho. Dele saem,
+  por SHA-256, o identificador enviado ao servidor, a chave AES-256-GCM e o sal dos nomes de
+  arquivo. Conteúdo: gzip + AES-GCM. O servidor e o GitHub só veem dados cifrados e nomes opacos.
+- **Recuperação**: Ajustes → "Recuperar da nuvem" com o código. Antes, os dados locais são guardados
+  em `db.snapshots` (`pre-cloud-…`). Fusão: partes de datas diferentes se somam; a mesma data
+  enviada por dois aparelhos fica com a última versão (as anteriores seguem no histórico git).
+- **Limites**: até ~3,5 MB por envio; uma foto isolada maior que isso fica só no aparelho e o app
+  informa. Falhas aparecem como alerta em Hoje e em Ajustes.
+- **Configuração (Vercel)**: `GITHUB_DATA_TOKEN` = token fine-grained com permissão *Contents:
+  read and write* só neste repositório. Sem ele a função responde 503 e o app avisa.
+
+## Atualização do aplicativo
+
+São processos distintos. O aplicativo recebe arquivos novos por Service Worker/Workbox; dados pessoais ficam no IndexedDB.
 
 Cada operação local grava snapshot, auditoria e outbox na mesma transação. Outbox usa `local-only`; o tipo suporta estados futuros, mas não há transporte remoto configurado. Estar online não significa que dados pessoais têm cópia fora do aparelho. A retomada da rede apenas atualiza o indicador e solicita verificação de recursos novos quando o aplicativo está ativo.
 
@@ -8,7 +36,7 @@ O Service Worker precacheia HTML, JS, CSS e ícones produzidos pelo build. Não 
 
 O iOS pode suspender totalmente uma PWA fechada. Não se promete sincronização, download ou execução em segundo plano. Foco, conexão e retorno visível revalidam atualizações. Sem rede, atividades e cronômetros continuam baseados no estado persistido.
 
-Concorrência local usa a transação serializável do IndexedDB. Importação compara a revisão atual à revisada e falha se houver novas alterações. Backup substitui o conjunto somente após confirmação, sem merge silencioso. Sincronização remota futura exige backend privado, autenticação, autorização por usuário, transporte seguro, proteção em repouso, protocolo de conflitos e testes completos.
+Concorrência local usa a transação serializável do IndexedDB. Importação compara a revisão atual à revisada e falha se houver novas alterações. Backup substitui o conjunto somente após confirmação, sem merge silencioso. A cópia na nuvem é descrita no início deste documento.
 
 
 ## Publicação Vercel e segurança da interface
