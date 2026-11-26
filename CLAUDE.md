@@ -63,6 +63,8 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   **Toda mudança no treino vale "no coração"**: altera `ORIGINAL_PLAN` e `TRAINING_PLAN_VERSION`
   (`plan.ts`); `reconcileOpenSessions` aplica às sessões abertas de hoje em diante sem remover
   séries com dados; volume, recuperação, relatórios, docs e testes seguem no mesmo PR.
+- **Carga sugerida (26/11/2026)**: baseada nas cargas das últimas 5 semanas; sugere aumentar
+  quando a carga vem subindo nas últimas sessões (`loadSuggestion`, TRAINING_PLAN.md).
 - **Cardio (rígido)**: segunda, terça, quinta, sexta e domingo, **60 min** cada
   (5 × 60 = **300 min/semana**); quarta e sábado sem cardio. Cada sessão só
   conclui com a meta do próprio dia; minutos extras não compensam outro dia.

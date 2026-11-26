@@ -39,13 +39,35 @@ export function setFactor(policy:SetPolicy|undefined,week:number) {
  return 1;
 }
 export function weeklyVolume(week:number,policy:SetPolicy='full') { const volumes:Record<string,number>={}; for(const t of ORIGINAL_PLAN){const counts=allocateSets(t.exercises,setFactor(policy,week));t.exercises.forEach((e,i)=>{volumes[e.muscle]=(volumes[e.muscle]||0)+counts[i];});}return volumes; }
-export function suggestedLoad(data:AppData,exercise:Exercise,date:string) {
+// Carga sugerida (26/11/2026, proprietário): baseada nas cargas registradas nas últimas 5 semanas.
+// Se as últimas exposições mostram aumento, sugere continuar subindo (incremento configurado ou o
+// último passo executado). Progressão registrada ao encerrar o treino prevalece quando é a mais nova.
+// Semana de recuperação mantém a carga. Sem registro: referência do plano (ou "A definir").
+export const LOAD_WINDOW_DAYS=35;
+export interface LoadSuggestion {load:number|null;basis:string}
+const round=(n:number)=>Math.round(n*100)/100;
+export function loadSuggestion(data:AppData,exercise:Exercise,date:string):LoadSuggestion {
+ const fmt=(n:number)=>String(n).replace('.',',');
+ const exposures=data.sessions.filter(s=>s.date<date).map(s=>{const e=s.exercises.find(e=>e.id===exercise.id);const done=e?.sets.filter(v=>v.done&&v.load!==null&&v.mode===exercise.mode)??[];return {date:s.date,week:s.week,top:done.length?Math.max(...done.map(v=>v.load!)):null,complete:!!e&&e.sets.every(v=>v.done)};}).filter((x):x is {date:string;week:number;top:number;complete:boolean}=>x.top!==null).sort((a,b)=>a.date.localeCompare(b.date));
  const decision=[...data.decisions].filter(d=>d.exerciseId===exercise.id&&d.date<date&&!d.undoneAt&&d.mode===exercise.mode).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt))[0];
- const lastSession=[...data.sessions].filter(s=>s.date<date&&s.exercises.some(e=>e.id===exercise.id&&e.sets.some(v=>v.done&&v.load!==null&&v.mode===exercise.mode))).sort((a,b)=>b.date.localeCompare(a.date))[0];
- if(decision&&(!lastSession||decision.date>=lastSession.date))return decision.next;
- const last=lastSession?.exercises.find(e=>e.id===exercise.id)?.sets.find(v=>v.done&&v.load!==null&&v.mode===exercise.mode);
- return last?.load??exercise.reference;
+ const latest=exposures.at(-1);
+ if(decision&&(!latest||decision.date>=latest.date))return {load:decision.next,basis:`Progressão registrada em ${decision.date}.`};
+ if(!latest)return {load:exercise.reference,basis:exercise.reference===null?'Sem registro. Registre a carga executada.':'Referência do plano. Sem registro anterior.'};
+ const from=addDays(date,-LOAD_WINDOW_DAYS),recent=exposures.filter(x=>x.date>=from);
+ if(!recent.length)return {load:latest.top,basis:`Última carga registrada (${latest.date}). Sem registro nas últimas 5 semanas.`};
+ const week=schedule(cycleForDate(data,date),date).week;
+ const last=recent.at(-1)!;
+ if(week===4||week===8)return {load:last.top,basis:'Semana de recuperação: manter a última carga.'};
+ const trend=recent.filter(x=>x.week!==4&&x.week!==8);
+ const t1=trend.at(-1),t0=trend.at(-2);
+ if(t1&&t0&&t1.top>t0.top&&t1.complete&&t1===last){
+  const step=data.settings.increments[exercise.id]??round(t1.top-t0.top);
+  return {load:round(t1.top+step),basis:`Carga subindo nas últimas sessões (${fmt(t0.top)} → ${fmt(t1.top)}). Aumentar ${fmt(step)}.`};
+ }
+ const peak=Math.max(...recent.map(x=>x.top));
+ return {load:last.top,basis:`Manter a última carga. Maior das últimas 5 semanas: ${fmt(peak)}.`};
 }
+export function suggestedLoad(data:AppData,exercise:Exercise,date:string){return loadSuggestion(data,exercise,date).load;}
 export function makeWorkout(data:AppData,date:string):WorkoutSession|null {
  const cycle=cycleForDate(data,date); const plan=schedule(cycle,date);if(!cycle||!plan.template||!plan.week)return null;
  const t=ORIGINAL_PLAN.find(t=>t.id===plan.template)!;const w=WEEKS[plan.week-1];const factor=setFactor(data.settings.setPolicy,plan.week);const counts=allocateSets(t.exercises,factor);
@@ -151,7 +173,8 @@ export function reconcileOpenSessions(data:AppData,today:string):boolean{
    while(sets.length>f.sets.length){let i=sets.length-1;while(i>=0&&!emptySet(sets[i]))i--;if(i<0)break;sets.splice(i,1);changed=true;}
    for(let j=sets.length;j<f.sets.length;j++){let id=`${f.id}:${j}`;let k=j;while(sets.some(v=>v.id===id))id=`${f.id}:${++k}`;sets.push({...f.sets[j],id});changed=true;}
    if(cur.name!==f.name||cur.reps.join()!==f.reps.join())changed=true;
-   next.push({...cur,name:f.name,reps:[...f.reps],sets});
+   if(cur.suggested!==f.suggested)changed=true;
+   next.push({...cur,name:f.name,reps:[...f.reps],suggested:f.suggested,sets});
   }
   // Exercício que saiu do plano só permanece se já tiver séries registradas.
   for(const cur of s.exercises)if(!fresh.exercises.some(f=>f.id===cur.id)){if(cur.sets.some(v=>!emptySet(v)))next.push(cur);else changed=true;}
