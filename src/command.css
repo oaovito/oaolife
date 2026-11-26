@@ -389,11 +389,7 @@ html,body{overscroll-behavior-x:none}
 .button-row{display:flex;gap:.5rem;flex-wrap:wrap}
 /* Contador de dias cumpridos: elemento de maior destaque de Hoje. Muda a cada 10 dias. */
 .rank-counter{flex-shrink:0;--rank:var(--moss);--rank-ink:var(--text);position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:'badge main' 'progress progress' 'next next';gap:6px 14px;align-items:center;padding:14px 16px 12px;border:2px solid var(--rank);border-radius:var(--radius-md);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--rank) 14%,transparent) 0 2px,transparent 2px 9px),linear-gradient(160deg,color-mix(in srgb,var(--rank) 30%,transparent),transparent 70%),var(--surface);overflow:hidden}
-.rank-counter[data-class=recruit]{--rank:var(--line-strong)}
-.rank-counter[data-class=enlisted]{--rank:var(--signal)}
-.rank-counter[data-class=officer]{--rank:var(--tan)}
-.rank-counter[data-class=general]{--rank:var(--amber)}
-.rank-counter[data-class=marshal]{--rank:var(--amber);border-width:3px;box-shadow:0 0 0 1px color-mix(in srgb,var(--amber) 40%,transparent),0 0 22px color-mix(in srgb,var(--amber) 25%,transparent)}
+.rank-counter:is([data-class=marshal],[data-class=honor],[data-class=supreme],[data-class=legend]){border-width:3px;box-shadow:0 0 0 1px color-mix(in srgb,var(--amber) 40%,transparent),0 0 22px color-mix(in srgb,var(--amber) 25%,transparent)}
 .rank-counter .insignia{grid-area:badge;width:76px;height:76px}
 .insignia-shield{fill:color-mix(in srgb,var(--rank) 22%,var(--surface));stroke:var(--rank);stroke-width:2.5}
 .insignia-marks{fill:var(--rank);stroke:var(--rank);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
@@ -430,3 +426,108 @@ html,body{overscroll-behavior-x:none}
 .panel>h2{font-weight:800;letter-spacing:.02em}
 .rank-warning{position:absolute;top:6px;right:6px;min-height:44px;padding:0 10px;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.08em;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-sm)}
 .start-action{width:100%;margin:0 0 14px}
+
+/* Patentes até o dia 1000: cor por classe e metal da ordem; cerimônia de promoção; galeria. */
+:root{--m-bronze:#c08a52;--m-ferro:#9aa7b3;--m-prata:#cfd5dc;--m-ouro:#e0b347;--m-rubi:#d2505c;--m-platina:#e4ecf0;--m-ouro-velho:#cf9a35;--m-onix:#e8bd52;--m-lenda:#f4d98a}
+:root[data-theme=light]{--m-bronze:#7f5126;--m-ferro:#4b5866;--m-prata:#56606b;--m-ouro:#7d5c00;--m-rubi:#9a2633;--m-platina:#4f5d66;--m-ouro-velho:#7a5408;--m-onix:#6e5100;--m-lenda:#735600}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group){--rank:var(--moss)}
+:is(.rank-counter,.insignia,.rank-card,.promotion)[data-class=recruit]{--rank:var(--line-strong)}
+:is(.rank-counter,.insignia,.rank-card,.promotion)[data-class=enlisted]{--rank:var(--signal)}
+:is(.rank-counter,.insignia,.rank-card,.promotion)[data-class=officer]{--rank:var(--tan)}
+:is(.rank-counter,.insignia,.rank-card,.promotion):is([data-class=general],[data-class=marshal]){--rank:var(--amber)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=bronze]{--rank:var(--m-bronze)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=ferro]{--rank:var(--m-ferro)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=prata]{--rank:var(--m-prata)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=ouro]{--rank:var(--m-ouro)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=rubi]{--rank:var(--m-rubi)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=platina]{--rank:var(--m-platina)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=ouro-velho]{--rank:var(--m-ouro-velho)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=onix]{--rank:var(--m-onix)}
+:is(.rank-counter,.insignia,.rank-card,.promotion,.rank-group)[data-metal=lenda]{--rank:var(--m-lenda)}
+.insignia{overflow:visible}
+.insignia-inner{fill:none;stroke:var(--rank);stroke-width:1;opacity:.55}
+.insignia[data-class=supreme] .insignia-shield{fill:color-mix(in srgb,var(--rank) 10%,#07080a)}
+.insignia[data-class=legend] .insignia-shield{fill:color-mix(in srgb,var(--rank) 30%,#0b0c08);stroke-width:3}
+.insignia-rays path{fill:var(--rank);opacity:.75}
+.insignia-marks .m-chevron,.insignia-marks .m-ring,.insignia-marks .m-hilt{fill:none}
+.insignia-marks .m-sword path:first-child{stroke-width:2.6}.insignia-marks .m-hilt{stroke-width:2.4}
+.insignia-marks .m-leaf,.insignia-marks .m-chain{stroke:none}
+.insignia-marks .m-ring{stroke-width:1.6}
+.insignia-marks .m-cross,.insignia-marks .m-star,.insignia-marks .m-star8{stroke-width:.8;stroke-linejoin:miter}
+.insignia-marks .m-star8{opacity:.55}
+.insignia-marks .m-rosette{fill:color-mix(in srgb,var(--rank) 35%,#000);stroke-width:1.4}
+.insignia[data-metal=rubi] .m-rosette,.insignia[data-metal=rubi] .m-cross{stroke:var(--m-ouro)}
+.insignia-marks .m-text{stroke:none;font-family:var(--font-display);font-weight:800;font-size:9px;letter-spacing:.5px}
+.insignia-grade .pip{fill:none;stroke:var(--rank);stroke-width:.7;opacity:.5}
+.insignia-grade .pip.on{fill:var(--rank);opacity:1}
+.insignia-shine{fill:#fff;opacity:0;pointer-events:none}
+.rank-badge-button{grid-area:badge;padding:0;border:0;background:none;min-width:44px;min-height:44px;cursor:pointer;line-height:0}
+.rank-badge-button:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+/* Brilho periódico do metal nas ordens (desligado com movimento reduzido). */
+.rank-counter .insignia:is([data-class=honor],[data-class=supreme],[data-class=legend]) .insignia-shine{animation:rank-shine 7s ease-in-out 2s infinite}
+@keyframes rank-shine{0%,80%{opacity:0;transform:rotate(20deg) translateX(0)}84%{opacity:.35}100%{opacity:0;transform:rotate(20deg) translateX(96px)}}
+
+/* Cerimônia de promoção */
+.promotion{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:24px 16px;background:color-mix(in srgb,#000 78%,var(--rank));animation:promo-fade .35s ease-out both}
+.promotion-card{width:min(360px,100%);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 18px 18px;border:2px solid var(--rank);border-radius:var(--radius-md);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--rank) 12%,transparent) 0 2px,transparent 2px 9px),var(--surface);box-shadow:0 0 40px color-mix(in srgb,var(--rank) 35%,transparent)}
+.promotion-card .ops-tag{color:var(--rank)}
+.promotion-card h2{margin:0;font-family:var(--font-display);font-weight:800;font-size:2.1rem;line-height:1;text-transform:uppercase;letter-spacing:.04em;color:var(--text);animation:promo-rise .5s .9s ease-out both}
+.promotion-card p{margin:0;color:var(--muted);font-size:.9rem;animation:promo-rise .5s 1.1s ease-out both}
+.promotion-card button{width:100%;animation:promo-rise .4s 1.3s ease-out both}
+.promotion-stage{width:168px;height:168px;display:grid;place-items:center}
+.promotion-stage .insignia{width:150px;height:150px}
+@keyframes promo-fade{from{opacity:0}to{opacity:1}}
+@keyframes promo-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* Escudo: carimbo (praças), queda (oficiais), ascensão com brilho (generais e acima). */
+.insignia[data-animate] .insignia-shield,.insignia[data-animate] .insignia-inner{transform-origin:32px 32px;transform-box:view-box;animation:badge-stamp .55s cubic-bezier(.2,1.4,.4,1) both}
+.insignia[data-animate]:is([data-class=general],[data-class=marshal],[data-class=honor],[data-class=supreme],[data-class=legend]) .insignia-shield{animation:badge-rise .8s ease-out both}
+@keyframes badge-stamp{0%{opacity:0;transform:scale(1.7)}60%{opacity:1;transform:scale(.94)}100%{transform:scale(1)}}
+@keyframes badge-rise{0%{opacity:0;transform:scale(.6);filter:brightness(2.2)}100%{opacity:1;transform:scale(1);filter:none}}
+.insignia[data-animate] .insignia-marks>*,.insignia[data-animate] .insignia-marks .m-sword,.insignia[data-animate] .insignia-grade .pip{transform-box:fill-box;transform-origin:center}
+/* Divisas: desenhadas uma a uma. */
+.insignia[data-animate] .m-chevron{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s calc(.45s + var(--i,0)*.18s) ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.insignia[data-animate] .m-dot{animation:pop .4s .4s ease-out both}
+/* Barras: caem em sequência. */
+.insignia[data-animate] .m-bar{animation:bar-drop .4s calc(.45s + var(--i,0)*.14s) cubic-bezier(.3,1.5,.5,1) both}
+@keyframes bar-drop{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+/* Estrelas: surgem girando, uma a uma. */
+.insignia[data-animate] .m-star{animation:star-in .5s calc(.55s + var(--i,0)*.16s) cubic-bezier(.2,1.5,.4,1) both}
+@keyframes star-in{from{opacity:0;transform:scale(0) rotate(-140deg)}to{opacity:1;transform:none}}
+.insignia[data-animate] .m-star8{animation:star8-in .9s .35s ease-out both}
+@keyframes star8-in{from{opacity:0;transform:scale(.3) rotate(-45deg)}to{opacity:.55;transform:none}}
+/* Ordens: cruz, louros, colar e grau, com brilho do metal. */
+.insignia[data-animate] .m-cross{animation:pop .5s .5s cubic-bezier(.2,1.5,.4,1) both}
+.insignia[data-animate] .m-rosette,.insignia[data-animate] .m-ring{animation:pop .4s .75s ease-out both}
+.insignia[data-animate] .m-leaf{animation:pop .3s calc(.6s + var(--i,0)*.06s) ease-out both}
+.insignia[data-animate] .m-chain{animation:pop .25s calc(.7s + var(--i,0)*.05s) ease-out both}
+.insignia[data-animate] .m-sword{animation:sword-in .5s calc(.45s + var(--i,0)*.12s) ease-out both}
+@keyframes sword-in{from{opacity:0;transform:translateY(14px) scale(.7)}to{opacity:1;transform:none}}
+.insignia[data-animate] .m-text{animation:promo-rise .5s 1s ease-out both}
+.insignia[data-animate] .insignia-grade .pip.on{animation:pop .25s calc(.9s + var(--i,0)*.07s) ease-out both}
+@keyframes pop{from{opacity:0;transform:scale(0)}70%{transform:scale(1.25)}to{opacity:1;transform:scale(1)}}
+.insignia[data-animate] .insignia-shine{animation:shine-once 1.1s 1.2s ease-in-out both}
+@keyframes shine-once{0%{opacity:0;transform:rotate(20deg) translateX(0)}20%{opacity:.45}100%{opacity:0;transform:rotate(20deg) translateX(100px)}}
+/* Comando Supremo e Mil Dias: raios girando atrás do escudo. */
+.insignia[data-animate] .insignia-rays{transform-origin:32px 32px;transform-box:view-box;animation:rays-in 1s .3s ease-out both,rays-turn 24s 1.3s linear infinite}
+@keyframes rays-in{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes rays-turn{to{transform:rotate(360deg)}}
+.promotion[data-class=legend] .promotion-card{box-shadow:0 0 70px color-mix(in srgb,var(--rank) 55%,transparent)}
+.promotion[data-class=legend] .promotion-stage .insignia{animation:legend-pulse 2.4s 1.6s ease-in-out infinite}
+@keyframes legend-pulse{50%{filter:drop-shadow(0 0 10px var(--rank))}}
+
+/* Galeria de patentes */
+.rank-gallery{display:flex;flex-direction:column;gap:14px}
+.rank-gallery-intro{margin:0;color:var(--muted);font-size:.88rem}
+.rank-group{padding:12px;border:1px solid var(--line);border-top:3px solid var(--rank);border-radius:var(--radius-md);background:var(--surface)}
+.rank-group .section-heading{margin-bottom:10px}
+.rank-group .section-heading span{font-family:var(--font-mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.rank-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.rank-card{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:44px;padding:10px 6px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);text-align:center;cursor:pointer}
+.rank-card .insignia{width:58px;height:58px}
+.rank-card strong{font-family:var(--font-display);font-weight:700;font-size:.92rem;line-height:1.05;text-transform:uppercase;letter-spacing:.03em}
+.rank-card small{font-family:var(--font-mono);font-size:.58rem;letter-spacing:.07em;color:var(--muted)}
+.rank-card[data-state=current]{border:2px solid var(--rank);box-shadow:0 0 0 1px color-mix(in srgb,var(--rank) 35%,transparent)}
+.rank-card[data-state=current] small{color:var(--text)}
+.rank-card[data-state=locked] .insignia{opacity:.72;filter:saturate(.7)}
+.rank-card:focus-visible{outline:2px solid var(--focus);outline-offset:2px}

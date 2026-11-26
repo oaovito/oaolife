@@ -6,7 +6,7 @@ import { partition, merge } from '../storage/syncPartition';
 import { deriveKeys, generateCode, normalizeCode, pack, unpack } from '../storage/sync';
 import { decodeBackupPayload } from '../storage/backup';
 import { handleSync } from '../../api/sync';
-import { rankFor, RANKS } from '../domain/rank';
+import { ALL_RANKS, rankFor } from '../domain/rank';
 import { perfectDays, PERFECT_SINCE } from '../domain/weeklyReport';
 import { setMealConsumedAll } from '../../e2e/seed';
 import type { AuditRecord } from '../storage/db';
@@ -115,7 +115,16 @@ describe('contador de dias cumpridos e patentes',()=>{
   expect(rankFor(0)).toMatchObject({name:'Recruta',klass:'recruit',inLevel:0,nextAt:10});
   expect(rankFor(9).name).toBe('Recruta');expect(rankFor(10)).toMatchObject({name:'Soldado',klass:'enlisted',marks:1});
   expect(rankFor(105)).toMatchObject({name:'Capitão',klass:'officer',inLevel:5});
-  expect(rankFor((RANKS.length-1)*10).klass).toBe('marshal');expect(rankFor(5000).name).toMatch(/^Marechal ★\d+$/);
+  expect(rankFor(140)).toMatchObject({name:'General de Brigada',klass:'general',marks:2});expect(rankFor(160)).toMatchObject({name:'General de Exército',marks:4});
+  expect(rankFor(170)).toMatchObject({name:'Marechal I',klass:'marshal',marks:5});expect(rankFor(199).name).toBe('Marechal III');
+  expect(rankFor(200)).toMatchObject({name:'Cavaleiro I',klass:'honor',order:0,grade:1,metal:'bronze'});expect(rankFor(299).name).toBe('Cavaleiro X');
+  expect(rankFor(300).name).toBe('Oficial I');expect(rankFor(900)).toMatchObject({name:'Comando Supremo I',klass:'supreme'});expect(rankFor(999).name).toBe('Comando Supremo X');
+  expect(rankFor(1000)).toMatchObject({name:'Mil Dias',klass:'legend',nextName:'Mil Dias II'});expect(rankFor(5000).name).toBe('Mil Dias CDI');
+ });
+ it('101 patentes distintas do dia 0 ao dia 1000',()=>{
+  expect(ALL_RANKS).toHaveLength(101);expect(new Set(ALL_RANKS.map(r=>r.name)).size).toBe(101);
+  expect(ALL_RANKS.map(r=>r.startDay)).toEqual(Array.from({length:101},(_,i)=>i*10));
+  for(const r of ALL_RANKS.slice(0,-1))expect(r.nextName).toBe(ALL_RANKS[r.level+1].name);
  });
  it('conta só dias com todo o programa concluído, desde 26/11/2026',()=>{
   const data=emptyData();anchorTrainingCycle(data,PERFECT_SINCE);migrateV9(data,PERFECT_SINCE);
