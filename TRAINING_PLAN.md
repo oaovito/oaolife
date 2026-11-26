@@ -32,9 +32,37 @@ A data inicial do ciclo define a semana (intervalos de sete dias), sem alterar a
 
 26 séries antes da periodização; ordem preservada. Cardio e hipercifose não programados, salvo configuração explícita posterior de protocolo.
 
+## Tríceps · 26/11/2026
+
+A1 e A2 terminam com o mesmo bloco de tríceps, 9 séries por sessão:
+
+| Exercício | Séries | Repetições | Referência |
+|---|---:|---|---|
+| Tríceps polia | 3 | 8–12 | 31 kg |
+| Tríceps francês polia | 3 | 10–15 | 26 kg |
+| Tríceps seated dips | 3 | 8–12 | A definir |
+
+A mudança vale no plano (`ORIGINAL_PLAN`), no volume semanal, na recuperação (55%), nos relatórios e nas sessões abertas a partir de 26/11 (`reconcileOpenSessions`). Sessões encerradas e datas anteriores ficam como foram executadas.
+
+## Regra para mudanças no treino
+
+Toda mudança de exercício ou séries altera `ORIGINAL_PLAN` e `TRAINING_PLAN_VERSION` em `src/domain/plan.ts`. Na abertura do app e na importação de backup, `reconcileOpenSessions` ajusta as sessões abertas de hoje em diante: séries com qualquer dado nunca são removidas, só séries vazias. O ajuste fica registrado uma vez em `adjustments`. Testes e esta página são atualizados no mesmo PR.
+
+## Carga sugerida · 26/11/2026
+
+A carga sugerida de cada exercício vem das cargas registradas nas **últimas 5 semanas** (`loadSuggestion` em `src/domain/training.ts`):
+
+- Progressão registrada ao encerrar o treino, quando é a mais recente, prevalece.
+- Se a maior carga da última sessão subiu em relação à sessão anterior, e a última sessão foi completa, a sugestão é **aumentar**: incremento configurado do exercício ou, sem ele, o mesmo passo do último aumento.
+- Carga estável ou em queda: manter a última carga.
+- Semana de recuperação (4 e 8): manter a última carga, e essas semanas não contam para a tendência.
+- Sem registro nas 5 semanas: última carga registrada; sem nenhum registro: referência do plano (seated dips: a definir até o primeiro registro).
+
+A tela do exercício mostra a carga e o motivo da sugestão.
+
 ## Volume direto em semanas completas
 
-Peito 20; costas 20; deltoide lateral 16; anterior 6; posterior 10; bíceps 16; tríceps 16; trapézio 6; quadríceps 12; posteriores 11; glúteos 13; panturrilhas 16. Não soma estímulos indiretos integralmente. Glúteos contabilizam elevação pélvica e abdutora; posteriores, flexora e romeno; leg press fica em quadríceps nesta classificação.
+Peito 20; costas 20; deltoide lateral 16; anterior 6; posterior 10; bíceps 16; tríceps 18; trapézio 6; quadríceps 12; posteriores 11; glúteos 13; panturrilhas 16. Não soma estímulos indiretos integralmente. Glúteos contabilizam elevação pélvica e abdutora; posteriores, flexora e romeno; leg press fica em quadríceps nesta classificação.
 
 ## Execução
 

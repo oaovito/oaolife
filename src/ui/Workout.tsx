@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Check, Copy, Dumbbell, History, Play, RotateCcw, SkipForward, Square } from 'lucide-react';
 import type { CompletedSet, PlannedExercise, WorkoutSession } from '../domain/model';
-import { cycleForDate, schedule, makeWorkout, now } from '../domain/training';
-import { ORIGINAL_PLAN, LOAD_LABEL, WEEKS } from '../domain/plan';
+import { cycleForDate, schedule, makeWorkout, now, loadSuggestion } from '../domain/training';
+import { ORIGINAL_PLAN, LOAD_LABEL, WEEKS, EXERCISES } from '../domain/plan';
 import { progressionFor } from '../domain/progression';
 import { mutate, openWorkout, finishWorkout, reopenWorkout } from '../storage/db';
 import { workoutComplete } from '../domain/daily';
@@ -48,10 +48,12 @@ export function Workout({data,date,run,go}:PageProps) {
   const decision=progressionFor(data,session!,ex),finished=ex.sets.filter(s=>s.done||s.skipped),nextSet=ex.sets.find(s=>!s.done&&!s.skipped)?.id;
   const history=data.sessions.filter(s=>s.date<date).sort((a,b)=>b.date.localeCompare(a.date)).flatMap(s=>s.exercises.filter(e=>e.id===ex.id).map(e=>({date:s.date,exercise:e})));
   const last=history.flatMap(h=>h.exercise.sets).find(s=>s.done&&s.load!==null&&s.mode===ex.mode);
+  const base=EXERCISES.find(e=>e.id===ex.id),suggestion=base&&session!.status==='open'?loadSuggestion(data,base,date):null,suggested=suggestion?suggestion.load:ex.suggested;
   return <Panel key={ex.id} className={`exercise ${resolved(ex)?'exercise-complete':ex.id===next?'exercise-current':'exercise-pending'}`}><details className="exercise-disclosure" open={ex.id===next}>
    <summary><span className="exercise-number">{String(i+1).padStart(2,'0')}</span><span>{ex.name}<small>{ex.sets.filter(s=>s.done).length}/{ex.sets.length} séries feitas{ex.sets.some(s=>s.skipped)?' · execução parcial':''}</small></span></summary>
    <div className="exercise-meta prominent"><span><small>SÉRIES × REPS</small><strong>{ex.sets.length} × {ex.reps.join('–')}</strong></span><span><small>RIR</small><strong>{ex.rir.join('–')}</strong></span><span><small>DESCANSO</small><strong>{ex.rest}</strong></span></div>
-   <div className="load-summary"><span>Referência <strong>{ex.reference??'A definir'}{ex.reference!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Sugerida <strong>{ex.suggested??'A definir'}{ex.suggested!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Última executada <strong>{last?.load??'Sem registro'}{last?` ${LOAD_LABEL[last.mode]}`:''}</strong></span></div>
+   <div className="load-summary"><span>Referência <strong>{ex.reference??'A definir'}{ex.reference!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Sugerida <strong>{suggested??'A definir'}{suggested!==null?` ${LOAD_LABEL[ex.mode]}`:''}</strong></span><span>Última executada <strong>{last?.load??'Sem registro'}{last?` ${LOAD_LABEL[last.mode]}`:''}</strong></span></div>
+   {suggestion&&<p className="load-basis">{suggestion.basis}</p>}
    {ex.fst&&<p className="notice">FST-7 adaptado: até quatro séries, descanso de 30–45 s, sem séries extras.</p>}{ex.notes&&<p className="notice">{ex.notes}</p>}
    {session!.status==='open'&&!resolved(ex)&&<div className="button-row"><button className="primary" onClick={()=>exerciseAction(ex,'complete')}><Check size={20} aria-hidden="true"/>Concluir exercício</button><button className="secondary" onClick={()=>exerciseAction(ex,'skip')}><SkipForward size={18} aria-hidden="true"/>Não realizar restantes</button></div>}
    {ex.sets.map((s,j)=>!s.done&&!s.skipped?<SetRow key={s.id} value={s} index={j} previous={ex.sets[j-1]} exercise={ex} session={session!} run={run} expanded={s.id===nextSet}/>:null)}

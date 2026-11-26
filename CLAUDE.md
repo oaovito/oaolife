@@ -59,6 +59,12 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   26/11/2026). Periodização define o RIR. Alternativas (`full`, `periodized`)
   só por escolha explícita em Plano.
   A causa do antigo "2 séries" era o fator de volume da semana 1 (75%).
+- **Tríceps (26/11/2026)**: A1 e A2 com polia 3 + francês polia 3 + seated dips 3 (18/semana).
+  **Toda mudança no treino vale "no coração"**: altera `ORIGINAL_PLAN` e `TRAINING_PLAN_VERSION`
+  (`plan.ts`); `reconcileOpenSessions` aplica às sessões abertas de hoje em diante sem remover
+  séries com dados; volume, recuperação, relatórios, docs e testes seguem no mesmo PR.
+- **Carga sugerida (26/11/2026)**: baseada nas cargas das últimas 5 semanas; sugere aumentar
+  quando a carga vem subindo nas últimas sessões (`loadSuggestion`, TRAINING_PLAN.md).
 - **Cardio (rígido)**: segunda, terça, quinta, sexta e domingo, **60 min** cada
   (5 × 60 = **300 min/semana**); quarta e sábado sem cardio. Cada sessão só
   conclui com a meta do próprio dia; minutos extras não compensam outro dia.
