@@ -123,3 +123,15 @@ test('ação principal de cada bloco aparece sem rolagem no iPhone 16',async({pa
   expect(box!.y+box!.height,`${path}: ${name}`).toBeLessThanOrEqual(nav!.y);expect(await page.evaluate(()=>document.querySelector('.main-shell')?.scrollTop??scrollY)).toBe(0);
  }
 });
+
+test('ManCare aos domingos e Cuidado Casa todo dia: marcados em Hoje, persistem e cabem acima do menu',async({page},info)=>{
+ await page.clock.install({time:new Date('2026-11-30T12:00:00-03:00')});await page.goto('/');
+ await expect(page.getByRole('region',{name:/^ManCare/})).toHaveCount(0);
+ const casa=page.getByRole('region',{name:/^Cuidado Casa/});await expect(casa).toBeVisible();
+ if(info.project.name!=='desktop'){const box=await casa.boundingBox(),nav=await page.getByRole('navigation').boundingBox();expect(box!.y+box!.height).toBeLessThanOrEqual(nav!.y);}
+ await casa.getByRole('button',{name:'Louça',exact:true}).click();await expect(casa.getByRole('button',{name:'Louça',exact:true})).toHaveAttribute('aria-pressed','true');
+ await casa.getByRole('button',{name:'Lixo',exact:true}).click();await expect(page.getByRole('region',{name:/^Cuidado Casa/})).toHaveCount(0);
+ await page.reload();await page.getByText(/^Concluídos \(1\)/).click();await expect(page.getByRole('region',{name:/^Cuidado Casa: Concluído/})).toBeVisible();
+ await page.goto('/?date=2026-11-29');const man=page.getByRole('region',{name:/^ManCare/});await expect(man.getByRole('button',{name:'Barba',exact:true})).toHaveAttribute('aria-pressed','false');
+ await man.getByRole('button',{name:'Barba',exact:true}).click();await expect(page.getByRole('region',{name:/^ManCare/})).toHaveCount(0);
+});

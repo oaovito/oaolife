@@ -1,6 +1,7 @@
 import { waterConsumed, waterGoal } from './hydration';
 import { createNutrition, mealsForDay, setMealConsumed, syncMealRecord } from './nutrition';
-import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
+import type { AppData, BlockKey, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
+import { routineDone, routineItems, type RoutineBlock } from './routines';
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
 import { MEALS } from './plan';
 import { cycleForDate, now, schedule } from './training';
@@ -14,7 +15,7 @@ export function makeDay(data:AppData,date:string):DailyLog {
  const configured=currentMobilityProtocol(data.mobility);
  // Alongamento para hipercifose: todos os dias, inclusive domingo (ordem do proprietário, 26/11/2026).
  const protocol=structuredClone(configured);
- return {hydration:{version:'liquids-1',target:data.settings.hydrationTarget,bottle:data.settings.bottleVolume,entries:[]},archivedNutrition:[],nutrition:createNutrition(data),previousNutrition:null,declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planVersion:'weekly-360',planned:cardioTarget(date),elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:5,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{},sequences:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''}};
+ return {hydration:{version:'liquids-1',target:data.settings.hydrationTarget,bottle:data.settings.bottleVolume,entries:[]},archivedNutrition:[],nutrition:createNutrition(data),previousNutrition:null,declarations:{},id:date,cycleId:cycle?.id??null,timezone:data.settings.timezone,createdAt:now(),recorded:[],meals:MEALS.map(m=>m.foods.map(()=>false)),mealTimes:MEALS.map(()=>null),water:Array(6).fill(0),waterTargets:Array(6).fill(data.settings.waterTarget),cardio:{planVersion:'weekly-360',planned:cardioTarget(date),elapsed:0,runningSince:null,status:'idle',mode:'Esteira',minimumSpeed:5,speed:null,intensity:'Leve',rpe:null,heartRate:null,notes:''},mobility:{protocol,sets:{},sequences:{}},recovery:{sleep:null,fatigue:null,soreness:null,pain:null,jointPain:false,symptoms:false,notes:''},routines:{}};
 }
 export function nextMeal(day:DailyLog) { const i=day.meals.findIndex(m=>!m.every(Boolean));return i<0?null:i; }
 export function toggleFood(day:DailyLog,meal:number,food:number,at=now()) { if(day.nutrition?.version==='five-meals-2'&&meal===3)throw Error('Use os registros de frutas.'); if(day.nutrition?.consumed[meal]){day.nutrition.plan[meal]=structuredClone(day.nutrition.consumed[meal]!.meal);if(day.nutrition.version==='five-meals-1'&&meal===4)day.nutrition.protein=day.nutrition.plan[4].foods[1].key as typeof day.nutrition.protein;if(day.nutrition.version==='five-meals-2'&&(meal===1||meal===4)){const p=day.nutrition.plan[meal].foods[0].key as typeof day.nutrition.protein;if(meal===1)day.nutrition.lunchProtein=p;else day.nutrition.protein=p;}}day.meals[meal][food]=!day.meals[meal][food];day.mealTimes[meal]=day.meals[meal].every(Boolean)?at:null;syncMealRecord(day,meal,at); }
@@ -25,7 +26,7 @@ export function startCardio(c:CardioSession,clock=Date.now()) { if(c.runningSinc
 export function finishCardio(c:CardioSession,clock=Date.now()) { pauseCardio(c,clock);if(c.elapsed<=0)throw Error('Registre a duração realizada antes de finalizar.');if(c.planned===null)throw Error('Defina a duração planejada.');c.status=c.elapsed>=c.planned*60&&speedRuleMet(c)?'complete':'partial'; }
 export function timedCompletionRequired(day:DailyLog,key:string) { return key==='cardio'&&day.cardio.planVersion==='weekly-360'||key==='mobility'&&!!day.mobility.protocol?.exercises.some(ex=>/hipercifose/i.test(ex.name)&&ex.sets===4&&ex.duration===60&&ex.rest===60); }
 function summary(done:number,total:number,subtitle:string,partial=false):BlockSummary { return {done,total,subtitle,status:total===0?'Não programado':done>=total?'Concluído':partial?'Parcial':done?'Em andamento':'Não iniciado'}; }
-export function summaries(data:AppData,date:string,clock=Date.now()):Record<'workout'|'meals'|'water'|'cardio'|'mobility'|'hormonal',BlockSummary> {
+export function summaries(data:AppData,date:string,clock=Date.now()):Record<BlockKey,BlockSummary> {
  const cycle=cycleForDate(data,date),plan=schedule(cycle,date),day=data.days.find(d=>d.id===date)??makeDay(data,date);const session=data.sessions.find(s=>s.date===date&&s.cycleId===cycle?.id);
  const totalSets=session?.exercises.reduce((a,e)=>a+e.sets.length,0)||0,doneSets=session?.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0)||0;
  const workout=plan.template?summary(doneSets,totalSets||1,`${plan.template} · ${totalSets?`${doneSets}/${totalSets} séries`:plan.week?'Pronto para começar':'Configure a semana da periodização'}`,session?.status==='partial'):summary(0,0,'Descanso e recuperação');
@@ -47,7 +48,9 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const hormonalDay=HORMONAL_WEEKDAYS.includes(new Date(date+'T12:00:00Z').getUTCDay())||logs.length>0||!!day.declarations.hormonal;
  const hormonal=hormonalDay?summary(0,1,logs.length?`${logs.length} administração(ões) registrada(s)`:`Plano informado · ${(data.hormonalProtocol??INFORMED_HORMONAL_PLAN).weeks} semanas`):summary(0,0,'Não programado');
  if(hormonalDay&&logs.length)hormonal.status='Em andamento';
- const blocks={workout,meals,water,cardio,mobility,hormonal};
+ // ManCare e Cuidado Casa: itens do dia, marcados um a um.
+ const routine=(block:RoutineBlock)=>{const items=routineItems(block,date);if(!items.length)return summary(0,0,'Não programado');const done=items.filter(i=>routineDone(day,i.id));return summary(done.length,items.length,items.map(i=>`${i.name}${routineDone(day,i.id)?' ✓':''}`).join(' · '));};
+ const blocks={workout,meals,water,cardio,mobility,hormonal,mancare:routine('mancare'),casa:routine('casa')};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
   if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};
  }

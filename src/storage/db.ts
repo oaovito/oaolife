@@ -3,7 +3,7 @@ import { activateMobility } from '../domain/mobility';
 import { activateHormonalPlan } from '../domain/hormonal';
 import { activateMealPlan, activateNutrition, FOUR_MEAL_PLAN, FOUR_MEAL_PLAN_2111, isPlanLayout, mealsForDay } from '../domain/nutrition';
 import Dexie, { type Table } from 'dexie';
-import { appDataSchema, type AppData, type SyncOperation } from '../domain/model';
+import { appDataSchema, blockKeys, type AppData, type SyncOperation } from '../domain/model';
 import { emptyData, makeDay, workoutComplete, summaries, pauseCardio, timedCompletionRequired } from '../domain/daily';
 import { trainingAnchorPending, addDays, anchorTrainingCycle, reconcileOpenSessions, cycleEnd, makeWorkout, now, today, uid, cycleForDate, schedule, daysBetween } from '../domain/training';
 import { progressionFor } from '../domain/progression';
@@ -95,7 +95,7 @@ export function confirmDay(date:string) {
   if(day.cardio.runningSince!==null)pauseCardio(day.cardio);
   stopMobilityTimers(day.mobility);
   const blocks=summaries(data,date);
-  for(const key of ['workout','meals','water','cardio','mobility','hormonal'] as const)if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
+  for(const key of blockKeys)if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado'&&blocks[key].status!=='Concluído')day.declarations[key]={at:now(),note:'Dia confirmado pelo usuário sem detalhar a execução. Valores reais existentes preservados.'};
  });
 }
 

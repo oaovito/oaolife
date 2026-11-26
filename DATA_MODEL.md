@@ -61,3 +61,7 @@ mudar quantidades; sessões abertas de hoje em diante recebem as séries do plan
 séries com dados. IndexedDB v9 adiciona a tabela `snapshots`; `initialize` grava `pre-v9` antes de
 migrar e `restoreSnapshot` restaura com auditoria (a migração não é reaplicada após restaurar).
 Backup `oaolife-backup-9` importa formatos 2–9.
+
+## Rotinas do dia (26/11/2026)
+
+`days[].routines` guarda os itens de rotina marcados no dia: `{ [itemId]: { done, at } }` (`louca`, `lixo`, `barba`). Campo aditivo com padrão `{}`: dados e backups anteriores continuam válidos sem migração destrutiva; nada é apagado. A programação dos itens (dias da semana e data de início) fica em `src/domain/routines.ts`. `mobility.sequences` e os segundos por série são mantidos como histórico; a postura não usa mais cronômetro.
