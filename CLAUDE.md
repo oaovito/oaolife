@@ -63,6 +63,7 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   **Toda mudança no treino vale "no coração"**: altera `ORIGINAL_PLAN` e `TRAINING_PLAN_VERSION`
   (`plan.ts`); `reconcileOpenSessions` aplica às sessões abertas de hoje em diante sem remover
   séries com dados; volume, recuperação, relatórios, docs e testes seguem no mesmo PR.
+- **Abdominal máquina (26/11/2026)**: 3 séries no fim de B1, C1, B2 e C2 = **12 séries/semana** (grupo `Abdômen`).
 - **Carga sugerida (26/11/2026)**: baseada nas cargas das últimas 5 semanas; sugere aumentar
   quando a carga vem subindo nas últimas sessões (`loadSuggestion`, TRAINING_PLAN.md).
 - **Cardio (rígido)**: segunda, terça, quinta, sexta e domingo, **60 min** cada

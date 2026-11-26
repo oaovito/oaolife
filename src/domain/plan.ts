@@ -25,20 +25,22 @@ const leg=e('leg','Leg press vertical','Quadríceps',4,[10,15],100,{compound:tru
 const panturrilha=e('panturrilha','Panturrilha máquina, joelho estendido','Panturrilhas',4,[8,12],90,{priority:true,notes:'Amplitude completa; evitar impulso.'});
 const sentado=e('panturrilha-sentado','Panturrilha sentado','Panturrilhas',4,[12,20],null,{priority:true,notes:'Amplitude completa; evitar impulso.'});
 const extensora=e('extensora','Cadeira extensora','Quadríceps',4,[10,15],85,{smallStep:true});
+// Abdominal máquina (26/11/2026, proprietário): 12 séries/semana = 3 séries em B1, C1, B2 e C2.
+const abdominal=e('abdominal-maquina','Abdominal máquina','Abdômen',3,[10,15],null);
 const original:WorkoutTemplate[]=[
  {id:'A1',title:'Peito, ombros e tríceps',exercises:[vertical,articulado,{...crucifixo,fst:true},desenvolvimento,lateralBaixa,lateralMedia,triceps,frances,dips]},
- {id:'B1',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[puxada,remada,smith,posterior,rosca,alternada,encolhimento]},
- {id:'C1',title:'Glúteos e posteriores',exercises:[pelvica,abdutora,flexora,romeno,leg,panturrilha,sentado]},
+ {id:'B1',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[puxada,remada,smith,posterior,rosca,alternada,encolhimento,abdominal]},
+ {id:'C1',title:'Glúteos e posteriores',exercises:[pelvica,abdutora,flexora,romeno,leg,panturrilha,sentado,abdominal]},
  {id:'A2',title:'Peito, ombros e tríceps',exercises:[articulado,{...vertical,reps:[8,12]},crucifixo,desenvolvimento,lateralBaixa,{...lateralMedia,fst:true},triceps,frances,dips]},
- {id:'B2',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[{...puxada,sets:3},{...remada,sets:4},smith,posterior,rosca,alternada,encolhimento]},
- {id:'C2',title:'Quadríceps, glúteos e posteriores',exercises:[panturrilha,{...leg,reps:[8,12]},extensora,{...flexora,reps:[10,15]},{...pelvica,sets:3,reps:[10,15]},abdutora,sentado]}
+ {id:'B2',title:'Costas, posterior de ombro, bíceps e trapézio',exercises:[{...puxada,sets:3},{...remada,sets:4},smith,posterior,rosca,alternada,encolhimento,abdominal]},
+ {id:'C2',title:'Quadríceps, glúteos e posteriores',exercises:[panturrilha,{...leg,reps:[8,12]},extensora,{...flexora,reps:[10,15]},{...pelvica,sets:3,reps:[10,15]},abdutora,sentado,abdominal]}
 ];
 function freeze<T>(value:T):T { if (value && typeof value==='object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
 // DADO PESSOAL: plano de treino individual. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
 export const ORIGINAL_PLAN = freeze(original);
 // Versão do plano de treino. Ao mudar o plano, incremente: sessões abertas de hoje em diante
 // são reconciliadas (reconcileOpenSessions), sem perder séries registradas.
-export const TRAINING_PLAN_VERSION='2026-11-26-triceps';
+export const TRAINING_PLAN_VERSION='2026-11-26-abdominal';
 export const EXERCISES = [...new Map(ORIGINAL_PLAN.flatMap(t=>t.exercises).map(e=>[e.id,e])).values()];
 export const WEEKS:TrainingWeek[] = [
  [0.75,3,4,'Calibração'],[0.85,2,3,'Adaptação'],[1,1,2,'Volume completo'],[0.55,4,5,'Recuperação'],
