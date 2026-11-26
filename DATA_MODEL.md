@@ -64,4 +64,4 @@ Backup `oaolife-backup-9` importa formatos 2–9.
 
 ## Rotinas do dia (26/11/2026)
 
-`days[].routines` guarda os itens de rotina marcados no dia: `{ [itemId]: { done, at } }` (`louca`, `lixo`, `barba`). Campo aditivo com padrão `{}`: dados e backups anteriores continuam válidos sem migração destrutiva; nada é apagado. A programação dos itens (dias da semana e data de início) fica em `src/domain/routines.ts`. `mobility.sequences` e os segundos por série são mantidos como histórico; a postura não usa mais cronômetro.
+`days[].routines` guarda os itens de rotina marcados no dia: `{ [itemId]: { done, at } }` (`louca`, `lixo`, `barba`). Itens com etapas guardam cada etapa sob sua própria chave: a máquina de roupa usa `roupa.<1|2>.<lavar|estender|recolher|dobrar|guardar>`, sem mudança de schema. Campo aditivo com padrão `{}`: dados e backups anteriores continuam válidos sem migração destrutiva; nada é apagado. A programação dos itens (dias da semana e data de início) fica em `src/domain/routines.ts`. `mobility.sequences` e os segundos por série são mantidos como histórico; a postura não usa mais cronômetro.
