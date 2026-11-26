@@ -75,6 +75,11 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
 - **Despertar 06:00 (desde 27/11/2026)**: item diário do bloco `despertar` (`routines.ts`); em Hoje é a
   próxima ação enquanto pendente (um toque confirma), sem card extra. Conta no dia cumprido.
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
+- **Rotina do dia (26/11/2026)**: alimentação e hidratação com horários fixos (`src/domain/dailySchedule.ts`,
+  tela `/rotina`): 8 × 500 ml de água (06:00 … 19:30) e 4 refeições (07:00 líquida, 10:30 sólida, 14:00
+  líquida, 18:30 sólida). Status vem dos registros do dia (água em `hydration.entries` com id `rotina:<item>`,
+  refeição em `meals`); a meia-noite recomeça sem apagar histórico. Editável em `settings.dailySchedule`
+  (horário, volume, tipo; sempre 4 refeições). **Sem notificações** (decisão do proprietário).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
   domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série
   (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.

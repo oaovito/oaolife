@@ -1,6 +1,7 @@
 import { waterConsumed, waterGoal } from './hydration';
 import { createNutrition, mealsForDay, setMealConsumed, syncMealRecord } from './nutrition';
 import type { AppData, BlockKey, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
+import { DEFAULT_SCHEDULE } from './model';
 import { routineDone, routineItems, routineProgress, type RoutineBlock } from './routines';
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
 import { MEALS } from './plan';
@@ -9,7 +10,7 @@ import { cardioTarget, speedRuleMet } from './cardio';
 import { currentMobilityProtocol } from './mobility';
 export const HORMONAL_WEEKDAYS=[1,4]; // segunda e quinta
 // DADO PESSOAL: perfil (idade, altura, peso) e metas individuais. Migrar para repositório privado (docs/PERSONAL_DATA_INVENTORY.md).
-export function emptyData():AppData { return {schemaVersion:9,nutritionOverrides:{},hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',haptics:true,theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,hydrationTarget:4000,bottleVolume:500,calorieGoal:2000,proteinGoal:190,setPolicy:'full-deload',mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
+export function emptyData():AppData { return {schemaVersion:9,nutritionOverrides:{},hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',haptics:true,theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,hydrationTarget:4000,bottleVolume:500,calorieGoal:2000,proteinGoal:190,setPolicy:'full-deload',mealTimes:['','','','',''],lastBackup:null,installationNotice:false,dailySchedule:structuredClone(DEFAULT_SCHEDULE)},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
  const cycle=cycleForDate(data,date),p=schedule(cycle,date);
  const configured=currentMobilityProtocol(data.mobility);

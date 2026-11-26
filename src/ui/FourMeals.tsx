@@ -17,7 +17,7 @@ export function FourMeals({data,date,run,go}:PageProps){
  <div className="meal-energy"><strong>{nutrientText(value.kcal,'kcal')}</strong><span>{value.kcal===null?`Subtotal conhecido: ${nutrientText(knownNutrients([meal]).kcal,'kcal')}`:'Referências nutricionais'}</span></div><Macros value={value}/>
  <details className="meal-details"><summary>Porções e referências</summary>{!record&&meal.foods.map((f,j)=><CheckButton key={j} done={day.meals[i][j]} onClick={()=>run(()=>editDay(date,'Registrar alimento',d=>toggleFood(d,i,j)))}>{f.label}</CheckButton>)}<FoodDetails meal={meal}/></details>
  </Panel>;};
- return <><PageTitle eyebrow="ALIMENTAÇÃO" title={completed===4?'Alimentação concluída':'Quatro refeições. Sem exceção.'} back={()=>go('home')}><p>Duas refeições líquidas e duas sólidas, quantidades fixas. Valores TACO/TBCA.</p></PageTitle>
+ return <><PageTitle eyebrow="ALIMENTAÇÃO" title={completed===4?'Alimentação concluída':'Quatro refeições. Sem exceção.'} back={()=>go('home')}><button type="button" className="secondary routine-link" onClick={()=>go('routine')}>Rotina do dia · horários</button><p>Duas refeições líquidas e duas sólidas, quantidades fixas. Valores TACO/TBCA.</p></PageTitle>
  <div className="meal-grid">{n.plan.map((_,i)=>!n.consumed[i]?render(i):null)}</div>
  <Panel className="nutrition-summary"><div className="metric-grid">
  <Metric label="Calorias consumidas" value={nutrientText(t.consumed.kcal,'kcal')} emphasis/>
