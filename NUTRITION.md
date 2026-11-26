@@ -49,3 +49,22 @@ restauração. O plano antigo e seus horários/checklists/declarações ficam em
 Consumo completo anterior conhecido continua somado no dia. Datas anteriores não
 são reescritas. Reabrir não duplica arquivos nem registros, e toda alteração da
 migração entra na auditoria/fila local. Os planos five-meals-1/2 continuam suportados.
+
+## Referências completas · 1.4.0 (26/11/2026)
+
+| Alimento | Referência por 100 g/ml | Fonte |
+|---|---|---|
+| Iogurte grego natural | 97 kcal · 9 P · 3,98 C · 5 G | TBCA BRC0133G |
+| Leite desnatado UHT (100 ml) | 30,9 kcal · 2,99 P · 4,43 C · 0,21 G | TACO (por 100 g) × densidade 1,03 g/ml |
+| Leite em pó desnatado | 362 · 34,7 · 53 · 0,9 | TACO |
+| Aveia em flocos | 394 · 13,9 · 66,6 · 8,5 | TACO |
+| Peito de frango grelhado | 150 · 32,1 · 0 · 2,45 | TBCA BRC0114F |
+| Arroz branco cozido | 128 · 2,5 · 28,1 · 0,2 | TACO |
+| Legumes cozidos (mix) | 23,3 · 1,33 · 4,7 · 0,3 | Média TACO cenoura, brócolis e abobrinha cozidos |
+| Patinho grelhado | 211 · 36 · 0 · 7,5 | TBCA BRC0045F |
+| Azeite de oliva | 884 · 0 · 0 · 100 | TACO (P e C "NA": lipídio puro) |
+
+Totais do plano: R1 628 kcal / 47,8 g P; R2 743 / 72,4; R3 550 / 45,0; R4 715 / 71,8;
+**dia 2.637 kcal / 237,1 g P / 278,7 g C / 64,0 g G**. Meta solicitada ~2.000 kcal: a
+divergência (+637 kcal) é exibida em Alimentação; as quantidades não são alteradas.
+Rótulos confirmados cadastrados pelo usuário continuam com prioridade.

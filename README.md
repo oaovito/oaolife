@@ -2,7 +2,9 @@
 
 Aplicação pessoal em português para acompanhar treino, alimentação, hidratação, cardio e protocolo habitual de hipercifose. React, TypeScript, Vite e IndexedDB; dados locais, sem conta ou backend remoto.
 
-**Acesse: https://oaolife.vercel.app** · versão 1.3.1
+**Acesse: https://oaolife.vercel.app** · versão 1.4.0
+
+> Diretrizes permanentes: [CLAUDE.md](CLAUDE.md). Produto, design, auditoria e estado: [docs/](docs/PRODUCT_SPEC.md).
 
 Repositório oficial e único: https://github.com/oaovito/oaolife
 
@@ -10,9 +12,9 @@ Repositório oficial e único: https://github.com/oaovito/oaolife
 
 O aplicativo abre no dashboard. A data vem do dispositivo. Segunda A1, terça B1, quarta C1, quinta A2, sexta B2, sábado C2, domingo descanso. A referência **17/10/2026 = C2** não define a semana de periodização: configure-a em Plano. Antes disso, o treino original pode ser consultado, sem inventar uma semana.
 
-Conclua séries ou exercícios com um toque; carga, repetições, RIR, técnica e amplitude são opcionais para o registro e obrigatórios para a progressão automática. Séries não realizadas ficam separadas dos totais executados. Conclua o treino ou encerre parcialmente com motivo. Alimentação, água, cardio e hipercifose são independentes. O dia só termina quando os blocos programados terminam. O alongamento de hipercifose em pé com cotovelos na parede já está disponível: 4 séries de 60 s, 3 descansos de 60 s, sequência automática de 7 min. Os incrementos dos equipamentos continuam sendo informados separadamente. Novos dias de cardio usam 360 minutos semanais de esteira (quarta e sábado 30 min; demais dias 60 min), a pelo menos 5,0 km/h; a velocidade realmente realizada é informada separadamente.
+Conclua séries ou exercícios com um toque; carga, repetições, RIR, técnica e amplitude são opcionais para o registro e obrigatórios para a progressão automática. Séries não realizadas ficam separadas dos totais executados. Conclua o treino ou encerre parcialmente com motivo. Alimentação, água, cardio e hipercifose são independentes. O dia só termina quando os blocos programados terminam. O alongamento de hipercifose em pé com cotovelos na parede já está disponível: 4 séries de 60 s, 3 descansos de 60 s, sequência automática de 7 min. Os incrementos dos equipamentos continuam sendo informados separadamente. O cardio tem meta semanal flexível de 360 minutos: todos os minutos contam, em qualquer dia; a distribuição diária é apenas sugestão. Na esteira, a velocidade mínima é 5,0 km/h. Cada exercício exibe exatamente as séries do plano em todas as semanas (ajustável em Plano).
 
-O plano alimentar ativo tem quatro refeições (duas líquidas e duas sólidas), com porções e referências em [NUTRITION.md](NUTRITION.md). A meta inicial de líquidos é 4.000 ml, ajustável, com garrafa visual de 500 ou 600 ml, registros manuais e histórico. Metas de energia e proteína também são configuráveis; referências ausentes permanecem explícitas, sem inventar totais. Planos antigos e consumos realizados são preservados.
+O plano alimentar ativo tem quatro refeições (duas líquidas e duas sólidas), com porções e referências em [NUTRITION.md](NUTRITION.md). A meta inicial de líquidos é 4.000 ml, ajustável, com garrafa visual de 500 ou 600 ml, registros manuais e histórico. O plano soma cerca de 2.637 kcal e 237 g de proteína (TACO/TBCA); a meta solicitada de ~2.000 kcal é exibida com a divergência, sem alterar quantidades. Planos antigos e consumos realizados são preservados.
 
 ## Instalação no iPhone
 
@@ -45,10 +47,6 @@ Em Hoje → Resumo e fechamento do dia, “Concluir dia sem detalhar” confirma
 Em Hoje → Registro hormonal, o plano informado já está disponível, sem importação. O bloco pode ser concluído, recolhido e reaberto para correção. As administrações reais são registradas separadamente; nada é marcado como tomado automaticamente. Usa o mesmo armazenamento e backup dos demais blocos. Consulte [HORMONAL.md](HORMONAL.md).
 
 
-## Plano alimentar e interface 1.3.0
+## Histórico de versões
 
-Cinco refeições: iogurte grego e dois pães; proteína e arroz; leite com Nescau ou Toddy; frutas livres; proteína e arroz. Seletores independentes, frutas contabilizadas imediatamente e meta opcional. Concluídas saem da lista e ficam no histórico recolhido, com desfazer. Migração preserva planos anteriores e valores consumidos. Fontes, quantidades e cálculos em [NUTRITION.md](NUTRITION.md).
-
-Tokens compartilhados em `src/design-system.css`, temas claro/escuro contrastantes, métricas grandes, botões primários/secundários/pausa/alerta, foco visível e controles de toque. Painel inicial, alimentação, treino, água, cardio e mobilidade foram revisados. A animação de conclusão respeita movimento reduzido; vibração pode ser desligada nos Ajustes. Safari no iPhone não disponibiliza essa API; não se promete vibração nesse dispositivo.
-
-O ciclo de treino começa em **02/11/2026 como semana 1**. Os percentuais semanais originais continuam ativos; duas séries podem ocorrer nas semanas reduzidas. Veja [TRAINING_PLAN.md](TRAINING_PLAN.md).
+Notas das versões 1.0–1.3 permanecem em [context.md](context.md) e nos documentos temáticos. A versão 1.4.0 (26/11/2026) está descrita em [docs/TECHNICAL_AUDIT.md](docs/TECHNICAL_AUDIT.md).

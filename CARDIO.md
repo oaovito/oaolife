@@ -19,3 +19,10 @@ O cronômetro persiste tempo acumulado e timestamp de início. Pausa, retomada e
 A tela mostra progresso diário e semanal. O total real pode ultrapassar 360; o indicador semanal limita a contribuição de cada dia à sua própria meta, impedindo compensação automática de outro dia. Sem aumento automático de duração ou intensidade, inclusive por frequência cardíaca ou calorias.
 
 Snapshots antigos preservam metas, modalidade, velocidade e duração reais. Um botão permite aplicar explicitamente o novo plano ao dia consultado. Novos dias usam a distribuição definitiva. IndexedDB, auditoria, outbox local e backup continuam sendo a arquitetura existente; não há backend de sincronização remota configurado.
+
+## Meta semanal flexível · 1.4.0
+
+Todos os minutos realizados na semana (segunda a domingo) contam para os 360 minutos, em qualquer
+distribuição. Os valores diários são sugestões. Ao atingir 360 min, o bloco do dia não fica pendente.
+A velocidade mínima de 5 km/h vale apenas para a esteira; outras modalidades concluem pela duração.
+Gasto energético não é calculado.
