@@ -423,3 +423,8 @@ html,body{overscroll-behavior-x:none}
  .next-action span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.72rem;letter-spacing:.03em}
  .next-action{max-width:62vw}
 }
+/* Peso visual de comando: faixa superior nos painéis e títulos mais pesados. */
+.panel{border-top:3px solid var(--olive)}
+.page-title h1{font-weight:800;letter-spacing:.01em}
+.panel>h2{font-weight:800;letter-spacing:.02em}
+.rank-warning{position:absolute;top:6px;right:6px;min-height:44px;padding:0 10px;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.08em;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--radius-sm)}

@@ -17,7 +17,7 @@ export function FourMeals({data,date,run,go}:PageProps){
  <button className={record?'secondary':'primary completion-button'} onClick={()=>run(()=>editDay(date,'Registrar refeição',d=>setMealConsumed(d,i,!record)),record?'Consumo desfeito.':'Refeição registrada.')}>{record?'Desfazer consumo':'Marcar como consumida'}</button>
  <details className="meal-details"><summary>Porções e referências</summary>{!record&&meal.foods.map((f,j)=><CheckButton key={j} done={day.meals[i][j]} onClick={()=>run(()=>editDay(date,'Registrar alimento',d=>toggleFood(d,i,j)))}>{f.label}</CheckButton>)}<FoodDetails meal={meal}/></details>
  </Panel>;};
- return <><PageTitle eyebrow="ALIMENTAÇÃO" title={completed===4?'Alimentação concluída':'Quatro refeições no seu dia'} back={()=>go('home')}><p>Plano de 21/11/2026: duas refeições líquidas e duas sólidas. Valores TACO/TBCA; as quantidades prescritas não são alteradas automaticamente.</p></PageTitle>
+ return <><PageTitle eyebrow="ALIMENTAÇÃO" title={completed===4?'Alimentação concluída':'Quatro refeições. Sem exceção.'} back={()=>go('home')}><p>Plano de 21/11/2026: duas refeições líquidas e duas sólidas. Valores TACO/TBCA; as quantidades prescritas não são alteradas automaticamente.</p></PageTitle>
  <Panel className="nutrition-summary"><div className="metric-grid">
  <Metric label="Calorias consumidas" value={nutrientText(t.consumed.kcal,'kcal')} emphasis/>
  <Metric label="Calorias restantes" value={nutrientText(t.consumed.kcal===null?null:Math.max(0,goals.calorieGoal-t.consumed.kcal),'kcal')}/>
