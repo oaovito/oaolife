@@ -17,7 +17,7 @@ export function Hormonal({data,date,run,go}:PageProps) {
  const pending=items.filter(e=>!logged.some(l=>l.entryId===e.id));
  const [edit,setEdit]=useState(false);
  const save=(doses:{entryId:string;doseMg:number}[])=>run(()=>mutate('Registrar aplicação do dia',date,d=>{d.hormonalProtocol??=structuredClone(INFORMED_HORMONAL_PLAN);if(date>today())throw Error('Use a data real, sem registrar administrações futuras.');registerHormonalDay(d,date,logWeek,doses,uid,now());ensureDay(d,date).declarations.hormonal={at:now(),note:'Aplicação do dia registrada.'};}),'Aplicação registrada.').then(ok=>{if(ok)setEdit(false);});
- return <><PageTitle eyebrow="SUA ROTINA" title="Registro hormonal" back={()=>go('home')}><p>Segunda e quinta, conforme o plano informado. Registro com um toque; edite só quando houver exceção.</p></PageTitle>
+ return <><PageTitle eyebrow="PROTOCOLO" title="Registro hormonal" back={()=>go('home')}><p>Segunda e quinta, conforme o plano informado. Registro com um toque; edite só quando houver exceção.</p></PageTitle>
  <Panel className="hormonal-quick"><h2>{weekday===1||weekday===4?`${weekdays[weekday]} · aplicação do dia`:'Exceção · fora de segunda e quinta'}</h2>
   {!(weekday===1||weekday===4)&&<Field label="Modelo da aplicação"><select value={model} onChange={e=>setModel(Number(e.target.value))}><option value={1}>Modelo de segunda</option><option value={4}>Modelo de quinta</option></select></Field>}
   <ul className="dose-list">{items.map(e=>{const l=logged.find(v=>v.entryId===e.id);return <li key={e.id}><span>{e.substance}</span><strong className="num">{l?l.doseMg:e.doseMg} mg</strong>{l&&<Check size={16} aria-label="Registrado"/>}</li>;})}</ul>

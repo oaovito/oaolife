@@ -89,7 +89,7 @@ export function Home({data,date,go,run}:PageProps){
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
-   {next?<button className="primary next-action" onClick={()=>go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Todos os módulos programados estão concluídos.</p>}
+   {next?<button className="primary next-action" onClick={()=>go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
   </section>
   {isSunday(date)&&<WeighIn data={data} date={date} run={run}/>}
   {reportReleased(data,weekStart(date),date)&&isSunday(date)&&<button className="secondary report-ready" onClick={()=>openReports(go)}><BarChart3 size={18} aria-hidden="true"/>Relatório da semana disponível<ChevronRight size={18} aria-hidden="true"/></button>}

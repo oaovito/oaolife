@@ -423,3 +423,7 @@ html,body{overscroll-behavior-x:none}
  .next-action span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.72rem;letter-spacing:.03em}
  .next-action{max-width:62vw}
 }
+/* Peso visual de comando: faixa superior nos painéis e títulos mais pesados. */
+.panel{border-top:3px solid var(--olive)}
+.page-title h1{font-weight:800;letter-spacing:.01em}
+.panel>h2{font-weight:800;letter-spacing:.02em}

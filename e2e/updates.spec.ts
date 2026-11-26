@@ -60,7 +60,7 @@ test('rascunho de encerramento protege atualização sem esconder o botão',asyn
 test('Ajustes permite verificar atualização manualmente e informa falta de conexão',async({page,context})=>{
  await nav(page,'Ajustes');const button=page.getByRole('button',{name:'Verificar atualizações',exact:true});await expect(button).toBeEnabled();
  await button.click();await expect(page.getByRole('status')).toContainText('Verificação concluída. Nenhuma nova versão disponível.');
- await context.setOffline(true);await expect(page.locator('.offline-banner')).toBeVisible();await button.click();await expect(page.getByRole('alert')).toContainText('Conecte-se à internet para verificar atualizações.');
+ await context.setOffline(true);await expect(page.locator('.offline-banner')).toBeVisible();await button.click();await expect(page.getByRole('alert')).toContainText('Sem internet para verificar atualizações.');
  await context.setOffline(false);await button.click();await expect(page.getByRole('status')).toContainText('Verificação concluída. Nenhuma nova versão disponível.');await expect(page.getByRole('alert')).toHaveCount(0);
 });
 

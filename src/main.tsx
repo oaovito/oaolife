@@ -6,7 +6,7 @@ import { startSync } from './storage/sync';
 import './styles.css';
 import './design-system.css';
 import './command.css';
-class ErrorBoundary extends React.Component<{children:React.ReactNode},{error:boolean}>{state={error:false};static getDerivedStateFromError(){return {error:true};}render(){return this.state.error?<div className="startup-error"><h1>Seus registros merecem cuidado.</h1><p>A interface encontrou um erro. Reabra o aplicativo. Os dados locais não foram apagados.</p><button onClick={()=>location.reload()}>Reabrir oaolife</button></div>:this.props.children;}}
+class ErrorBoundary extends React.Component<{children:React.ReactNode},{error:boolean}>{state={error:false};static getDerivedStateFromError(){return {error:true};}render(){return this.state.error?<div className="startup-error"><h1>Falha na interface. Registros intactos.</h1><p>A interface encontrou um erro. Reabra o aplicativo. Os dados locais não foram apagados.</p><button onClick={()=>location.reload()}>Reabrir oaolife</button></div>:this.props.children;}}
 const root=createRoot(document.getElementById('root')!);
 // Pede armazenamento persistente a cada abertura: reduz o risco de o sistema descartar os dados.
 void requestPersistence().catch(()=>false);
