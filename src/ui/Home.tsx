@@ -13,6 +13,7 @@ import { rankFor } from '../domain/rank';
 import { Promotion, RankCounter, usePromotion } from './RankBadge';
 import { uid, today } from '../domain/training';
 import { editDay, mutate } from '../storage/db';
+import { TRAINING_TIME, cardioTime } from '../domain/dailySchedule';
 import { ROUTINE_BLOCKS, routineDone, routineItems, routineProgress, toggleRoutine, undoRoutineStep, type RoutineBlock, type RoutineItem } from '../domain/routines';
 import { Segments, type PageProps, type Page } from './shared';
 
@@ -59,7 +60,7 @@ export function Home({data,date,go,run}:PageProps){
    if(!plan.template)return {value:'—',unit:'Descanso',detail:'Recuperação da musculação',remaining:'Sem séries hoje',progress:0,max:0};
    const sets=session?session.exercises.flatMap(e=>e.sets):[],total=session?sets.length:preview?preview.exercises.reduce((n,e)=>n+e.sets.length,0):template!.exercises.reduce((n,e)=>n+e.sets,0),made=sets.filter(s=>s.done).length,left=sets.length?sets.filter(s=>!s.done&&!s.skipped).length:total;
    const current=session?.exercises.find(e=>e.sets.some(s=>!s.done&&!s.skipped));
-   return {value:`${made}`,unit:`/ ${total} séries`,detail:`${plan.template} · ${current?current.name:template!.title}`,remaining:b.status==='Concluído'?'Sessão encerrada':`Restam ${left} séries`,progress:made,max:total};
+   return {value:`${made}`,unit:`/ ${total} séries`,detail:`${TRAINING_TIME} · ${plan.template} · ${current?current.name:template!.title}`,remaining:b.status==='Concluído'?'Sessão encerrada':`Restam ${left} séries`,progress:made,max:total};
   }
   if(key==='meals'){
    const kcal=totals?.consumed.kcal??null,protein=totals?.consumed.protein??null,meals=day.meals.filter(m=>m.every(Boolean)).length;
@@ -68,7 +69,7 @@ export function Home({data,date,go,run}:PageProps){
   if(key==='water')return {value:liters(consumed),unit:`/ ${liters(target)} L`,detail:`${int(consumed)} ml registrados`,remaining:consumed>=target?'Meta do dia atingida':`Faltam ${int(target-consumed)} ml`,progress:consumed,max:target};
   if(key==='cardio'){const todayMin=day.cardio.elapsed/60+(day.cardio.runningSince?((Date.now()-day.cardio.runningSince)/60000):0),planned=day.cardio.planned;
    if(planned===null)return {value:'—',unit:'',detail:`Sem cardio hoje · semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min`,remaining:`${week.sessions.done}/${week.sessions.total} sessões`,progress:week.credited,max:CARDIO_WEEKLY_MINUTES};
-   return {value:int(todayMin),unit:`/ ${planned} min`,detail:`Semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min · ${week.sessions.done}/${week.sessions.total} sessões`,remaining:b.status==='Concluído'?'Sessão de hoje cumprida':`Faltam ${int(Math.max(0,planned-todayMin))} min hoje`,progress:Math.min(todayMin,planned),max:planned};}
+   return {value:int(todayMin),unit:`/ ${planned} min`,detail:`${cardioTime(date)} · semana ${int(week.credited)} / ${CARDIO_WEEKLY_MINUTES} min · ${week.sessions.done}/${week.sessions.total} sessões`,remaining:b.status==='Concluído'?'Sessão de hoje cumprida':`Faltam ${int(Math.max(0,planned-todayMin))} min hoje`,progress:Math.min(todayMin,planned),max:planned};}
   if(key==='mobility')return b.status==='Não programado'?{value:'—',unit:'',detail:'Não programado hoje',remaining:'Sem pendências',progress:0,max:0}:{value:`${b.done}`,unit:`/ ${b.total} séries`,detail:'Hipercifose · 60 s por série',remaining:b.done>=b.total?'Protocolo concluído':`Restam ${b.total-b.done} séries`,progress:b.done,max:b.total};
   return {value:b.status==='Em andamento'||b.status==='Concluído'?'OK':'—',unit:'',detail:b.subtitle,remaining:b.status==='Concluído'?'Registrado':'Registro pendente',progress:b.status==='Concluído'?1:0,max:1};
  };
@@ -107,7 +108,7 @@ export function Home({data,date,go,run}:PageProps){
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
-   {next?.key==='despertar'?<button className="primary next-action" aria-pressed={false} onClick={()=>void run(()=>editDay(date,'Despertar 06:00',d=>{toggleRoutine(d,'despertar','despertar',new Date().toISOString());}))}><span><small>PRÓXIMA AÇÃO · UM TOQUE CONFIRMA</small>Despertar 06:00 · acordei às 6h</span><Check size={20} aria-hidden="true"/></button>:next?<button className="primary next-action" onClick={()=>isRoutine(next.key)?document.getElementById(`module-${next.key}`)?.querySelector<HTMLButtonElement>('.routine-item[aria-pressed=false]')?.focus():go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {isRoutine(next.key)?routineItems(next.key,date).filter(i=>!routineDone(day,i)).map(i=>i.steps?routineProgress(day,i).next!.label:i.name).join(', '):figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
+   {next?.key==='despertar'?<button className="primary next-action" aria-pressed={false} onClick={()=>void run(()=>editDay(date,'Despertar 06:00',d=>{toggleRoutine(d,'despertar','despertar',new Date().toISOString());}))}><span><small>PRÓXIMA AÇÃO · UM TOQUE CONFIRMA</small>Despertar 06:00 · acordei às 6h</span><Check size={20} aria-hidden="true"/></button>:next?<button className="primary next-action" onClick={()=>isRoutine(next.key)?document.getElementById(`module-${next.key}`)?.querySelector<HTMLButtonElement>('.routine-item[aria-pressed=false]')?.focus():go(next.key==='meals'||next.key==='water'?'routine':next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {isRoutine(next.key)?routineItems(next.key,date).filter(i=>!routineDone(day,i)).map(i=>i.steps?routineProgress(day,i).next!.label:i.name).join(', '):figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
   </section>
   {isSunday(date)&&<WeighIn data={data} date={date} run={run}/>}
   {reportReleased(data,weekStart(date),date)&&isSunday(date)&&<button className="secondary report-ready" onClick={()=>openReports(go)}><BarChart3 size={18} aria-hidden="true"/>Relatório da semana disponível<ChevronRight size={18} aria-hidden="true"/></button>}

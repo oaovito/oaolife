@@ -8,7 +8,7 @@ const timestamp = z.string().datetime();
 export const sessionNames = ['A1','B1','C1','A2','B2','C2'] as const;
 export const sessionNameSchema = z.enum(sessionNames);
 export type SessionName = z.infer<typeof sessionNameSchema>;
-export const groups = ['Peito','Costas','Deltoide lateral','Deltoide anterior','Deltoide posterior','Bíceps','Tríceps','Trapézio','Quadríceps','Posteriores','Glúteos','Panturrilhas'] as const;
+export const groups = ['Peito','Costas','Deltoide lateral','Deltoide anterior','Deltoide posterior','Bíceps','Tríceps','Trapézio','Quadríceps','Posteriores','Glúteos','Panturrilhas','Abdômen'] as const;
 export type Muscle = typeof groups[number];
 export const loadModeSchema = z.enum(['total','lado','halter']);
 export type LoadMode = z.infer<typeof loadModeSchema>;
@@ -49,7 +49,23 @@ export const progressionSchema = z.object({ id, cycleId:id, sessionId:id, exerci
 export type ProgressionDecision = z.infer<typeof progressionSchema>;
 const photoSchema = z.object({ id, date:dateSchema, angle:z.enum(['Frente','Costas','Lateral']), data:z.string().max(10000000).regex(/^data:image\/(png|jpeg|webp);base64,/), notes:text });
 export type PhotoRecord = z.infer<typeof photoSchema>;
-const settingsSchema = z.object({ id:z.literal('settings'), haptics:z.boolean().default(true), theme:z.enum(['dark','light']), timezone:z.string().min(1).max(100).refine(s=>{try{new Intl.DateTimeFormat('pt-BR',{timeZone:s});return true;}catch{return false;}},'Fuso inválido'), increments:z.record(id,num.min(0.01).max(100)), cardioMinutes:num.max(60).nullable(), waterTarget:num.min(500).max(600),hydrationTarget:num.positive().max(20000).default(4000),bottleVolume:num.positive().max(5000).default(500),calorieGoal:num.positive().max(10000).default(2000),proteinGoal:num.positive().max(1000).default(190),setPolicy:z.enum(['full','full-deload','periodized']).default('full-deload'), mealTimes:z.array(z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).or(z.literal(''))).length(5), lastBackup:timestamp.nullable(), installationNotice:z.boolean() });
+const scheduleTime=z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/,'Horário inválido (HH:MM).');
+// Rotina diária de alimentação e hidratação (ver src/domain/dailySchedule.ts).
+export const scheduleItemSchema=z.object({
+ id:z.string().min(1).max(40),
+ time:scheduleTime,
+ kind:z.enum(['water','meal']),
+ ml:z.number().int().min(50).max(2000).nullable(),
+});
+export type ScheduleItem=z.infer<typeof scheduleItemSchema>;
+const water=(id:string,t:string,ml=500):ScheduleItem=>({id,time:t,kind:'water',ml});
+const meal=(id:string,t:string):ScheduleItem=>({id,time:t,kind:'meal',ml:null});
+export const DEFAULT_SCHEDULE:ScheduleItem[]=[
+ water('agua-0600','06:00'),meal('refeicao-1','07:00'),water('agua-0830','08:30'),water('agua-0930','09:30'),
+ meal('refeicao-2','10:30'),water('agua-1130','11:30'),water('agua-1300','13:00'),meal('refeicao-3','14:00'),
+ water('agua-1530','15:30'),water('agua-1700','17:00'),meal('refeicao-4','18:30'),water('agua-1930','19:30'),
+];
+const settingsSchema = z.object({ id:z.literal('settings'), haptics:z.boolean().default(true), theme:z.enum(['dark','light']), timezone:z.string().min(1).max(100).refine(s=>{try{new Intl.DateTimeFormat('pt-BR',{timeZone:s});return true;}catch{return false;}},'Fuso inválido'), increments:z.record(id,num.min(0.01).max(100)), cardioMinutes:num.max(60).nullable(), waterTarget:num.min(500).max(600),hydrationTarget:num.positive().max(20000).default(4000),bottleVolume:num.positive().max(5000).default(500),calorieGoal:num.positive().max(10000).default(2000),proteinGoal:num.positive().max(1000).default(190),setPolicy:z.enum(['full','full-deload','periodized']).default('full-deload'), mealTimes:z.array(z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).or(z.literal(''))).length(5), lastBackup:timestamp.nullable(), installationNotice:z.boolean(), dailySchedule:z.array(scheduleItemSchema).min(1).max(40).default(()=>structuredClone(DEFAULT_SCHEDULE)) });
 export type AppSettings = z.infer<typeof settingsSchema>;
 const adjustmentSchema = z.object({ id, at:timestamp, kind:text, detail:text });
 export const hormonalProtocolSchema=z.object({

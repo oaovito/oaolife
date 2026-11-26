@@ -7,6 +7,7 @@ import { cycleForDate, schedule, now, uid } from '../domain/training';
 import { mobilityExerciseSchema, type MobilityExercise } from '../domain/model';
 import { PageTitle, Panel, Metric, Field, CheckButton, Progress, Empty, CompletedItems, CompletedTask, formatSeconds, formNumber, formatDate, type PageProps } from './shared';
 import { applyCardioPlan, cardioTarget, weeklyCardio, CARDIO_DAY_NAMES, CARDIO_SESSION_MINUTES, CARDIO_WEEKLY_MINUTES } from '../domain/cardio';
+import { cardioTime } from '../domain/dailySchedule';
 import { currentMobilityProtocol, toggleMobilitySet } from '../domain/mobility';
 export { Meals } from './Meals';
 export function LegacyWater({data,date,run,go}:PageProps) {
@@ -27,7 +28,7 @@ export function Cardio({data,date,run,go}:PageProps){
  const seconds=timerSeconds(c),minutes=seconds/60,week=weeklyCardio(data,date),target=cardioTarget(date),done=c.status==='complete';
  const fmtMin=(m:number)=>m.toLocaleString('pt-BR',{maximumFractionDigits:1});
  const apply=()=>run(()=>editDay(date,'Atualizar plano de cardio',d=>applyCardioPlan(d.cardio,date)),'Meta do dia atualizada; tempo e velocidade realizados preservados.');
- return <><PageTitle eyebrow="CARDIO" title={c.planned===null?'Sem cardio neste dia':`Cardio do dia: ${c.planned} min`} back={()=>go('home')}><p>Prescrição fixa: {CARDIO_DAY_NAMES}, {CARDIO_SESSION_MINUTES} min cada ({CARDIO_WEEKLY_MINUTES} min/semana). Cada sessão é cumprida no seu dia; minutos extras não compensam outro dia. Na esteira, velocidade mínima de 5,0 km/h.</p></PageTitle>
+ return <><PageTitle eyebrow={c.planned===null?"CARDIO":`CARDIO · ${cardioTime(date)}`} title={c.planned===null?'Sem cardio neste dia':`Cardio do dia: ${c.planned} min`} back={()=>go('home')}><p>Prescrição fixa: {CARDIO_DAY_NAMES}, {CARDIO_SESSION_MINUTES} min cada ({CARDIO_WEEKLY_MINUTES} min/semana). Cada sessão é cumprida no seu dia; minutos extras não compensam outro dia. Na esteira, velocidade mínima de 5,0 km/h.</p></PageTitle>
  {c.planVersion!=='weekly-360'&&<Panel><p>Este dia mantém o planejamento anterior{c.planned===null?', sem cardio programado':` de ${c.planned} minutos`}. {target===null?' Pelo plano atual, esta data não tem cardio.':` A meta do plano atual para esta data é ${target} minutos.`}</p><button className="secondary" onClick={apply}>{target===null?'Aplicar plano atual (sem cardio) neste dia':`Aplicar meta de ${target} min e 5 km/h neste dia`}</button></Panel>}
  {c.planned!==null&&<Panel className="cardio-log" aria-label="Registro do cardio do dia">
   <span className="eyebrow">{done?'CARDIO CONCLUÍDO':c.status==='partial'?'REGISTRO PARCIAL':'REGISTRO DO DIA'}</span>

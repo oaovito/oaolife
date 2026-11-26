@@ -63,6 +63,7 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   **Toda mudança no treino vale "no coração"**: altera `ORIGINAL_PLAN` e `TRAINING_PLAN_VERSION`
   (`plan.ts`); `reconcileOpenSessions` aplica às sessões abertas de hoje em diante sem remover
   séries com dados; volume, recuperação, relatórios, docs e testes seguem no mesmo PR.
+- **Abdominal máquina (26/11/2026)**: 3 séries no fim de B1, C1, B2 e C2 = **12 séries/semana** (grupo `Abdômen`).
 - **Carga sugerida (26/11/2026)**: baseada nas cargas das últimas 5 semanas; sugere aumentar
   quando a carga vem subindo nas últimas sessões (`loadSuggestion`, TRAINING_PLAN.md).
 - **Cardio (rígido)**: segunda, terça, quinta, sexta e domingo, **60 min** cada
@@ -75,6 +76,14 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
 - **Despertar 06:00 (desde 27/11/2026)**: item diário do bloco `despertar` (`routines.ts`); em Hoje é a
   próxima ação enquanto pendente (um toque confirma), sem card extra. Conta no dia cumprido.
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
+- **Rotina do dia (26/11/2026)**: alimentação e hidratação com horários fixos (`src/domain/dailySchedule.ts`,
+  tela `/rotina`): 8 × 500 ml de água (06:00 … 19:30) e 4 refeições (07:00 líquida, 10:30 sólida, 14:00
+  líquida, 18:30 sólida). Status vem dos registros do dia (água em `hydration.entries` com id `rotina:<item>`,
+  refeição em `meals`); a meia-noite recomeça sem apagar histórico. Editável em `settings.dailySchedule`
+  (horário, volume, tipo; sempre 4 refeições). **Sem notificações** (decisão do proprietário).
+  **Treino às 08:00** (`TRAINING_TIME`) nos dias com musculação. **Cardio** domingo 09:00, demais dias 10:00
+  (`cardioTime`); **Refeição 2 = início do cardio + 1h30** (domingo 10:30; demais 11:30; `scheduleForDate`),
+  água no mesmo horário vai ao meio do intervalo seguinte (11:30 → 12:15).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, **todos os dias** (inclusive
   domingo; sem configuração de dias). **Sem cronômetro** (26/11/2026): o usuário marca cada série
   (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.

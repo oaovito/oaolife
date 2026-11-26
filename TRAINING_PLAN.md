@@ -30,7 +30,7 @@ A data inicial do ciclo define a semana (intervalos de sete dias), sem alterar a
 | Cadeira abdutora | 3 | 12–20 | A definir |
 | Panturrilha sentado | 4 | 12–20 | A definir |
 
-26 séries antes da periodização; ordem preservada. Cardio e hipercifose não programados, salvo configuração explícita posterior de protocolo.
+29 séries antes da periodização (com o abdominal máquina); ordem preservada. Cardio e hipercifose não programados, salvo configuração explícita posterior de protocolo.
 
 ## Tríceps · 26/11/2026
 
@@ -43,6 +43,10 @@ A1 e A2 terminam com o mesmo bloco de tríceps, 9 séries por sessão:
 | Tríceps seated dips | 3 | 8–12 | A definir |
 
 A mudança vale no plano (`ORIGINAL_PLAN`), no volume semanal, na recuperação (55%), nos relatórios e nas sessões abertas a partir de 26/11 (`reconcileOpenSessions`). Sessões encerradas e datas anteriores ficam como foram executadas.
+
+## Abdominal máquina · 26/11/2026
+
+**12 séries por semana**: Abdominal máquina, 3 séries de 10–15, no fim de B1, C1, B2 e C2 (A1 e A2 já terminam com o bloco de tríceps). Grupo muscular próprio, `Abdômen`, no volume semanal e nos relatórios; 55% nas semanas 4 e 8. Sessões abertas a partir de 26/11 recebem o exercício via `reconcileOpenSessions`.
 
 ## Regra para mudanças no treino
 
