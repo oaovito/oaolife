@@ -285,6 +285,7 @@ details>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;g
 .week-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}
 .week-strip span{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);padding:4px 0;border-radius:var(--radius-sm)}
 .week-strip span.today{border-color:var(--signal)}
+.week-strip span.rest{border-style:dashed;color:var(--muted,inherit)}
 .week-strip small{font-family:var(--font-mono);font-size:.6rem;color:var(--muted)}
 .week-strip strong{font-family:var(--font-display);font-size:1.1rem}
 .mobile-brand,.page-footer .quiet,.idle-note .text-button{min-height:44px}

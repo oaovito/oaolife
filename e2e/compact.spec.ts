@@ -1,12 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
-test('metas nos sete dias e sessões de cardio somadas no domingo',async({page})=>{
+test('dias fixos de cardio (60 min; quarta e sábado sem) e sessões somadas no domingo',async({page})=>{
  await open(page,'/cardio?date=2026-10-18');
- for(const [date,minutes] of [['2026-10-12','60'],['2026-10-13','60'],['2026-10-14','30'],['2026-10-15','60'],['2026-10-16','60'],['2026-10-17','30'],['2026-10-18','60']]){
-  await page.getByLabel('Consultar data',{exact:true}).fill(date);await expect(page.getByLabel('Planejado neste dia (min)')).toHaveValue(minutes);
+ for(const [date,minutes] of [['2026-10-12','60'],['2026-10-13','60'],['2026-10-14',''],['2026-10-15','60'],['2026-10-16','60'],['2026-10-17',''],['2026-10-18','60']]){
+  await page.getByLabel('Consultar data',{exact:true}).fill(date);if(minutes)await expect(page.getByLabel('Planejado neste dia (min)')).toHaveValue(minutes);else await expect(page.getByRole('heading',{name:'Sem cardio neste dia',level:1})).toBeVisible();
  }
  await page.getByLabel('Registro manual realizado (min)').fill('20');await page.getByLabel('Velocidade realizada (km/h)',{exact:true}).fill('5');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('REGISTRO PARCIAL',{exact:true})).toBeVisible();
  await page.getByLabel('Modo do registro manual').selectOption('add');await page.getByLabel('Registro manual realizado (min)').fill('40');await page.getByRole('button',{name:'Salvar cardio',exact:true}).click();await expect(page.getByText('Cardio concluído · Concluído · Corrigir',{exact:true})).toBeVisible();
- await expect(page.locator('.weekly-cardio')).toContainText('16% ·');await page.reload();expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
+ await expect(page.locator('.weekly-cardio')).toContainText('20% ·');await page.reload();expect((await savedData(page)).days[0].cardio.elapsed).toBe(3600);
  await nav(page,'Hoje');await expect(page.getByRole('button',{name:/^Treino:/})).toContainText('Não programado');await page.getByRole('button',{name:/^Treino:/}).click();await expect(page.getByRole('button',{name:'Iniciar treino',exact:true})).toHaveCount(0);
 });
 test('hipercifose alterna, pausa, reabre offline e conclui junto com cardio',async({page,context})=>{

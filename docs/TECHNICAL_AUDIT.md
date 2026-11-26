@@ -16,7 +16,7 @@
 | 3 | Azeite com proteína/carboidrato nulos anulava os totais de macros | Média | Totais nulos | Baixo | Corrigido (0 g, lipídio puro, TACO NA) |
 | 4 | Meta calórica padrão 2.525 kcal (herdada do plano de cinco refeições) em vez de ~2.000 solicitada | Média | Restante incorreto | Baixo | Migração altera só o padrão antigo; metas personalizadas e dias passados preservados |
 | 5 | Divergência plano × meta escondida em um `details` | Média | Hierarquia | Baixo | Exibida (Plano / Meta / Diferença) + tabela por refeição |
-| 6 | Cardio: excedente de um dia não contava para a semana (meta diária fixa) | Média | Contradiz meta semanal flexível | Baixo | Todos os minutos contam; bloco conclui com 360 min/semana |
+| 6 | Cardio: distribuição antiga (60/60/30/60/60/30/60) não refletia a prescrição do proprietário | Média | Plano errado | Baixo | Prescrição rígida seg/ter/qui/sex/dom × 60 min = 300 min/semana, sem compensação entre dias |
 | 7 | Cardio fora da esteira nunca concluía (regra de velocidade aplicada a todas as modalidades) | Média | Conclusão impossível | Baixo | Velocidade mínima só na esteira |
 | 8 | Barra superior estourava a largura a 320 px quando offline | Média | Arraste lateral | Baixo | Corrigido; teste de layout passa |
 | 9 | Grade de séries×reps cortava texto a 320 px | Baixa | Legibilidade | Baixo | Corrigido |

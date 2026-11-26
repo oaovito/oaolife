@@ -8,7 +8,7 @@
 | Alimentação: plano 21/11/2026 e cálculos TACO/TBCA | Implementado e validado | testes por refeição e total; e2e |
 | Alimentação: concluídas saem da lista e são corrigíveis | Implementado e validado | unitário + e2e |
 | Hidratação 4.000 ml configurável | Implementado e validado | e2e (garrafa 600 ml, desfazer, correção, conclusão) |
-| Cardio 360 min/semana flexível | Implementado e validado | unitários (distribuição, reset semanal, modalidade) + e2e |
+| Cardio rígido 5 × 60 min = 300 min/semana | Implementado e validado | unitários (dias fixos, sem compensação, migração, modalidade) + e2e |
 | Postura (hipercifose 4×60 s) | Implementado e validado | e2e (pausa, retomada, reabertura offline) |
 | Registro hormonal | Implementado e validado (sem mudança) | e2e |
 | Evolução (medidas, fotos, gráficos) | Implementado; apenas reestilizado | e2e de layout e axe |

@@ -61,8 +61,8 @@ Registro rápido (+250/+500/+600), quantidade personalizada, correção, exclus�
 desfazer, histórico, reset à meia-noite local. Não incentiva compensação abrupta.
 
 ### Cardio
-Meta **semanal** de 360 min (seg–dom), flexível: todos os minutos contam em qualquer dia.
-Sugestão diária 60/60/30/60/60/30/60 (seg→dom). Cronômetro persistente, registro manual
+Prescrição **rígida**: segunda, terça, quinta, sexta e domingo, 60 min cada = **300 min/semana**;
+quarta e sábado sem cardio. Cada sessão se cumpre no próprio dia, sem compensação. Cronômetro persistente, registro manual
 (substituir ou somar), modalidade, velocidade (mínimo 5 km/h só na esteira), PSE e FC opcionais.
 
 ### Postura (hipercifose)

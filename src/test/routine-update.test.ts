@@ -9,23 +9,25 @@ import { appDataSchema } from '../domain/model';
 import { encryptBackup, decryptBackup } from '../storage/backup';
 
 describe('cardio semanal fixo',()=>{
- it('distribui exatamente 360 minutos nos sete dias, sem treino no domingo',()=>{
+ it('dias fixos: seg, ter, qui, sex e dom com 60 min (300/semana); quarta e sábado sem cardio',()=>{
   const data=emptyData(),days=Array.from({length:7},(_,i)=>makeDay(data,addDays('2026-10-19',i)));
-  expect(days.map(d=>d.cardio.planned)).toEqual([60,60,30,60,60,30,60]);
-  expect(days.reduce((n,d)=>n+d.cardio.planned!,0)).toBe(360);
+  expect(days.map(d=>d.cardio.planned)).toEqual([60,60,null,60,60,null,60]);
+  expect(days.reduce((n,d)=>n+(d.cardio.planned??0),0)).toBe(300);
   expect(summaries(data,'2026-10-25').workout.status).toBe('Não programado');
   expect(summaries(data,'2026-10-25').cardio.status).toBe('Não iniciado');
+  expect(summaries(data,'2026-10-21').cardio.status).toBe('Não programado');
  });
  it('acumula sessões menores e só conclui a meta do próprio dia',()=>{
-  const data=emptyData(),day=makeDay(data,'2026-10-21');data.days.push(day);day.cardio.speed=5;
+  const data=emptyData(),day=makeDay(data,'2026-10-22');data.days.push(day);day.cardio.speed=5;
   startCardio(day.cardio,1000);pauseCardio(day.cardio,601000);finishCardio(day.cardio,601000);expect(day.cardio.status).toBe('partial');
-  startCardio(day.cardio,1000000);finishCardio(day.cardio,2200000);expect(day.cardio.elapsed).toBe(1800);expect(day.cardio.status).toBe('complete');
-  day.cardio.elapsed=36000;const week=weeklyCardio(data,day.id);expect(week.actual).toBe(600);expect(week.credited).toBe(360);expect(week.remaining).toBe(0);expect(week.reached).toBe(true);expect(week.days.filter(d=>d.complete)).toHaveLength(1);
+  startCardio(day.cardio,1000000);finishCardio(day.cardio,4000000);expect(day.cardio.elapsed).toBe(3600);expect(day.cardio.status).toBe('complete');
+  // Prescrição rígida: 600 min num só dia contam 60 para a semana; os outros dias continuam devidos.
+  day.cardio.elapsed=36000;const week=weeklyCardio(data,day.id);expect(week.actual).toBe(600);expect(week.credited).toBe(60);expect(week.remaining).toBe(240);expect(week.reached).toBe(false);expect(week.sessions).toEqual({done:1,total:5});expect(week.days.filter(d=>d.complete)).toHaveLength(1);
  });
  it('semana começa na segunda, inclusive atravessando ano; aplicar plano preserva medidas',()=>{
   const data=emptyData();expect(weeklyCardio(data,'2027-01-03').start).toBe('2026-12-28');
-  const c=makeDay(data,'2026-10-24').cardio;Object.assign(c,{planned:null,planVersion:'legacy',elapsed:345,speed:4.5});applyCardioPlan(c,'2026-10-24');
-  expect(c).toMatchObject({planned:30,elapsed:345,speed:4.5,status:'partial'});expect(cardioTarget('2026-10-25')).toBe(60);
+  const c=makeDay(data,'2026-10-23').cardio;Object.assign(c,{planned:null,planVersion:'legacy',elapsed:345,speed:4.5});applyCardioPlan(c,'2026-10-23');
+  expect(c).toMatchObject({planned:60,elapsed:345,speed:4.5,status:'partial'});expect(cardioTarget('2026-10-25')).toBe(60);expect(cardioTarget('2026-10-24')).toBeNull();
  });
 });
 

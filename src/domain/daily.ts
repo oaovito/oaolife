@@ -4,7 +4,7 @@ import type { AppData, BlockSummary, DailyLog, WorkoutSession, CardioSession } f
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
 import { MEALS, MOBILITY_DAYS } from './plan';
 import { cycleForDate, now, schedule } from './training';
-import { cardioTarget, speedRuleMet, weeklyCardio } from './cardio';
+import { cardioTarget, speedRuleMet } from './cardio';
 import { currentMobilityProtocol } from './mobility';
 export function emptyData():AppData { return {schemaVersion:9,nutritionOverrides:{},hormonalProtocol:structuredClone(INFORMED_HORMONAL_PLAN),hormonalLogs:[],profile:{id:'local-user',age:27,height:178,initialWeight:84},settings:{id:'settings',haptics:true,theme:'dark',timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,increments:{},cardioMinutes:60,waterTarget:500,hydrationTarget:4000,bottleVolume:500,calorieGoal:2000,proteinGoal:190,setPolicy:'full-deload',mealTimes:['','','','',''],lastBackup:null,installationNotice:false},cycles:[],sessions:[],days:[],measurements:[],photos:[],foods:[],recipes:[],mobility:null,decisions:[],adjustments:[]}; }
 export function makeDay(data:AppData,date:string):DailyLog {
@@ -32,10 +32,9 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<'wor
  const waterDone=day.water.filter((v,i)=>v>=day.waterTargets[i]).length;
  const water=day.hydration?summary(waterConsumed(day),waterGoal(day),`${waterConsumed(day)} de ${waterGoal(day)} ml`):summary(waterDone,6,waterDone===6?'Hidratação concluída':`${(day.water.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR',{maximumFractionDigits:2})} de ${(day.waterTargets.reduce((a,v)=>a+v,0)/1000).toLocaleString('pt-BR')} litros`,day.water.some((v,i)=>v>0&&v<day.waterTargets[i]));
  const cardioScheduled=day.cardio.planned!==null;const seconds=timerSeconds(day.cardio,clock);
- const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Defina a duração · até 60 min':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}${day.cardio.minimumSpeed===null?'':` · ${day.cardio.speed??'—'} / ${day.cardio.minimumSpeed} km/h`}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
+ const cardio=cardioScheduled?summary(day.cardio.status==='complete'?1:0,1,day.cardio.planned===null?'Sem cardio programado':`${Math.floor(seconds/60)} de ${day.cardio.planned} min · ${day.cardio.mode}${day.cardio.minimumSpeed===null?'':` · ${day.cardio.speed??'—'} / ${day.cardio.minimumSpeed} km/h`}`,day.cardio.status==='partial'):summary(0,0,'Não programado');
  if(cardioScheduled&&day.cardio.planned===null)cardio.status='Pendente de revisão';else if(cardioScheduled&&['running','paused'].includes(day.cardio.status))cardio.status='Em andamento';
- // A meta semanal é flexível: atingidos 360 min na semana, o dia não fica pendente.
- if(cardioScheduled&&day.cardio.planVersion==='weekly-360'&&cardio.status!=='Concluído'&&day.cardio.runningSince===null&&weeklyCardio(data,date,clock).reached)Object.assign(cardio,{status:'Concluído',done:1,total:1,subtitle:'Meta semanal de 360 min atingida'});
+ // Cardio rígido: o dia só conclui com a própria meta (sem compensação semanal).
  const mobilityScheduled=!!plan.template&&((data.mobility?data.mobility.days.includes(plan.template):MOBILITY_DAYS.includes(plan.template))||!!day.mobility.protocol?.days.includes(plan.template));
  const protocol=day.mobility.protocol;const mTotal=protocol?.exercises.reduce((a,e)=>a+e.sets,0)||0;const validIds=protocol?.exercises.flatMap(e=>Array.from({length:e.sets},(_,i)=>`${e.id}:${i}`))||[];const mDone=validIds.filter(id=>day.mobility.sets[id]?.done).length;
  const mobility=mobilityScheduled?(mTotal?summary(mDone,mTotal,`${mDone}/${mTotal} séries do protocolo`):{status:'Pendente de revisão' as const,done:0,total:4,subtitle:'Protocolo pendente de configuração'}):summary(0,0,plan.template?'Não especificado no plano inicial':'Não programado');

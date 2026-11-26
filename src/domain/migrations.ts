@@ -1,3 +1,4 @@
+import { applyCardioPlan, cardioTarget } from './cardio';
 import type { AppData } from './model';
 import type { Serving } from './nutritionSchema';
 import { NUTRIENT_KEYS, nutritionReference } from './nutrition';
@@ -35,6 +36,9 @@ export function migrateV9(data:AppData,date:string):boolean {
   if(completeNutritionReferences(data,day))changes.push(`referências nutricionais ${day.id}`);
  }
  for(const session of data.sessions)if(session.date>=date&&reshapeOpenSession(data,session))changes.push(`séries ${session.date}`);
+ // Cardio rígido (seg, ter, qui, sex, dom · 60 min = 300 min/semana): dias de hoje em diante ainda não concluídos
+ // recebem a nova meta; tempo, velocidade e observações registrados são preservados.
+ for(const day of data.days)if(day.id>=date&&day.cardio.planVersion==='weekly-360'&&day.cardio.status!=='complete'&&day.cardio.planned!==cardioTarget(day.id)){applyCardioPlan(day.cardio,day.id);changes.push(`cardio ${day.id}`);}
  data.adjustments.push({id:MIGRATION_9,at:now(),kind:'Atualização 9',detail:changes.length?changes.join('; '):'Sem alterações de dados necessárias.'});
  return true;
 }

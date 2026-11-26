@@ -1,5 +1,10 @@
 # CLAUDE.md — diretrizes permanentes do oaolife
 
+> **REGRA SUPREMA (proprietário, 26/11/2026):** o oaolife é um planejamento
+> militar envolto em disciplina e regras rígidas. Prescrições têm dia, duração e
+> quantidade fixos; cada dia se cumpre no próprio dia, sem compensação nem
+> "como eu quiser". Toda decisão de produto, texto ou UX segue esta regra.
+
 Claude Code tem a direção técnica, funcional e visual integral deste projeto
 (CTO, engenharia, design, QA, segurança, publicação). Execute e valide; não
 entregue apenas planos. Escreva para o proprietário em português, de forma
@@ -51,8 +56,10 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   26/11/2026). Periodização define o RIR. Alternativas (`full`, `periodized`)
   só por escolha explícita em Plano.
   A causa do antigo "2 séries" era o fator de volume da semana 1 (75%).
-- **Cardio**: meta **semanal flexível** de 360 min; todos os minutos contam em
-  qualquer dia. Valores diários são sugestão. Velocidade mínima só na esteira.
+- **Cardio (rígido)**: segunda, terça, quinta, sexta e domingo, **60 min** cada
+  (5 × 60 = **300 min/semana**); quarta e sábado sem cardio. Cada sessão só
+  conclui com a meta do próprio dia; minutos extras não compensam outro dia.
+  Velocidade mínima 5,0 km/h só na esteira (`src/domain/cardio.ts`).
 - **Hidratação**: meta configurável (padrão 4.000 ml; garrafa 500 ml = 8).
 - **Postura**: hipercifose 4 × 60 s, 60 s de descanso, cronômetro por timestamp.
 - **Refeições concluídas** saem da lista principal e ficam corrigíveis no histórico.
