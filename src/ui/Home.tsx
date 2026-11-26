@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, BarChart3, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, Scale, Utensils, Wind } from 'lucide-react';
+import { AlertTriangle, BarChart3, ChevronRight, ClipboardList, Check, Dumbbell, Droplets, Footprints, House, Scale, Scissors, Utensils, Wind } from 'lucide-react';
 import { summaries, dayComplete, makeDay } from '../domain/daily';
 import { cycleForDate, schedule, makeWorkout } from '../domain/training';
 import { ORIGINAL_PLAN, WEEKS } from '../domain/plan';
@@ -12,7 +12,8 @@ import { syncAlert, useSyncState } from './CloudSync';
 import { rankFor } from '../domain/rank';
 import { Promotion, RankCounter, usePromotion } from './RankBadge';
 import { uid, today } from '../domain/training';
-import { mutate } from '../storage/db';
+import { editDay, mutate } from '../storage/db';
+import { ROUTINE_BLOCKS, routineDone, routineItems, toggleRoutine, type RoutineBlock } from '../domain/routines';
 import { Segments, type PageProps, type Page } from './shared';
 
 export const PROGRESS_VIEW_KEY='oaolife:progress-view';
@@ -32,7 +33,10 @@ const MODULES:Module[]=[
  {key:'cardio',code:'04',title:'Cardio',icon:Footprints},
  {key:'mobility',code:'05',title:'Postura',icon:Wind},
  {key:'hormonal',code:'06',title:'Registro hormonal',icon:ClipboardList},
+ {key:'mancare',code:'07',title:'ManCare',icon:Scissors},
+ {key:'casa',code:'08',title:'Cuidado Casa',icon:House},
 ];
+const isRoutine=(key:BlockKey):key is RoutineBlock=>key==='mancare'||key==='casa';
 const int=(v:number)=>Math.round(v).toLocaleString('pt-BR');
 const liters=(ml:number)=>(ml/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2});
 type Figure={value:string;unit:string;detail:string;remaining:string;progress:number;max:number};
@@ -73,7 +77,13 @@ export function Home({data,date,go,run}:PageProps){
  const {promotion,close:closePromotion}=usePromotion(rank,date===today());
  if(day.cardio.runningSince!==null)alerts.push('Cronômetro de cardio em andamento.');
 
- const card=(m:Module)=>{const b=blocks[m.key],f=figure(m.key),Icon=m.icon,s=state(b);
+ // ManCare e Cuidado Casa: cada item é marcado direto em Hoje, com um toque.
+ const routineCard=(m:Module&{key:RoutineBlock})=>{const b=blocks[m.key],Icon=m.icon,s=state(b),items=routineItems(m.key,date);
+  return <section key={m.key} id={`module-${m.key}`} className={`module module-routine module-${m.key}`} data-state={s} aria-label={`${m.title}: ${b.status}. ${b.done}/${b.total}`}>
+   <span className="module-head"><Icon size={16} aria-hidden="true"/><span className="module-code">{m.code}</span><span className="module-title">{m.title}</span><span className="module-status">{s==='done'&&<Check size={12} aria-hidden="true"/>}{b.done}/{b.total}</span></span>
+   <span className="routine-items">{items.map(i=>{const on=routineDone(day,i.id);return <button key={i.id} type="button" className="routine-item" aria-pressed={on} onClick={()=>void run(()=>editDay(date,`${ROUTINE_BLOCKS[m.key].title}: ${i.name}`,d=>{toggleRoutine(d,m.key,i.id,new Date().toISOString());}))}>{on?<Check size={14} aria-hidden="true"/>:<span className="routine-box" aria-hidden="true"/>}{i.name}</button>;})}</span>
+  </section>;};
+ const card=(m:Module)=>{if(isRoutine(m.key))return routineCard(m as Module&{key:RoutineBlock});const b=blocks[m.key],f=figure(m.key),Icon=m.icon,s=state(b);
   return <button key={m.key} className={`module module-${m.key}`} data-state={s} onClick={()=>go(m.key as Page)} aria-label={`${m.title}: ${b.status}. ${f.value} ${f.unit}. ${f.remaining}`}>
    <span className="module-head"><Icon size={16} aria-hidden="true"/><span className="module-code">{m.code}</span><span className="module-title">{m.title}</span><span className="module-status">{s==='done'&&<Check size={12} aria-hidden="true"/>}{b.status}</span></span>
    <span className="module-figure"><strong>{f.value}</strong>{f.unit&&<span>{f.unit}</span>}</span>
@@ -90,7 +100,7 @@ export function Home({data,date,go,run}:PageProps){
   <section className="mission" aria-label="Situação do dia">
    <div className="mission-status"><span className="ops-tag">{complete?'MISSÃO CUMPRIDA':'STATUS DA MISSÃO'}</span><strong className="mission-count">{done.length}<span>/{scheduled.length}</span></strong><span className="mission-label">módulos concluídos</span></div>
    <div className="mission-track" aria-hidden="true">{scheduled.map(m=><i key={m.key} data-state={state(blocks[m.key])} title={m.title}/>)}</div>
-   {next?<button className="primary next-action" onClick={()=>go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
+   {next?<button className="primary next-action" onClick={()=>isRoutine(next.key)?document.getElementById(`module-${next.key}`)?.querySelector<HTMLButtonElement>('.routine-item[aria-pressed=false]')?.focus():go(next.key as Page)}><span><small>PRÓXIMA AÇÃO</small>{next.title} · {isRoutine(next.key)?routineItems(next.key,date).filter(i=>!routineDone(day,i.id)).map(i=>i.name).join(', '):figure(next.key).remaining}</span><ChevronRight size={20} aria-hidden="true"/></button>:<p className="mission-done"><Check size={18} aria-hidden="true"/>Missão do dia cumprida. Nada pendente.</p>}
   </section>
   {isSunday(date)&&<WeighIn data={data} date={date} run={run}/>}
   {reportReleased(data,weekStart(date),date)&&isSunday(date)&&<button className="secondary report-ready" onClick={()=>openReports(go)}><BarChart3 size={18} aria-hidden="true"/>Relatório da semana disponível<ChevronRight size={18} aria-hidden="true"/></button>}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import type { AppData, BlockKey } from '../domain/model';
 import { summaries } from '../domain/daily';
-const labels:Record<BlockKey,string>={workout:'Treino',meals:'Alimentação',water:'Hidratação',cardio:'Cardio',mobility:'Alongamento',hormonal:'Registro hormonal'};
+const labels:Record<BlockKey,string>={workout:'Treino',meals:'Alimentação',water:'Hidratação',cardio:'Cardio',mobility:'Alongamento',hormonal:'Registro hormonal',mancare:'ManCare',casa:'Cuidado Casa'};
 export const completionPattern=[200,80,250,80,350];
 export function vibrateCompletion(enabled:boolean) {
  if(!enabled||typeof navigator==='undefined'||typeof navigator.vibrate!=='function')return false;
