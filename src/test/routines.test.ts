@@ -9,9 +9,10 @@ describe('blocos ManCare e Cuidado Casa',()=>{
  it('programação: barba só aos domingos; louça e lixo todos os dias; nada antes de 26/11/2026',()=>{
   expect(routineItems('mancare','2026-11-29').map(i=>i.name)).toEqual(['Barba']);
   for(const d of ['2026-11-26','2026-11-27','2026-11-28','2026-11-30'])expect(routineItems('mancare',d)).toEqual([]);
-  for(const d of ['2026-11-26','2026-11-28','2026-11-29','2026-12-01','2026-12-03'])expect(routineItems('casa',d).map(i=>i.name)).toEqual(['Louça','Lixo']);
+  for(const d of ['2026-11-28','2026-11-29'])expect(routineItems('casa',d).map(i=>i.name)).toEqual(['Louça','Lixo']);
+  for(const d of ['2026-11-26','2026-12-01','2026-12-03'])expect(routineItems('casa',d).map(i=>i.name)).toEqual(['Louça','Lixo','Aspirador']);
   for(const d of ['2026-11-27','2026-11-30','2026-12-02'])expect(routineItems('casa',d).map(i=>i.name)).toEqual(['Louça','Lixo','Máquina de roupa']);
-  expect(routineItems('casa','2026-11-25')).toEqual([]);
+  expect(routineItems('casa','2026-11-25')).toEqual([]);expect(routineItems('casa','2026-11-24').map(i=>i.name)).toEqual([]);
   const data=emptyData();expect(summaries(data,'2026-11-25').casa.status).toBe('Não programado');expect(summaries(data,'2026-11-30').mancare.status).toBe('Não programado');
  });
  it('marca e desmarca cada item; bloco conclui com todos os itens do dia',()=>{
