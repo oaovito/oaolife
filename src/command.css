@@ -538,7 +538,7 @@ html,body{overscroll-behavior-x:none}
 /* ManCare e Cuidado Casa: cartões compactos com itens marcados direto em Hoje. */
 .module-routine{cursor:default;gap:6px;padding:9px 10px}
 .routine-items{display:flex;flex-wrap:wrap;gap:6px}
-.routine-item{flex:1 1 0;min-width:0;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font-mono);font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+.routine-item{flex:1 0 auto;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font-mono);font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
 .routine-item[aria-pressed=true]{border-color:var(--signal);color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--surface2))}
 .routine-box{width:12px;height:12px;border:1.5px solid currentColor;border-radius:2px}
 .routine-item:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -553,6 +553,10 @@ html,body{overscroll-behavior-x:none}
 .module-grid>.module-routine:last-child:nth-child(odd) .module-head{flex:0 0 auto}
 .module-grid>.module-routine:last-child:nth-child(odd) .module-head .module-status{margin-left:8px}
 .module-grid>.module-routine:last-child:nth-child(odd) .routine-items{flex:1;flex-wrap:nowrap}
+/* Três ou mais itens simples (ex.: Aspirador ter/qui): título em cima, itens numa linha própria que
+   quebra em telas estreitas, sem rolagem horizontal. */
+.module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)){flex-direction:column;align-items:stretch;gap:6px}
+.module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)) .routine-items{flex-wrap:wrap}
 /* Dia de máquina de roupa (seg/qua/sex): o Cuidado Casa ganha a linha de etapas; espaçamentos mais
    justos mantêm Hoje acima do menu no iPhone 16 (393×852). */
 .module-grid>.module-routine.module-routine:has(.routine-steps){grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 10px;padding:5px 10px}

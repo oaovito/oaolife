@@ -140,3 +140,13 @@ test('ManCare aos domingos e Cuidado Casa todo dia (roupa seg/qua/sex): marcados
  await page.goto('/?date=2026-11-29');const man=page.getByRole('region',{name:/^ManCare/});await expect(man.getByRole('button',{name:'Barba',exact:true})).toHaveAttribute('aria-pressed','false');
  await man.getByRole('button',{name:'Barba',exact:true}).click();await expect(page.getByRole('region',{name:/^ManCare/})).toHaveCount(0);
 });
+
+test('Aspirador às terças e quintas: Cuidado Casa com três itens cabe acima do menu, sem rolagem horizontal',async({page},info)=>{
+ await page.clock.install({time:new Date('2026-12-03T12:00:00-03:00')});await page.goto('/');
+ const casa=page.getByRole('region',{name:/^Cuidado Casa/});await expect(casa).toHaveAttribute('aria-label',/0\/3/);
+ for(const name of ['Louça','Lixo','Aspirador'])await expect(casa.getByRole('button',{name,exact:true})).toBeVisible();
+ expect(await casa.evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);
+ if(info.project.name!=='desktop'){const box=await casa.boundingBox(),nav=await page.getByRole('navigation').boundingBox();expect(box!.y+box!.height).toBeLessThanOrEqual(nav!.y);}
+ await casa.getByRole('button',{name:'Aspirador',exact:true}).click();await expect(casa.getByRole('button',{name:'Aspirador',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.reload();await expect(page.getByRole('region',{name:/^Cuidado Casa/}).getByRole('button',{name:'Aspirador',exact:true})).toHaveAttribute('aria-pressed','true');
+});

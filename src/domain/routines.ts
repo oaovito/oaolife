@@ -19,6 +19,8 @@ export const ROUTINE_BLOCKS:Record<RoutineBlock,{title:string;items:RoutineItem[
  casa:{title:'Cuidado Casa',items:[
   {id:'louca',name:'Louça',weekdays:EVERY_DAY,since:ROUTINES_SINCE},
   {id:'lixo',name:'Lixo',weekdays:EVERY_DAY,since:ROUTINES_SINCE},
+  // Aspirador (26/11/2026): terças e quintas.
+  {id:'aspirador',name:'Aspirador',weekdays:[2,4],since:'2026-11-26'},
   {id:'roupa',name:'Máquina de roupa',weekdays:[1,3,5],since:'2026-11-26',steps:laundrySteps},
  ]},
 };
