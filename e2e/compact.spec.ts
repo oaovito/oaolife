@@ -135,6 +135,7 @@ test('ManCare aos domingos e Cuidado Casa todo dia (roupa seg/qua/sex): marcados
  await casa.getByRole('button',{name:'Lixo',exact:true}).click();
  for(const n of ['Roupa 1','Roupa 2'])await expect(casa.getByRole('button',{name:n,exact:true})).toHaveAttribute('aria-pressed','false');
  await expect(casa).toHaveAttribute('aria-label',/Em andamento\. 2\/4/);
+ if(info.project.name!=='desktop'){const tops=await casa.locator('.routine-item').evaluateAll(es=>es.map(e=>Math.round(e.getBoundingClientRect().top)));expect(new Set(tops).size,'quatro caixas numa linha').toBe(1);}
  await casa.getByRole('button',{name:'Roupa 1',exact:true}).click();await expect(casa).toHaveAttribute('aria-label',/3\/4/);
  await casa.getByRole('button',{name:'Roupa 2',exact:true}).click();await expect(page.getByRole('region',{name:/^Cuidado Casa/})).toHaveCount(0);
  await page.reload();await page.getByText(/^Concluídos \(1\)/).click();await expect(page.getByRole('region',{name:/^Cuidado Casa: Concluído/})).toBeVisible();

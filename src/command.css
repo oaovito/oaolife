@@ -551,6 +551,11 @@ html,body{overscroll-behavior-x:none}
    quebra em telas estreitas, sem rolagem horizontal. */
 .module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)){flex-direction:column;align-items:stretch;gap:6px}
 .module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)) .routine-items{flex-wrap:wrap}
+/* Quatro itens (Roupa 1 e Roupa 2 seg/qua/sex): uma linha só, com espaçamentos mais justos, para que
+   Hoje caiba acima do menu no iPhone 16 (393×852) mesmo com fontes de métrica diferente. */
+@media(min-width:360px){.module-grid>.module-routine.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(4)) .routine-items{flex-wrap:nowrap;gap:5px}}
+.module-grid>.module-routine:has(.routine-items>:nth-child(4)) .routine-item{flex:1 1 auto;min-width:0;padding:0 5px;gap:4px;letter-spacing:.04em}
+@media(max-width:760px){.home-page.command:has(.routine-items>:nth-child(4)){gap:6px}.module-grid:has(.routine-items>:nth-child(4)){gap:6px}.module-grid>.module-routine.module-routine:has(.routine-items>:nth-child(4)){padding-top:6px;padding-bottom:6px;gap:4px}}
 /* Cardio sem cronômetro (26/11/2026): check da meta do dia ou minutos informados. */
 .cardio-log{display:grid;gap:12px}
 .cardio-figure{display:flex;align-items:baseline;gap:8px}
