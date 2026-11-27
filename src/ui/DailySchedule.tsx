@@ -53,7 +53,7 @@ function ScheduleEditor({items,run,done}:{items:ScheduleItem[];run:PageProps['ru
    <Field label="Tipo"><select value={item.kind} onChange={e=>set(i,e.target.value==='water'?{kind:'water',ml:item.ml??500}:{kind:'meal',ml:null})}><option value="water">Água</option><option value="meal">Refeição</option></select></Field>
    {item.kind==='water'&&<Field label="Volume (ml)"><input type="number" inputMode="numeric" min={50} max={2000} step={50} required value={item.ml??''} onChange={e=>set(i,{ml:e.target.value===''?null:Number(e.target.value)})}/></Field>}
   </fieldset>)}
-  <p>A Refeição 2 segue o cardio: 1h30 após o início (domingo 10:30; demais dias 11:30). Água marcada no mesmo horário passa para o intervalo seguinte.</p>
+  <p>A Refeição 2 é às 11:30 todos os dias. Água marcada no mesmo horário passa para o intervalo seguinte (12:15).</p>
   <p className={meals!==4?'cardio-note':''}>Água programada: {ml(waterTotal)} ml · refeições: {meals}/4 (plano alimentar fixo: 2 líquidas e 2 sólidas, na ordem do dia).</p>
   <button className="primary" type="submit"><Save size={18} aria-hidden="true"/>Salvar rotina</button>
  </form>;
