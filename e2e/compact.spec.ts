@@ -132,12 +132,12 @@ test('ManCare aos domingos e Cuidado Casa todo dia (roupa seg/qua/sex): marcados
  const casa=page.getByRole('region',{name:/^Cuidado Casa/});await expect(casa).toBeVisible();
  if(info.project.name!=='desktop'){const box=await casa.boundingBox(),nav=await page.getByRole('navigation').boundingBox();expect(box!.y+box!.height).toBeLessThanOrEqual(nav!.y);}
  await casa.getByRole('button',{name:'Louça',exact:true}).click();await expect(casa.getByRole('button',{name:'Louça',exact:true})).toHaveAttribute('aria-pressed','true');
- await casa.getByRole('button',{name:'Lixo',exact:true}).click();await expect(casa).toHaveAttribute('aria-label',/Em andamento\. 2\/3/);
- const roupa=casa.locator('.routine-step');await expect(roupa).toContainText('Máquina 1 · Lavar');await expect(roupa).toContainText('0/10');
- await roupa.click();await expect(roupa).toContainText('Máquina 1 · Estender');
- await casa.getByRole('button',{name:'Desfazer Máquina 1 · Lavar'}).click();await expect(roupa).toContainText('Máquina 1 · Lavar');
- for(const step of ['1 · Lavar','1 · Estender','1 · Recolher','1 · Dobrar','1 · Guardar','2 · Lavar','2 · Estender','2 · Recolher','2 · Dobrar']){await expect(roupa).toContainText(`Máquina ${step}`);await roupa.click();}
- await expect(roupa).toContainText('9/10');await roupa.click();await expect(page.getByRole('region',{name:/^Cuidado Casa/})).toHaveCount(0);
+ await casa.getByRole('button',{name:'Lixo',exact:true}).click();
+ for(const n of ['Roupa 1','Roupa 2'])await expect(casa.getByRole('button',{name:n,exact:true})).toHaveAttribute('aria-pressed','false');
+ await expect(casa).toHaveAttribute('aria-label',/Em andamento\. 2\/4/);
+ if(info.project.name!=='desktop'){const tops=await casa.locator('.routine-item').evaluateAll(es=>es.map(e=>Math.round(e.getBoundingClientRect().top)));expect(new Set(tops).size,'quatro caixas numa linha').toBe(1);}
+ await casa.getByRole('button',{name:'Roupa 1',exact:true}).click();await expect(casa).toHaveAttribute('aria-label',/3\/4/);
+ await casa.getByRole('button',{name:'Roupa 2',exact:true}).click();await expect(page.getByRole('region',{name:/^Cuidado Casa/})).toHaveCount(0);
  await page.reload();await page.getByText(/^Concluídos \(1\)/).click();await expect(page.getByRole('region',{name:/^Cuidado Casa: Concluído/})).toBeVisible();
  await page.goto('/?date=2026-11-29');const man=page.getByRole('region',{name:/^ManCare/});await expect(man.getByRole('button',{name:'Barba',exact:true})).toHaveAttribute('aria-pressed','false');
  await man.getByRole('button',{name:'Barba',exact:true}).click();await expect(page.getByRole('region',{name:/^ManCare/})).toHaveCount(0);

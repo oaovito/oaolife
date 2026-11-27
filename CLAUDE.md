@@ -89,8 +89,7 @@ CSS: `styles.css` (legado) → `design-system.css` (tokens) → `command.css`
   (`toggleMobilitySet`); cronômetros antigos em andamento são encerrados preservando o tempo.
 - **ManCare e Cuidado Casa (26/11/2026)**: blocos de rotina em Hoje, itens marcados com um toque
   (`src/domain/routines.ts`, campo `routines` do dia). ManCare: Barba aos domingos. Cuidado Casa:
-  Louça e Lixo todos os dias; Aspirador ter/qui; Máquina de roupa seg/qua/sex (2 máquinas × lavar, estender, recolher,
-  dobrar, guardar; etapas em ordem fixa, item só conclui com as 10). Contam no dia cumprido, nas patentes e nos relatórios. Item novo entra
+  Louça e Lixo todos os dias; Aspirador ter/qui; Roupa 1 e Roupa 2 seg/qua/sex (duas caixas, um toque cada; desde 27/11/2026, substitui a máquina em etapas). Contam no dia cumprido, nas patentes e nos relatórios. Item novo entra
   em `ROUTINE_BLOCKS` com a data `since`; dias anteriores não mudam.
 - **Ajustes** não exibe tutorial de instalação no iPhone (removido a pedido).
 - **Hoje** mostra só os blocos do programa do dia (blocos "Não programado" ficam ocultos).

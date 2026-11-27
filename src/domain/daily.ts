@@ -2,7 +2,7 @@ import { waterConsumed, waterGoal } from './hydration';
 import { createNutrition, mealsForDay, setMealConsumed, syncMealRecord } from './nutrition';
 import type { AppData, BlockKey, BlockSummary, DailyLog, WorkoutSession, CardioSession } from './model';
 import { DEFAULT_SCHEDULE } from './model';
-import { routineDone, routineItems, routineProgress, type RoutineBlock } from './routines';
+import { routineDone, routineItems, type RoutineBlock } from './routines';
 import { INFORMED_HORMONAL_PLAN } from './hormonal';
 import { MEALS } from './plan';
 import { cycleForDate, now, schedule } from './training';
@@ -69,7 +69,7 @@ export function summaries(data:AppData,date:string,clock=Date.now()):Record<Bloc
  const hormonal=hormonalDay?summary(0,1,logs.length?`${logs.length} administração(ões) registrada(s)`:`Plano informado · ${(data.hormonalProtocol??INFORMED_HORMONAL_PLAN).weeks} semanas`):summary(0,0,'Não programado');
  if(hormonalDay&&logs.length)hormonal.status='Em andamento';
  // ManCare e Cuidado Casa: itens do dia, marcados um a um.
- const routine=(block:RoutineBlock)=>{const items=routineItems(block,date);if(!items.length)return summary(0,0,'Não programado');const done=items.filter(i=>routineDone(day,i));return summary(done.length,items.length,items.map(i=>{const p=routineProgress(day,i);return `${i.name}${p.done===p.total?' ✓':p.total>1?` ${p.done}/${p.total}`:''}`;}).join(' · '));};
+ const routine=(block:RoutineBlock)=>{const items=routineItems(block,date);if(!items.length)return summary(0,0,'Não programado');const done=items.filter(i=>routineDone(day,i));return summary(done.length,items.length,items.map(i=>`${i.name}${routineDone(day,i)?' ✓':''}`).join(' · '));};
  const blocks={workout,meals,water,cardio,mobility,hormonal,despertar:routine('despertar'),mancare:routine('mancare'),casa:routine('casa')};
  for(const key of Object.keys(day.declarations) as (keyof typeof blocks)[]) {
   if(!timedCompletionRequired(day,key)&&blocks[key].status!=='Não programado') blocks[key]={status:'Concluído',done:1,total:1,subtitle:'Confirmado por você · detalhes não informados'};

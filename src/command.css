@@ -542,27 +542,20 @@ html,body{overscroll-behavior-x:none}
 .routine-item[aria-pressed=true]{border-color:var(--signal);color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--surface2))}
 .routine-box{width:12px;height:12px;border:1.5px solid currentColor;border-radius:2px}
 .routine-item:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.routine-steps{display:flex;gap:6px;width:100%;min-width:0}
-.routine-step{flex:1 1 0;min-width:0;justify-content:flex-start}
-.routine-step-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:left}
-.routine-step-count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.68rem}
-.routine-undo{flex:0 0 44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);cursor:pointer}
-.routine-undo:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Cartão de rotina sozinho na última linha: ocupa a largura toda, cabeçalho e itens na mesma linha. */
 .module-grid>.module-routine:last-child:nth-child(odd){grid-column:1/-1;flex-direction:row;align-items:center;gap:10px}
 .module-grid>.module-routine:last-child:nth-child(odd) .module-head{flex:0 0 auto}
 .module-grid>.module-routine:last-child:nth-child(odd) .module-head .module-status{margin-left:8px}
 .module-grid>.module-routine:last-child:nth-child(odd) .routine-items{flex:1;flex-wrap:nowrap}
-/* Três ou mais itens simples (ex.: Aspirador ter/qui): título em cima, itens numa linha própria que
+/* Três ou mais itens simples (ex.: Aspirador ter/qui; Roupa 1 e Roupa 2 seg/qua/sex): título em cima, itens numa linha própria que
    quebra em telas estreitas, sem rolagem horizontal. */
 .module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)){flex-direction:column;align-items:stretch;gap:6px}
 .module-grid>.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(3)) .routine-items{flex-wrap:wrap}
-/* Dia de máquina de roupa (seg/qua/sex): o Cuidado Casa ganha a linha de etapas; espaçamentos mais
-   justos mantêm Hoje acima do menu no iPhone 16 (393×852). */
-.module-grid>.module-routine.module-routine:has(.routine-steps){grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 10px;padding:5px 10px}
-@media(max-width:760px){.home-page.command:has(.routine-steps){gap:6px}.module-grid:has(.routine-steps){gap:6px}}
-.module-grid>.module-routine:has(.routine-steps) .routine-items{flex-wrap:nowrap}
-.module-grid>.module-routine:has(.routine-steps) .routine-steps{grid-column:1/-1}
+/* Quatro itens (Roupa 1 e Roupa 2 seg/qua/sex): uma linha só, com espaçamentos mais justos, para que
+   Hoje caiba acima do menu no iPhone 16 (393×852) mesmo com fontes de métrica diferente. */
+@media(min-width:360px){.module-grid>.module-routine.module-routine.module-routine:last-child:nth-child(odd):has(.routine-items>:nth-child(4)) .routine-items{flex-wrap:nowrap;gap:5px}}
+.module-grid>.module-routine:has(.routine-items>:nth-child(4)) .routine-item{flex:1 1 auto;min-width:0;padding:0 5px;gap:4px;letter-spacing:.04em}
+@media(max-width:760px){.home-page.command:has(.routine-items>:nth-child(4)){gap:6px}.module-grid:has(.routine-items>:nth-child(4)){gap:6px}.module-grid>.module-routine.module-routine:has(.routine-items>:nth-child(4)){padding-top:6px;padding-bottom:6px;gap:4px}}
 /* Cardio sem cronômetro (26/11/2026): check da meta do dia ou minutos informados. */
 .cardio-log{display:grid;gap:12px}
 .cardio-figure{display:flex;align-items:baseline;gap:8px}

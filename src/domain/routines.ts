@@ -7,15 +7,14 @@ export const ROUTINES_SINCE='2026-11-26';
 export type RoutineBlock='despertar'|'mancare'|'casa';
 // Despertar (26/11/2026, proprietário): horário fixo de acordar, 06:00, todos os dias, a partir de 27/11/2026.
 export const WAKE_TIME='06:00';
-export interface RoutineStep {key:string;label:string}
-// `steps`: item com etapas em ordem fixa; só conclui com todas. Sem `steps`, o item é uma etapa única.
-export interface RoutineItem {id:string;name:string;weekdays:number[];since:string;steps?:RoutineStep[]}
+// `legacy`: chaves de um registro anterior que também contam como item concluído (nada é apagado).
+export interface RoutineItem {id:string;name:string;weekdays:number[];since:string;legacy?:string[]}
 const EVERY_DAY=[0,1,2,3,4,5,6];
-// Máquina de roupa (26/11/2026): segunda, quarta e sexta; duas máquinas, cada uma lavar → estender →
-// recolher → dobrar → guardar. Cada etapa é registrada em `routines` sob `roupa.<máquina>.<etapa>`.
-export const LAUNDRY_LOADS=2;
-export const LAUNDRY_STEPS=[['lavar','Lavar'],['estender','Estender'],['recolher','Recolher'],['dobrar','Dobrar'],['guardar','Guardar']] as const;
-const laundrySteps:RoutineStep[]=Array.from({length:LAUNDRY_LOADS},(_,m)=>LAUNDRY_STEPS.map(([k,l])=>({key:`roupa.${m+1}.${k}`,label:`Máquina ${m+1} · ${l}`}))).flat();
+// Roupa (27/11/2026, proprietário): segunda, quarta e sexta, duas caixas, "Roupa 1" e "Roupa 2", um toque cada.
+// Substitui a Máquina de roupa em etapas (26/11/2026): um dia já registrado com as 5 etapas de uma máquina
+// (`roupa.<N>.<etapa>`) conta como Roupa N concluída; os registros antigos permanecem.
+export const LEGACY_LAUNDRY_STEPS=['lavar','estender','recolher','dobrar','guardar'] as const;
+const laundry=(n:number):RoutineItem=>({id:`roupa${n}`,name:`Roupa ${n}`,weekdays:[1,3,5],since:'2026-11-26',legacy:LEGACY_LAUNDRY_STEPS.map(k=>`roupa.${n}.${k}`)});
 export const ROUTINE_BLOCKS:Record<RoutineBlock,{title:string;items:RoutineItem[]}>={
  despertar:{title:'Despertar',items:[{id:'despertar',name:`Despertar ${WAKE_TIME}`,weekdays:EVERY_DAY,since:'2026-11-27'}]},
  mancare:{title:'ManCare',items:[{id:'barba',name:'Barba',weekdays:[0],since:ROUTINES_SINCE}]},
@@ -24,7 +23,7 @@ export const ROUTINE_BLOCKS:Record<RoutineBlock,{title:string;items:RoutineItem[
   {id:'lixo',name:'Lixo',weekdays:EVERY_DAY,since:ROUTINES_SINCE},
   // Aspirador (26/11/2026): terças e quintas.
   {id:'aspirador',name:'Aspirador',weekdays:[2,4],since:'2026-11-26'},
-  {id:'roupa',name:'Máquina de roupa',weekdays:[1,3,5],since:'2026-11-26',steps:laundrySteps},
+  laundry(1),laundry(2),
  ]},
 };
 export const ROUTINE_KEYS=Object.keys(ROUTINE_BLOCKS) as RoutineBlock[];
@@ -32,24 +31,15 @@ const weekday=(date:string)=>new Date(date+'T12:00:00Z').getUTCDay();
 export function routineItems(block:RoutineBlock,date:string):RoutineItem[]{
  return ROUTINE_BLOCKS[block].items.filter(i=>date>=i.since&&i.weekdays.includes(weekday(date)));
 }
-export const routineSteps=(item:RoutineItem):RoutineStep[]=>item.steps??[{key:item.id,label:item.name}];
-export function routineProgress(day:DailyLog|undefined,item:RoutineItem){
- const steps=routineSteps(item),done=steps.filter(s=>!!day?.routines[s.key]?.done).length;
- return {done,total:steps.length,next:steps.find(s=>!day?.routines[s.key]?.done)??null,last:[...steps].reverse().find(s=>!!day?.routines[s.key]?.done)??null};
+export function routineDone(day:DailyLog|undefined,item:RoutineItem){
+ return !!day?.routines[item.id]?.done||(!!item.legacy?.length&&item.legacy.every(k=>!!day?.routines[k]?.done));
 }
-export function routineDone(day:DailyLog|undefined,item:RoutineItem){const p=routineProgress(day,item);return p.done===p.total;}
 function scheduled(day:DailyLog,block:RoutineBlock,itemId:string){
  const item=routineItems(block,day.id).find(i=>i.id===itemId);if(!item)throw Error('Item fora da rotina deste dia.');return item;
 }
-// Item simples: marca ou desmarca. Item com etapas: registra a próxima etapa pendente, na ordem fixa;
-// com todas registradas, o toque desfaz a última (correção).
+// Marca ou desmarca o item. Desmarcar (correção) também desfaz o registro antigo equivalente, sem apagá-lo.
 export function toggleRoutine(day:DailyLog,block:RoutineBlock,itemId:string,at:string){
- const item=scheduled(day,block,itemId);
- if(!item.steps){const done=!day.routines[item.id]?.done;day.routines[item.id]={done,at:done?at:null};return;}
- const p=routineProgress(day,item);
- if(p.next)day.routines[p.next.key]={done:true,at};else if(p.last)day.routines[p.last.key]={done:false,at:null};
-}
-// Desfaz a última etapa registrada de um item com etapas.
-export function undoRoutineStep(day:DailyLog,block:RoutineBlock,itemId:string){
- const last=routineProgress(day,scheduled(day,block,itemId)).last;if(last)day.routines[last.key]={done:false,at:null};
+ const item=scheduled(day,block,itemId),done=!routineDone(day,item);
+ day.routines[item.id]={done,at:done?at:null};
+ if(!done)for(const k of item.legacy??[])if(day.routines[k]?.done)day.routines[k]={done:false,at:null};
 }
