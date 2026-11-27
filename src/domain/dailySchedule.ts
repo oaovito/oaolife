@@ -9,10 +9,10 @@ import { setMealConsumed } from './nutrition';
 // à meia-noite o novo dia começa pendente e os dias anteriores permanecem no histórico.
 // Treino (26/11/2026): às 08:00 nos dias com sessão de musculação programada.
 export const TRAINING_TIME='08:00';
-// Cardio (26/11/2026): domingo às 09:00; nos demais dias às 10:00. A Refeição 2 fica 1h30 após o
-// início do cardio (domingo 10:30; demais dias 11:30), inclusive nos dias sem cardio (mesma âncora).
+// Cardio (26/11/2026): domingo às 09:00; nos demais dias às 10:00.
 export const CARDIO_TIMES=['09:00','10:00','10:00','10:00','10:00','10:00','10:00'] as const; // domingo..sábado
-export const MEAL2_AFTER_CARDIO_MIN=90;
+// Refeição 2 (27/11/2026, proprietário): 11:30 todos os dias, inclusive domingo; a água das 11:30 vai para 12:15.
+export const MEAL2_TIME='11:30';
 const weekday=(date:string)=>new Date(date+'T12:00:00Z').getUTCDay();
 export const cardioTime=(date:string)=>CARDIO_TIMES[weekday(date)];
 export const hhmm=(min:number)=>`${String(Math.floor(min/60)%24).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
@@ -33,11 +33,11 @@ export function normalizeSchedule(items:ScheduleItem[]):ScheduleItem[]{
  return list;
 }
 export const scheduleFor=(settings:Pick<AppSettings,'dailySchedule'>)=>normalizeSchedule(settings.dailySchedule??DEFAULT_SCHEDULE);
-// Rotina de uma data: a Refeição 2 segue o horário do cardio do dia (+1h30). Água no mesmo horário
+// Rotina de uma data: a Refeição 2 fica às 11:30 (MEAL2_TIME). Água no mesmo horário
 // passa para o meio do intervalo até o item seguinte (ex.: 11:30 → 12:15).
 export function scheduleForDate(settings:Pick<AppSettings,'dailySchedule'>,date:string):ScheduleItem[]{
  const list=scheduleFor(settings).map(i=>({...i})),meal2=list.filter(i=>i.kind==='meal')[1];
- meal2.time=hhmm(minutesOf(cardioTime(date))+MEAL2_AFTER_CARDIO_MIN);
+ meal2.time=MEAL2_TIME;
  const sorted=()=>list.sort((a,b)=>a.time.localeCompare(b.time)||(a.kind==='meal'?-1:1));sorted();
  for(let i=0;i<list.length;i++){const it=list[i];if(it!==meal2&&it.time===meal2.time&&it.kind==='water'){const after=list.slice(i+1).find(x=>x.time>meal2.time),limit=after?minutesOf(after.time):minutesOf(meal2.time)+90;it.time=hhmm(Math.floor((minutesOf(meal2.time)+limit)/2/5)*5);sorted();}}
  return list;

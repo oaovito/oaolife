@@ -42,12 +42,11 @@ describe('rotina diária de alimentação e hidratação',()=>{
   expect(()=>updateSchedule(data.settings,items.map(i=>i.id==='refeicao-1'?{...i,kind:'water' as const,ml:500}:i))).toThrow('exatamente 4 refeições');
   expect(()=>updateSchedule(data.settings,items.map(i=>i.id==='agua-0930'?{...i,time:'08:30'}:i))).toThrow('mesmo horário');
  });
- it('Refeição 2 fica 1h30 após o início do cardio: domingo 10:30 (cardio 09:00); demais dias 11:30 (cardio 10:00); água do mesmo horário vai para 12:15',()=>{
+ it('Refeição 2 às 11:30 todos os dias, inclusive domingo; água das 11:30 vai para 12:15; cardio domingo 09:00, demais 10:00',()=>{
   const data=emptyData(),times=(date:string)=>scheduleDay(data.settings,undefined,date).map(e=>`${e.time} ${e.kind}`);
   expect(cardioTime('2026-11-29')).toBe('09:00');expect(cardioTime('2026-11-30')).toBe('10:00');expect(cardioTime('2026-11-28')).toBe('10:00');
-  expect(times('2026-11-29')).toContain('10:30 meal');expect(times('2026-11-29')).toContain('11:30 water');
-  for(const d of ['2026-11-30','2026-12-02','2026-11-28']){const t=times(d);expect(t).toContain('11:30 meal');expect(t).toContain('12:15 water');expect(t).not.toContain('10:30 meal');expect(t.filter(x=>x.endsWith('meal'))).toHaveLength(4);}
-  const mon=scheduleDay(data.settings,undefined,'2026-11-30');expect(mon.find(e=>e.time==='11:30')!.label).toBe('Refeição 2 – Sólida');
+  for(const d of ['2026-11-29','2026-11-30','2026-12-02','2026-11-28']){const t=times(d);expect(t).toContain('11:30 meal');expect(t).toContain('12:15 water');expect(t).not.toContain('10:30 meal');expect(t).not.toContain('11:30 water');expect(t.filter(x=>x.endsWith('meal'))).toHaveLength(4);}
+  for(const d of ['2026-11-29','2026-11-30']){const l=scheduleDay(data.settings,undefined,d);expect(l.find(e=>e.time==='11:30')!.label).toBe('Refeição 2 – Sólida');}
  });
  it('ajustes antigos recebem a rotina padrão (campo aditivo)',()=>{
   const data=emptyData() as unknown as {settings:Record<string,unknown>};delete data.settings.dailySchedule;
