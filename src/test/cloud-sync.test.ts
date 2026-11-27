@@ -7,7 +7,7 @@ import { deriveKeys, generateCode, normalizeCode, pack, unpack } from '../storag
 import { decodeBackupPayload } from '../storage/backup';
 import { handleSync } from '../../api/sync';
 import { ALL_RANKS, rankFor } from '../domain/rank';
-import { routineItems, routineSteps } from '../domain/routines';
+import { routineItems } from '../domain/routines';
 import { perfectDays, PERFECT_SINCE } from '../domain/weeklyReport';
 import { setMealConsumedAll } from '../../e2e/seed';
 import type { AuditRecord } from '../storage/db';
@@ -138,7 +138,7 @@ describe('contador de dias cumpridos e patentes',()=>{
    if(d.cardio.planned!==null){d.cardio.elapsed=3600;d.cardio.speed=5;d.cardio.status='complete';}
    const ex=d.mobility.protocol!.exercises[0];d.mobility.sequences[ex.id]={elapsed:420,runningSince:null,completedAt:`${date}T12:00:00.000Z`};for(let s=0;s<ex.sets;s++)d.mobility.sets[`${ex.id}:${s}`]={done:true,seconds:60,runningSince:null,discomfort:null,pain:null,notes:''};
    for(const k of ['workout','hormonal'] as const)d.declarations[k]={at:`${date}T12:00:00.000Z`,note:'Teste'};
-   for(const k of ['despertar','mancare','casa'] as const)for(const i of routineItems(k,date))for(const st of routineSteps(i))d.routines[st.key]={done:true,at:`${date}T12:00:00.000Z`};};
+   for(const k of ['despertar','mancare','casa'] as const)for(const i of routineItems(k,date))d.routines[i.id]={done:true,at:`${date}T12:00:00.000Z`};};
   complete('2026-11-26');complete('2026-11-27');complete('2026-11-29');
   expect(perfectDays(data,'2026-11-29')).toEqual({total:3,streak:1,best:2});
   // Hoje incompleto não zera a sequência de ontem.
